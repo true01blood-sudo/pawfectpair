@@ -47,11 +47,11 @@ export default function LoginPage() {
   return (
     <main className="relative flex-1 flex items-center justify-center overflow-hidden bg-dark p-4">
       <div
-        className="absolute inset-0 scale-110 bg-cover bg-center blur-2xl"
+        className="absolute inset-0 scale-110 bg-cover bg-center blur-md"
         style={{ backgroundImage: "url(/images/bg-source.png)" }}
         aria-hidden
       />
-      <div className="absolute inset-0 bg-dark/60" aria-hidden />
+      <div className="absolute inset-0 bg-dark/45" aria-hidden />
 
       <div className="relative z-10 w-full max-w-sm rounded-3xl bg-black/50 backdrop-blur-md p-8 text-white">
         <h1 className="text-3xl font-bold text-center">

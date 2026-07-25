@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { MenuIcon, CloseIcon } from "@/components/icons";
 
 const navLinks = [
@@ -17,6 +18,8 @@ const navLinks = [
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  if (pathname === "/login") return null;
 
   return (
     <header className="sticky top-0 z-20 bg-dark">
