@@ -1,0 +1,5 @@
+Petcare services/
+.env*
+!.env.example
+node_modules/
+.claude/settings.local.json
