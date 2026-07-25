@@ -1,7 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Image from "next/image";
-import Link from "next/link";
+import Header from "@/components/Header";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,6 +18,11 @@ export const metadata: Metadata = {
   description: "Platforma completă pentru animalele de companie",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,14 +34,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-white text-dark">
-        <header className="bg-dark">
-          <div className="mx-auto flex max-w-5xl items-center px-4 py-2">
-            <Link href="/" className="flex items-center gap-2">
-              <Image src="/logo.png" alt="PawfectPair" width={40} height={20} className="rounded" />
-              <span className="text-white font-bold text-lg">PawfectPair</span>
-            </Link>
-          </div>
-        </header>
+        <Header />
         <div className="flex-1 flex flex-col">{children}</div>
       </body>
     </html>

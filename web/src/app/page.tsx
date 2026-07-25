@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
+import { SearchIcon, PawIcon, VetIcon, BagIcon, ChatIcon } from "@/components/icons";
 
 const categories = [
-  { href: "/adoptii", label: "Adopții", icon: "🐾" },
-  { href: "/programari", label: "Veterinari", icon: "🩺" },
-  { href: "/magazin", label: "Magazin", icon: "🛍️" },
-  { href: "/comunitate", label: "Comunitate", icon: "💬" },
+  { href: "/adoptii", label: "Adopții", Icon: PawIcon },
+  { href: "/programari", label: "Veterinari", Icon: VetIcon },
+  { href: "/magazin", label: "Magazin", Icon: BagIcon },
+  { href: "/comunitate", label: "Comunitate", Icon: ChatIcon },
 ];
 
 export default async function Home() {
@@ -20,13 +21,13 @@ export default async function Home() {
     .select("id, name, species, breed, city, photo_url")
     .eq("status", "available")
     .order("created_at", { ascending: false })
-    .limit(6);
+    .limit(8);
 
   return (
     <>
-      <main className="flex-1 mx-auto w-full max-w-5xl p-4 pb-24">
-        <div className="flex items-center gap-2 rounded-full bg-zinc-100 px-5 py-3">
-          <span>🔍</span>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-4 pb-24 sm:px-6 lg:px-8 md:pb-8">
+        <div className="flex min-h-11 items-center gap-2 rounded-full bg-zinc-100 px-5 py-2">
+          <SearchIcon className="h-5 w-5 text-zinc-400" />
           <input
             type="search"
             placeholder="Caută animale, servicii, produse..."
@@ -34,16 +35,18 @@ export default async function Home() {
           />
         </div>
 
-        <section className="mt-6 rounded-2xl bg-dark p-6 text-white">
-          <p className="text-xs font-semibold uppercase text-primary">
-            Adoptă, nu cumpăra
-          </p>
-          <h2 className="mt-1 text-xl font-bold">
-            Ai grijă de un animal fără stăpân
-          </h2>
+        <section className="mt-6 flex flex-col items-start gap-4 rounded-2xl bg-dark p-6 text-white sm:p-8 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs font-semibold tracking-wide text-primary uppercase">
+              Adoptă, nu cumpăra
+            </p>
+            <h2 className="mt-1 text-xl font-bold sm:text-2xl md:text-3xl">
+              Ai grijă de un animal fără stăpân
+            </h2>
+          </div>
           <Link
             href="/adoptii"
-            className="mt-4 inline-block rounded-full bg-primary px-5 py-2 text-sm font-semibold"
+            className="flex min-h-11 shrink-0 items-center rounded-full bg-primary px-5 py-2 text-sm font-semibold"
           >
             Vezi adopțiile
           </Link>
@@ -51,15 +54,15 @@ export default async function Home() {
 
         <section className="mt-8">
           <h3 className="mb-3 font-semibold">Explorează</h3>
-          <div className="grid grid-cols-4 gap-3">
-            {categories.map((c) => (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {categories.map(({ href, label, Icon }) => (
               <Link
-                key={c.href}
-                href={c.href}
-                className="flex flex-col items-center gap-2 rounded-2xl border p-3 text-center"
+                key={href}
+                href={href}
+                className="flex min-h-11 flex-col items-center gap-2 rounded-2xl border p-4 text-center transition-colors hover:border-primary"
               >
-                <span className="text-2xl">{c.icon}</span>
-                <span className="text-xs text-zinc-600">{c.label}</span>
+                <Icon className="h-7 w-7 text-primary" />
+                <span className="text-xs text-zinc-600 sm:text-sm">{label}</span>
               </Link>
             ))}
           </div>
@@ -73,12 +76,12 @@ export default async function Home() {
             </Link>
           </div>
           {listings && listings.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {listings.map((pet) => (
                 <div key={pet.id} className="rounded-2xl border p-3">
-                  <div className="mb-2 aspect-square rounded-xl bg-zinc-100" />
-                  <p className="font-medium">{pet.name}</p>
-                  <p className="text-xs text-zinc-500">
+                  <div className="mb-2 aspect-square w-full rounded-xl bg-zinc-100" />
+                  <p className="truncate font-medium">{pet.name}</p>
+                  <p className="truncate text-xs text-zinc-500">
                     {pet.breed || pet.species} · {pet.city}
                   </p>
                 </div>
@@ -92,14 +95,14 @@ export default async function Home() {
         </section>
 
         {!user && (
-          <div className="mt-8 rounded-2xl border p-4 text-center">
+          <div className="mt-8 rounded-2xl border p-4 text-center sm:p-6">
             <p className="mb-3 text-sm text-zinc-600">
               Creează un cont pentru a adăuga animale, programa vizite la
               veterinar și mai mult.
             </p>
             <Link
               href="/login"
-              className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white"
+              className="inline-flex min-h-11 items-center rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white"
             >
               Autentificare / Cont nou
             </Link>
