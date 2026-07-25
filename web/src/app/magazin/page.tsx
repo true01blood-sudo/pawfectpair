@@ -4,6 +4,7 @@ import BottomNav from "@/components/BottomNav";
 import { becomeSeller } from "./actions";
 
 function formatPrice(cents: number, currency: string) {
+  if (cents === 0) return "Preț de stabilit";
   return `${(cents / 100).toFixed(2)} ${currency}`;
 }
 

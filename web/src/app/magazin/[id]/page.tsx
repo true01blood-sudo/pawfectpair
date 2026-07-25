@@ -32,13 +32,19 @@ export default async function ProdusDetailPage({
 
       <h1 className="mt-4 text-2xl font-bold">{product.name}</h1>
       <p className="text-lg font-semibold text-primary">
-        {(product.price_cents / 100).toFixed(2)} {product.currency}
+        {product.price_cents === 0
+          ? "Preț de stabilit"
+          : `${(product.price_cents / 100).toFixed(2)} ${product.currency}`}
       </p>
       {product.category && <p className="text-sm text-zinc-500">{product.category}</p>}
       {product.description && <p className="mt-3 text-sm text-zinc-700">{product.description}</p>}
       <p className="mt-2 text-xs text-zinc-400">Stoc: {product.stock}</p>
 
-      {product.stock > 0 ? (
+      {product.price_cents === 0 ? (
+        <p className="mt-6 text-sm text-zinc-500">
+          Vânzătorul nu a stabilit încă un preț pentru acest produs.
+        </p>
+      ) : product.stock > 0 ? (
         user ? (
           <form action={placeOrder.bind(null, id)} className="mt-6">
             <button className="min-h-11 rounded-full bg-primary px-6 font-semibold text-white">

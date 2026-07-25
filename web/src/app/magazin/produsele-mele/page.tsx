@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createProduct, deleteProduct } from "./actions";
+import { createProduct, deleteProduct, updatePrice } from "./actions";
 
 export default async function ProduseleMelePage() {
   const supabase = await createClient();
@@ -25,12 +25,26 @@ export default async function ProduseleMelePage() {
             <div>
               <p className="font-medium">{p.name}</p>
               <p className="text-zinc-500">
-                {(p.price_cents / 100).toFixed(2)} {p.currency} · stoc: {p.stock}
+                {p.price_cents === 0 ? "Preț de stabilit" : `${(p.price_cents / 100).toFixed(2)} ${p.currency}`}
+                {" · stoc: "}{p.stock}
               </p>
             </div>
-            <form action={deleteProduct.bind(null, p.id)}>
-              <button className="min-h-11 rounded-full border px-4 text-xs">Șterge</button>
-            </form>
+            <div className="flex items-center gap-2">
+              <form action={updatePrice.bind(null, p.id)} className="flex items-center gap-1">
+                <input
+                  name="price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Preț"
+                  className="min-h-11 w-20 rounded-lg border px-2 text-xs"
+                />
+                <button className="min-h-11 rounded-full border px-3 text-xs">Setează</button>
+              </form>
+              <form action={deleteProduct.bind(null, p.id)}>
+                <button className="min-h-11 rounded-full border px-4 text-xs">Șterge</button>
+              </form>
+            </div>
           </li>
         ))}
         {(!products || products.length === 0) && (

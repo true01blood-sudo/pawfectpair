@@ -85,3 +85,44 @@ export async function importDemoProducts() {
   revalidatePath("/magazin");
   revalidatePath("/admin");
 }
+
+// Real pet-product data (names, brands, photos) from the free, open
+// Open Pet Food Facts database. It has no retail price field (it's a
+// nutrition database, not a shop), so imported items land with
+// price_cents = 0 ("Preț de stabilit") until a seller sets a real price.
+export async function importPetFoodFacts(formData: FormData) {
+  const supabase = await requireAdmin();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const category = String(formData.get("category") ?? "dog-food");
+
+  const res = await fetch(
+    `https://world.openpetfoodfacts.org/facets/categories/${encodeURIComponent(category)}.json?page_size=12&fields=product_name,brands,image_front_small_url`,
+    { cache: "no-store" },
+  );
+  if (!res.ok) return;
+  const json = await res.json();
+  type PoffProduct = { product_name?: string; brands?: string; image_front_small_url?: string };
+  const items: PoffProduct[] = json.products ?? [];
+
+  const rows = items
+    .filter((p) => p.product_name)
+    .map((p) => ({
+      seller_id: user!.id,
+      name: p.brands ? `${p.product_name} (${p.brands})` : p.product_name!,
+      category,
+      price_cents: 0,
+      stock: 10,
+      photo_url: p.image_front_small_url || null,
+      source: "openpetfoodfacts",
+    }));
+
+  if (rows.length > 0) {
+    await supabase.from("products").insert(rows);
+  }
+
+  revalidatePath("/magazin");
+  revalidatePath("/admin");
+}

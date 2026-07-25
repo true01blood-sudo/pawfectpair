@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { updateMarkup, importDemoProducts } from "./actions";
+import { updateMarkup, importDemoProducts, importPetFoodFacts } from "./actions";
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -58,6 +58,26 @@ export default async function AdminPage() {
         <form action={importDemoProducts}>
           <button className="min-h-11 rounded-full border px-5 text-sm font-semibold">
             Importă produse demo
+          </button>
+        </form>
+      </section>
+
+      <section className="mt-6 rounded-2xl border p-4 sm:p-6">
+        <h2 className="mb-2 font-semibold">Import produse reale (Open Pet Food Facts)</h2>
+        <p className="mb-3 text-sm text-zinc-500">
+          Bază de date deschisă și gratuită, specifică animalelor de companie
+          (nume, brand, poză). Nu conține prețuri de retail — produsele
+          importate apar cu &quot;Preț de stabilit&quot; până când le
+          actualizezi din Produsele mele.
+        </p>
+        <form action={importPetFoodFacts} className="flex flex-wrap items-center gap-3">
+          <select name="category" className="min-h-11 rounded-xl border px-4 text-sm">
+            <option value="dog-food">Hrană câini</option>
+            <option value="cat-food">Hrană pisici</option>
+            <option value="dog-treats">Recompense câini</option>
+          </select>
+          <button className="min-h-11 rounded-full border px-5 text-sm font-semibold">
+            Importă produse reale
           </button>
         </form>
       </section>

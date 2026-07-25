@@ -34,6 +34,17 @@ export async function createProduct(formData: FormData) {
   revalidatePath("/magazin/produsele-mele");
 }
 
+export async function updatePrice(productId: string, formData: FormData) {
+  const supabase = await createClient();
+  const price = Number(formData.get("price") ?? 0);
+  if (price <= 0) throw new Error("Prețul trebuie să fie mai mare ca 0.");
+  await supabase
+    .from("products")
+    .update({ price_cents: Math.round(price * 100) })
+    .eq("id", productId);
+  revalidatePath("/magazin/produsele-mele");
+}
+
 export async function deleteProduct(productId: string) {
   const supabase = await createClient();
   await supabase.from("products").delete().eq("id", productId);
