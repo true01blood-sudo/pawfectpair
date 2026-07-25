@@ -75,7 +75,7 @@ export default async function Home() {
               <Link
                 key={href}
                 href={href}
-                className="flex min-h-11 flex-col items-center gap-2 rounded-2xl border p-4 text-center transition-colors hover:border-primary"
+                className="card-hover flex min-h-11 flex-col items-center gap-2 rounded-2xl border p-4 text-center shadow-sm hover:border-primary"
               >
                 <Icon className="h-7 w-7 text-primary" />
                 <span className="text-xs text-zinc-600 sm:text-sm">{label}</span>

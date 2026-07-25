@@ -51,7 +51,7 @@ export default async function MagazinPage() {
               <Link
                 key={p.id}
                 href={`/magazin/${p.id}`}
-                className="rounded-2xl border p-3 transition-colors hover:border-primary"
+                className="card-hover rounded-2xl border p-3 shadow-sm hover:border-primary"
               >
                 {p.photo_url ? (
                   <div className="mb-2 aspect-square w-full overflow-hidden rounded-xl">

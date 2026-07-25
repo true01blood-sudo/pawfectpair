@@ -61,7 +61,7 @@ export default async function AdoptiiPage({
               <Link
                 key={pet.id}
                 href={`/adoptii/${pet.id}`}
-                className="rounded-2xl border p-3 transition-colors hover:border-primary"
+                className="card-hover rounded-2xl border p-3 shadow-sm hover:border-primary"
               >
                 {pet.photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element

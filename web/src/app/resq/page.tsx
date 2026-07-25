@@ -47,7 +47,7 @@ export default async function ResqPage({
         {cases && cases.length > 0 ? (
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {cases.map((c) => (
-              <Link key={c.id} href={`/resq/${c.id}`} className="rounded-2xl border p-3 transition-colors hover:border-primary">
+              <Link key={c.id} href={`/resq/${c.id}`} className="card-hover rounded-2xl border p-3 shadow-sm hover:border-primary">
                 {c.photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={c.photo_url} alt={c.name} className="mb-2 aspect-square w-full rounded-xl object-cover" />

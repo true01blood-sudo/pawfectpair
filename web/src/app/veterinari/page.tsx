@@ -36,7 +36,7 @@ export default async function VeterinariPage() {
               <Link
                 key={vet.id}
                 href={`/veterinari/${vet.id}`}
-                className="rounded-2xl border p-4 transition-colors hover:border-primary"
+                className="card-hover rounded-2xl border p-4 shadow-sm hover:border-primary"
               >
                 <p className="font-medium">{vet.clinic_name}</p>
                 <p className="text-sm text-zinc-500">{vet.city || "Oraș nespecificat"}</p>

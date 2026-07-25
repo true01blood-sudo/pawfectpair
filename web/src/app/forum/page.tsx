@@ -53,7 +53,7 @@ export default async function ForumPage({
           <ul className="mt-6 flex flex-col gap-3">
             {(posts as unknown as PostRow[]).map((p) => (
               <li key={p.id}>
-                <Link href={`/forum/${p.id}`} className="block rounded-2xl border p-4 hover:border-primary">
+                <Link href={`/forum/${p.id}`} className="card-hover block rounded-2xl border p-4 shadow-sm hover:border-primary">
                   {p.category && (
                     <span className="text-xs font-semibold uppercase tracking-wide text-primary">{p.category}</span>
                   )}
