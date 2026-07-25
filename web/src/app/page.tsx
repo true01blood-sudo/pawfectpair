@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { SearchIcon, PawIcon, VetIcon, BagIcon, ChatIcon } from "@/components/icons";
 import ShareButton from "@/components/ShareButton";
+import { PetPlaceholder } from "@/components/PawPlaceholder";
 
 const valueProps = [
   { title: "Adopții verificate", text: "Anunțuri reale de la centre și asociații, fără intermediari care comercializează animale." },
@@ -94,7 +95,12 @@ export default async function Home() {
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {listings.map((pet) => (
                 <div key={pet.id} className="rounded-2xl border p-3">
-                  <div className="mb-2 aspect-square w-full rounded-xl bg-zinc-100" />
+                  {pet.photo_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={pet.photo_url} alt={pet.name} className="mb-2 aspect-square w-full rounded-xl object-cover" />
+                  ) : (
+                    <PetPlaceholder className="mb-2 aspect-square w-full rounded-xl" />
+                  )}
                   <p className="truncate font-medium">{pet.name}</p>
                   <p className="truncate text-xs text-zinc-500">
                     {pet.breed || pet.species} · {pet.city}

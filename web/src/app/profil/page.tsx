@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { addPet, signOut } from "./actions";
+import { PetPlaceholder } from "@/components/PawPlaceholder";
 
 export default async function ProfilPage() {
   const supabase = await createClient();
@@ -63,7 +64,7 @@ export default async function ProfilPage() {
               {pets.map((pet) => (
                 <li key={pet.id}>
                   <Link href={`/animale/${pet.id}`} className="block rounded-2xl border p-3 hover:border-primary">
-                    <div className="mb-2 aspect-square w-full rounded-xl bg-zinc-100" />
+                    <PetPlaceholder className="mb-2 aspect-square w-full rounded-xl" />
                     <p className="font-medium">{pet.name}</p>
                     <p className="text-xs text-zinc-500">{pet.breed || pet.species}</p>
                     <p className="mt-1 text-xs text-primary">Fișă medicală →</p>

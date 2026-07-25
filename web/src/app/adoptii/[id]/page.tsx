@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { applyToListing, acceptApplication } from "./actions";
+import { PetPlaceholder } from "@/components/PawPlaceholder";
 
 export default async function AdoptieDetailPage({
   params,
@@ -42,7 +43,12 @@ export default async function AdoptieDetailPage({
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
-      <div className="aspect-video w-full rounded-2xl bg-zinc-100" />
+      {pet.photo_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={pet.photo_url} alt={pet.name} className="aspect-video w-full rounded-2xl object-cover" />
+      ) : (
+        <PetPlaceholder className="aspect-video w-full rounded-2xl" />
+      )}
 
       <div className="mt-4 flex items-start justify-between">
         <div>

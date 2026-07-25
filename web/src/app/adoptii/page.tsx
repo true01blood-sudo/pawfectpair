@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
+import { PetPlaceholder } from "@/components/PawPlaceholder";
 
 const speciesOptions = ["Toate", "Câine", "Pisică", "Altele"];
 
@@ -62,7 +63,12 @@ export default async function AdoptiiPage({
                 href={`/adoptii/${pet.id}`}
                 className="rounded-2xl border p-3 transition-colors hover:border-primary"
               >
-                <div className="mb-2 aspect-square w-full rounded-xl bg-zinc-100" />
+                {pet.photo_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={pet.photo_url} alt={pet.name} className="mb-2 aspect-square w-full rounded-xl object-cover" />
+                ) : (
+                  <PetPlaceholder className="mb-2 aspect-square w-full rounded-xl" />
+                )}
                 <p className="truncate font-medium">{pet.name}</p>
                 <p className="truncate text-xs text-zinc-500">
                   {pet.breed || pet.species}

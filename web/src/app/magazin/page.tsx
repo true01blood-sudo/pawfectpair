@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { becomeSeller } from "./actions";
+import { ProductPlaceholder } from "@/components/PawPlaceholder";
 
 function formatPrice(cents: number, currency: string) {
   if (cents === 0) return "Preț de stabilit";
@@ -52,12 +53,14 @@ export default async function MagazinPage() {
                 href={`/magazin/${p.id}`}
                 className="rounded-2xl border p-3 transition-colors hover:border-primary"
               >
-                <div className="mb-2 aspect-square w-full overflow-hidden rounded-xl bg-zinc-100">
-                  {p.photo_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
+                {p.photo_url ? (
+                  <div className="mb-2 aspect-square w-full overflow-hidden rounded-xl">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={p.photo_url} alt={p.name} className="h-full w-full object-cover" />
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <ProductPlaceholder className="mb-2 aspect-square w-full rounded-xl" />
+                )}
                 <p className="truncate font-medium">{p.name}</p>
                 <p className="text-sm font-semibold text-primary">
                   {formatPrice(p.price_cents, p.currency)}

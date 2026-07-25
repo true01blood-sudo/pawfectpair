@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { addMedicalRecord, addWeightLog } from "./actions";
+import { PetPlaceholder } from "@/components/PawPlaceholder";
 
 const typeLabels: Record<string, string> = {
   vaccination: "Vaccinare",
@@ -50,7 +51,17 @@ export default async function PetHealthPage({
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
-      <h1 className="text-xl font-bold sm:text-2xl">{pet.name} — fișă medicală</h1>
+      <div className="flex items-center gap-4">
+        {pet.photo_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={pet.photo_url} alt={pet.name} className="h-20 w-20 rounded-2xl object-cover" />
+        ) : (
+          <PetPlaceholder className="h-20 w-20 rounded-2xl" />
+        )}
+        <div>
+          <h1 className="text-xl font-bold sm:text-2xl">{pet.name} — fișă medicală</h1>
+        </div>
+      </div>
       <p className="text-sm text-zinc-500">
         {pet.breed || pet.species}
         {pet.weight_kg ? ` · ${pet.weight_kg} kg` : ""}

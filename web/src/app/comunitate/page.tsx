@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { swipePet } from "./actions";
+import { PetPlaceholder } from "@/components/PawPlaceholder";
 
 export default async function ComunitatePage({
   searchParams,
@@ -101,7 +102,7 @@ export default async function ComunitatePage({
         <div className="mt-6">
           {candidate ? (
             <div className="rounded-2xl border p-4">
-              <div className="aspect-square w-full rounded-xl bg-zinc-100" />
+              <PetPlaceholder className="aspect-square w-full rounded-xl" />
               <p className="mt-3 text-lg font-semibold">{candidate.name}</p>
               <p className="text-sm text-zinc-500">{candidate.breed || candidate.species}</p>
 
