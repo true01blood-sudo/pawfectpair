@@ -61,11 +61,11 @@ export default async function Home() {
             </Link>
           </div>
           <Image
-            src="/images/hero-pets.png"
+            src="/images/pexels-hero.jpg"
             alt="Cățel și pisică"
             width={150}
-            height={165}
-            className="hidden shrink-0 rounded-full sm:block"
+            height={150}
+            className="hidden aspect-square shrink-0 rounded-full object-cover sm:block"
           />
         </section>
 

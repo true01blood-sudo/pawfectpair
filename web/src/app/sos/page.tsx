@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { logSosEvent } from "./actions";
+import PageBanner from "@/components/PageBanner";
 
 export default async function SosPage() {
   const supabase = await createClient();
@@ -24,7 +25,7 @@ export default async function SosPage() {
   return (
     <>
       <main className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
-        <h1 className="text-xl font-bold text-red-600 sm:text-2xl">🆘 PetSOS</h1>
+        <PageBanner src="/images/pexels-sos.jpg" alt="Urgență veterinară" title="🆘 PetSOS" subtitle="Ajutor imediat pentru animalul tău" />
         <p className="mt-1 text-sm text-zinc-500">
           Pentru urgențe reale, sună imediat cea mai apropiată clinică veterinară de mai jos.
         </p>

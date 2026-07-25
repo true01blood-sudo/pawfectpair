@@ -48,7 +48,7 @@ export default function LoginPage() {
     <main className="relative flex-1 flex items-center justify-center overflow-hidden bg-dark p-4">
       <div
         className="absolute inset-0 scale-110 bg-cover bg-center blur-md"
-        style={{ backgroundImage: "url(/images/bg-source.png)" }}
+        style={{ backgroundImage: "url(/images/pexels-login-bg.jpg)" }}
         aria-hidden
       />
       <div className="absolute inset-0 bg-dark/45" aria-hidden />

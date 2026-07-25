@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
+import PageBanner from "@/components/PageBanner";
 
 const speciesOptions = ["Toate", "Câine", "Pisică", "Altele"];
 
@@ -28,8 +29,8 @@ export default async function AdoptiiPage({
   return (
     <>
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-4 pb-24 sm:px-6 lg:px-8 md:pb-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-xl font-bold sm:text-2xl">Adopții</h1>
+        <PageBanner src="/images/pexels-adoptii.jpg" alt="Câini fericiți disponibili pentru adopție" title="Adopții" subtitle="Adoptă, nu cumpăra" />
+        <div className="flex justify-end">
           <Link
             href="/adoptii/adauga"
             className="flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-white"

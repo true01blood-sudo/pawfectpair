@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { becomeSeller } from "./actions";
 import { ProductPlaceholder } from "@/components/PawPlaceholder";
+import PageBanner from "@/components/PageBanner";
 
 function formatPrice(cents: number, currency: string) {
   if (cents === 0) return "Preț de stabilit";
@@ -27,8 +28,8 @@ export default async function MagazinPage() {
   return (
     <>
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-4 pb-24 sm:px-6 lg:px-8 md:pb-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-xl font-bold sm:text-2xl">Magazin</h1>
+        <PageBanner src="/images/pexels-magazin.jpg" alt="Produse pentru animale" title="Magazin" subtitle="Tot ce are nevoie animalul tău" />
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
           {profile?.role === "shop" ? (
             <Link
               href="/magazin/produsele-mele"

@@ -5,6 +5,7 @@ import BottomNav from "@/components/BottomNav";
 import { swipePet } from "./actions";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
 import { SPECIES_OPTIONS } from "@/lib/species";
+import PageBanner from "@/components/PageBanner";
 
 export default async function ComunitatePage({
   searchParams,
@@ -26,7 +27,7 @@ export default async function ComunitatePage({
     return (
       <>
         <main className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
-          <h1 className="text-xl font-bold sm:text-2xl">Comunitate</h1>
+          <PageBanner src="/images/pexels-comunitate.jpg" alt="Câine și pisică prieteni" title="Comunitate" subtitle="PetMatch — găsește companioni pentru animalul tău" />
           <p className="mt-4 text-sm text-zinc-600">
             Adaugă mai întâi un animal în{" "}
             <Link href="/profil" className="text-primary underline">profilul tău</Link>{" "}
@@ -80,10 +81,10 @@ export default async function ComunitatePage({
   return (
     <>
       <main className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold sm:text-2xl">PetMatch</h1>
+        <PageBanner src="/images/pexels-comunitate.jpg" alt="Câine și pisică prieteni" title="PetMatch" subtitle="Descoperă companioni pentru animalul tău" />
+        <div className="flex items-center justify-end">
           <Link href="/comunitate/mesaje" className="text-sm text-primary">
-            Mesaje
+            Mesaje →
           </Link>
         </div>
 

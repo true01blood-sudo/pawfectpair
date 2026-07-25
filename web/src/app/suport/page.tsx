@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import PageBanner from "@/components/PageBanner";
 
 export const metadata: Metadata = {
   title: "Suport",
@@ -16,7 +17,7 @@ const faqs = [
 export default function SuportPage() {
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-bold sm:text-3xl">Cu ce te putem ajuta?</h1>
+      <PageBanner src="/images/pexels-suport.jpg" alt="Echipă de suport" title="Cu ce te putem ajuta?" />
       <p className="mt-1 text-sm text-zinc-500">
         Ai o problemă legată de cont, o comandă sau o programare? Suntem aici.
       </p>
