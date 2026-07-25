@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { sendMessage } from "../../actions";
+import BackLink from "@/components/BackLink";
 
 export default async function ChatPage({
   params,
@@ -34,6 +35,7 @@ export default async function ChatPage({
 
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
+      <BackLink href="/comunitate/mesaje" label="Mesaje" />
       <h1 className="text-xl font-bold sm:text-2xl">Chat cu stăpânul lui {otherPetName}</h1>
 
       <div className="mt-4 flex-1 space-y-2 overflow-y-auto">

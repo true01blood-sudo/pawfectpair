@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { bookAppointment } from "../actions";
+import BackLink from "@/components/BackLink";
 
 export default async function VetDetailPage({
   params,
@@ -28,6 +29,7 @@ export default async function VetDetailPage({
 
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+      <BackLink href="/veterinari" label="Veterinari" />
       <h1 className="text-2xl font-bold">{vet.clinic_name}</h1>
       <p className="text-zinc-500">{vet.city} {vet.address ? `· ${vet.address}` : ""}</p>
       {vet.phone && <p className="text-sm text-zinc-500">{vet.phone}</p>}

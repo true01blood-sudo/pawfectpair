@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { placeOrder } from "../actions";
+import BackLink from "@/components/BackLink";
 import { ProductPlaceholder } from "@/components/PawPlaceholder";
 
 export default async function ProdusDetailPage({
@@ -24,6 +25,7 @@ export default async function ProdusDetailPage({
 
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+      <BackLink href="/magazin" label="Magazin" />
       {product.photo_url ? (
         <div className="aspect-square w-full overflow-hidden rounded-2xl">
           {/* eslint-disable-next-line @next/next/no-img-element */}

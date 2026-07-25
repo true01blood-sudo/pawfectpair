@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
 import { resolveCase } from "../actions";
+import BackLink from "@/components/BackLink";
 
 export default async function ResqDetailPage({
   params,
@@ -20,6 +21,7 @@ export default async function ResqDetailPage({
 
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+      <BackLink href="/resq" label="PetResQ" />
       {c.photo_url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={c.photo_url} alt={c.name} className="aspect-video w-full rounded-2xl object-cover" />
