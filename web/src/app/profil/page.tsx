@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { addPet, signOut } from "./actions";
@@ -51,10 +52,13 @@ export default async function ProfilPage() {
           {pets && pets.length > 0 ? (
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {pets.map((pet) => (
-                <li key={pet.id} className="rounded-2xl border p-3">
-                  <div className="mb-2 aspect-square w-full rounded-xl bg-zinc-100" />
-                  <p className="font-medium">{pet.name}</p>
-                  <p className="text-xs text-zinc-500">{pet.breed || pet.species}</p>
+                <li key={pet.id}>
+                  <Link href={`/animale/${pet.id}`} className="block rounded-2xl border p-3 hover:border-primary">
+                    <div className="mb-2 aspect-square w-full rounded-xl bg-zinc-100" />
+                    <p className="font-medium">{pet.name}</p>
+                    <p className="text-xs text-zinc-500">{pet.breed || pet.species}</p>
+                    <p className="mt-1 text-xs text-primary">Fișă medicală →</p>
+                  </Link>
                 </li>
               ))}
             </ul>
