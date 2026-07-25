@@ -10,6 +10,7 @@ const navLinks = [
   { href: "/veterinari", label: "Veterinari" },
   { href: "/magazin", label: "Magazin" },
   { href: "/comunitate", label: "Comunitate" },
+  { href: "/sos", label: "SOS", danger: true },
 ];
 
 export default function Header() {
@@ -25,7 +26,11 @@ export default function Header() {
 
         <nav className="hidden md:flex md:items-center md:gap-6">
           {navLinks.map((l) => (
-            <Link key={l.href} href={l.href} className="text-sm font-medium text-zinc-200 hover:text-primary">
+            <Link
+              key={l.href}
+              href={l.href}
+              className={`text-sm font-medium hover:text-primary ${l.danger ? "text-red-400 font-bold" : "text-zinc-200"}`}
+            >
               {l.label}
             </Link>
           ))}
@@ -54,7 +59,7 @@ export default function Header() {
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="flex min-h-11 items-center rounded-lg px-2 text-sm font-medium text-zinc-200"
+              className={`flex min-h-11 items-center rounded-lg px-2 text-sm font-medium ${l.danger ? "text-red-400 font-bold" : "text-zinc-200"}`}
             >
               {l.label}
             </Link>
