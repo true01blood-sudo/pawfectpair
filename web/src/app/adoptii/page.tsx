@@ -29,7 +29,7 @@ export default async function AdoptiiPage({
   return (
     <>
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-4 pb-24 sm:px-6 lg:px-8 md:pb-8">
-        <PageBanner src="/images/pexels-adoptii.jpg" alt="Câini fericiți disponibili pentru adopție" title="Adopții" subtitle="Adoptă, nu cumpăra" />
+        <PageBanner src="/images/pexels-hero.jpg" alt="Pisici disponibile pentru adopție" title="Adopții" subtitle="Adoptă, nu cumpăra" />
         <div className="flex justify-end">
           <Link
             href="/adoptii/adauga"

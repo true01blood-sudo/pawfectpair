@@ -45,28 +45,30 @@ export default async function Home() {
           <FilterIcon className="h-5 w-5 shrink-0 text-primary" />
         </div>
 
-        <section className="mt-6 flex items-center justify-between gap-4 overflow-hidden rounded-2xl bg-dark p-6 text-white sm:p-8">
-          <div>
-            <p className="text-xs font-semibold tracking-wide text-primary uppercase">
+        <section className="relative mt-6 h-72 w-full overflow-hidden rounded-3xl text-white sm:h-96">
+          <Image
+            src="/images/pexels-adoptii.jpg"
+            alt="Câini la adăpost, în așteptarea unei familii"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
+          <div className="absolute inset-x-0 bottom-0 p-6 sm:p-10">
+            <p className="text-xs font-semibold tracking-wide text-primary uppercase sm:text-sm">
               Adoptă, nu cumpăra
             </p>
-            <h2 className="mt-1 max-w-xs text-xl font-bold sm:text-2xl md:text-3xl">
+            <h2 className="font-heading mt-1 max-w-md text-2xl font-bold sm:text-4xl">
               Ai grijă de un animal fără stăpân
             </h2>
             <Link
               href="/adoptii"
-              className="mt-4 flex min-h-11 w-fit items-center rounded-full bg-primary px-5 py-2 text-sm font-semibold"
+              className="mt-4 flex min-h-11 w-fit items-center rounded-full bg-primary px-6 py-2 text-sm font-semibold"
             >
               Vezi adopțiile
             </Link>
           </div>
-          <Image
-            src="/images/pexels-hero.jpg"
-            alt="Cățel și pisică"
-            width={150}
-            height={150}
-            className="hidden aspect-square shrink-0 rounded-full object-cover sm:block"
-          />
         </section>
 
         <section className="mt-8">
