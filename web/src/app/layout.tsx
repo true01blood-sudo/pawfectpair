@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,9 +14,41 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = "https://pawfectpair.app";
+const description =
+  "PawfectPair — platforma completă pentru animalele de companie: adopții, programări veterinare, marketplace și o comunitate de stăpâni pasionați. Adoptă, ai grijă, conectează-te.";
+
 export const metadata: Metadata = {
-  title: "PawfectPair",
-  description: "Platforma completă pentru animalele de companie",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "PawfectPair — Platforma pentru animalele tale de companie",
+    template: "%s · PawfectPair",
+  },
+  description,
+  keywords: [
+    "adoptii caini",
+    "adoptii pisici",
+    "veterinar online",
+    "programare veterinar",
+    "magazin animale companie",
+    "comunitate proprietari animale",
+    "PawfectPair",
+  ],
+  openGraph: {
+    type: "website",
+    locale: "ro_RO",
+    url: siteUrl,
+    siteName: "PawfectPair",
+    title: "PawfectPair — Platforma pentru animalele tale de companie",
+    description,
+    images: [{ url: "/logo.png", width: 1030, height: 530 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PawfectPair",
+    description,
+    images: ["/logo.png"],
+  },
 };
 
 export const viewport: Viewport = {
@@ -36,6 +69,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-white text-dark">
         <Header />
         <div className="flex-1 flex flex-col">{children}</div>
+        <Footer />
       </body>
     </html>
   );

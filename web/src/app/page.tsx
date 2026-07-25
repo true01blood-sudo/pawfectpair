@@ -3,10 +3,17 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { SearchIcon, PawIcon, VetIcon, BagIcon, ChatIcon } from "@/components/icons";
+import ShareButton from "@/components/ShareButton";
+
+const valueProps = [
+  { title: "Adopții verificate", text: "Anunțuri reale de la centre și asociații, fără intermediari care comercializează animale." },
+  { title: "Veterinari la un click", text: "Programează o vizită direct din aplicație, fără telefoane și așteptare." },
+  { title: "Comunitate activă", text: "Sfaturi, povești și susținere de la alți stăpâni care chiar înțeleg." },
+];
 
 const categories = [
   { href: "/adoptii", label: "Adopții", Icon: PawIcon },
-  { href: "/programari", label: "Veterinari", Icon: VetIcon },
+  { href: "/veterinari", label: "Veterinari", Icon: VetIcon },
   { href: "/magazin", label: "Magazin", Icon: BagIcon },
   { href: "/comunitate", label: "Comunitate", Icon: ChatIcon },
 ];
@@ -102,6 +109,18 @@ export default async function Home() {
           )}
         </section>
 
+        <section className="mt-10">
+          <h3 className="mb-3 font-semibold">De ce PawfectPair</h3>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {valueProps.map((v) => (
+              <div key={v.title} className="rounded-2xl border p-4">
+                <p className="font-medium">{v.title}</p>
+                <p className="mt-1 text-sm text-zinc-500">{v.text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {!user && (
           <div className="mt-8 rounded-2xl border p-4 text-center sm:p-6">
             <p className="mb-3 text-sm text-zinc-600">
@@ -116,6 +135,10 @@ export default async function Home() {
             </Link>
           </div>
         )}
+
+        <div className="mt-6 flex justify-center">
+          <ShareButton />
+        </div>
       </main>
       <BottomNav />
     </>
