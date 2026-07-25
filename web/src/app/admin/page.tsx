@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { updateMarkup, importDemoProducts, importPetFoodFacts } from "./actions";
+import { updateMarkup, importDemoProducts, importPetFoodFacts, addArticle } from "./actions";
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -78,6 +78,26 @@ export default async function AdminPage() {
           </select>
           <button className="min-h-11 rounded-full border px-5 text-sm font-semibold">
             Importă produse reale
+          </button>
+        </form>
+      </section>
+
+      <section className="mt-6 rounded-2xl border p-4 sm:p-6">
+        <h2 className="mb-3 font-semibold">Adaugă articol educațional (PetEdu)</h2>
+        <form action={addArticle} className="flex flex-col gap-3">
+          <input name="title" placeholder="Titlu" required className="min-h-11 rounded-xl border px-4 text-sm" />
+          <div className="grid grid-cols-2 gap-3">
+            <select name="species" className="min-h-11 rounded-xl border px-3 text-sm">
+              <option value="general">General</option>
+              <option value="caine">Câini</option>
+              <option value="pisica">Pisici</option>
+              <option value="altele">Altele</option>
+            </select>
+            <input name="category" placeholder="Categorie (ex: nutriție)" className="min-h-11 rounded-xl border px-3 text-sm" />
+          </div>
+          <textarea name="body" placeholder="Conținut sfat/articol" rows={4} required className="rounded-xl border p-3 text-sm" />
+          <button className="min-h-11 self-start rounded-full bg-primary px-5 text-sm font-semibold text-white">
+            Publică articolul
           </button>
         </form>
       </section>

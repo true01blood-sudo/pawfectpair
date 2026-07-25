@@ -86,6 +86,31 @@ export async function importDemoProducts() {
   revalidatePath("/admin");
 }
 
+export async function addArticle(formData: FormData) {
+  const supabase = await requireAdmin();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const title = String(formData.get("title") ?? "").trim();
+  const body = String(formData.get("body") ?? "").trim();
+  const species = String(formData.get("species") ?? "general");
+  const category = String(formData.get("category") ?? "").trim() || null;
+
+  if (!title || !body) throw new Error("Titlul și conținutul sunt obligatorii.");
+
+  await supabase.from("edu_articles").insert({
+    title,
+    body,
+    species,
+    category,
+    created_by: user!.id,
+  });
+
+  revalidatePath("/educatie");
+  revalidatePath("/admin");
+}
+
 // Real pet-product data (names, brands, photos) from the free, open
 // Open Pet Food Facts database. It has no retail price field (it's a
 // nutrition database, not a shop), so imported items land with

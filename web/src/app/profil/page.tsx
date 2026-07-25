@@ -47,6 +47,15 @@ export default async function ProfilPage() {
           </div>
         </div>
 
+        <div className="mt-4 flex gap-2">
+          <Link href="/planificator" className="flex min-h-11 items-center rounded-full border px-4 text-sm">
+            Planificator
+          </Link>
+          <Link href="/educatie" className="flex min-h-11 items-center rounded-full border px-4 text-sm">
+            Sfaturi
+          </Link>
+        </div>
+
         <section className="mt-8">
           <h2 className="mb-3 font-semibold">Animalele mele</h2>
           {pets && pets.length > 0 ? (
