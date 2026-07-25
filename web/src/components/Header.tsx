@@ -10,6 +10,7 @@ const navLinks = [
   { href: "/veterinari", label: "Veterinari" },
   { href: "/magazin", label: "Magazin" },
   { href: "/comunitate", label: "Comunitate" },
+  { href: "/resq", label: "PetResQ" },
   { href: "/sos", label: "SOS", danger: true },
 ];
 

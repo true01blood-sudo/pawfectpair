@@ -45,8 +45,11 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex-1 bg-dark flex items-center justify-center p-4">
-      <div className="w-full max-w-sm rounded-3xl bg-black/40 backdrop-blur p-8 text-white">
+    <main
+      className="flex-1 flex items-center justify-center bg-dark bg-cover bg-center p-4"
+      style={{ backgroundImage: "url(/images/hero-pets.png)" }}
+    >
+      <div className="w-full max-w-sm rounded-3xl bg-black/50 backdrop-blur-md p-8 text-white">
         <h1 className="text-3xl font-bold text-center">
           {mode === "signIn" ? (
             <>
