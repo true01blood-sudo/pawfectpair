@@ -55,6 +55,9 @@ export default async function ProfilPage() {
           <Link href="/educatie" className="flex min-h-11 items-center rounded-full border px-4 text-sm">
             Sfaturi
           </Link>
+          <Link href="/statistici" className="flex min-h-11 items-center rounded-full border px-4 text-sm">
+            Statistici
+          </Link>
         </div>
 
         <section className="mt-8">
