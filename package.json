@@ -1,0 +1,13 @@
+{
+  "name": "pawfectpair",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "postinstall": "cd web && npm install && npm run build",
+    "build": "cd web && npm run build",
+    "start": "cd web && npm start"
+  }
+}
