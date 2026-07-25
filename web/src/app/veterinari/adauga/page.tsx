@@ -16,10 +16,10 @@ export default async function AdaugaVetPage() {
       <form action={registerVet} className="mt-6 flex flex-col gap-4">
         <input name="clinic_name" placeholder="Numele cabinetului" required className="min-h-11 rounded-xl border px-4" />
         <div className="grid grid-cols-2 gap-4">
-          <input name="city" placeholder="Oraș" className="min-h-11 rounded-xl border px-4" />
-          <input name="phone" placeholder="Telefon" className="min-h-11 rounded-xl border px-4" />
+          <input name="city" placeholder="Oraș" required className="min-h-11 rounded-xl border px-4" />
+          <input name="phone" placeholder="Telefon" required className="min-h-11 rounded-xl border px-4" />
         </div>
-        <input name="address" placeholder="Adresă" className="min-h-11 rounded-xl border px-4" />
+        <input name="address" placeholder="Adresă completă" required className="min-h-11 rounded-xl border px-4" />
         <textarea name="bio" placeholder="Despre cabinet, specializări..." rows={4} className="rounded-xl border p-4" />
         <button className="min-h-11 rounded-full bg-primary px-5 font-semibold text-white">
           Publică cabinetul

@@ -68,7 +68,7 @@ export default async function EducatiePage({
         {articles && articles.length > 0 ? (
           <ul className="mt-6 flex flex-col gap-3">
             {articles.map((a) => (
-              <li key={a.id} className="rounded-2xl border p-4">
+              <li key={a.id} className="card-hover rounded-2xl border p-4 shadow-sm">
                 <p className="text-xs font-semibold uppercase tracking-wide text-primary">
                   {speciesLabels[a.species]}
                   {a.category ? ` · ${a.category}` : ""}

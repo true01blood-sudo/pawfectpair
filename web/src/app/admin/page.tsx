@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { updateMarkup, importDemoProducts, importPetFoodFacts, addArticle } from "./actions";
 
@@ -25,6 +26,15 @@ export default async function AdminPage() {
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
       <h1 className="text-xl font-bold sm:text-2xl">Panou Admin</h1>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Link href="/admin/utilizatori" className="flex min-h-11 items-center rounded-full border px-4 text-sm">
+          Utilizatori
+        </Link>
+        <Link href="/admin/comenzi" className="flex min-h-11 items-center rounded-full border px-4 text-sm">
+          Comenzi
+        </Link>
+      </div>
 
       <section className="mt-6 rounded-2xl border p-4 sm:p-6">
         <h2 className="mb-3 font-semibold">Adaos comercial (markup) magazin</h2>

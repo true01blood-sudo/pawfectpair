@@ -51,7 +51,7 @@ export default async function PlanificatorPage() {
             {tasks && tasks.length > 0 ? (
               <ul className="mt-4 flex flex-col gap-2">
                 {(tasks as unknown as TaskRow[]).map((t) => (
-                  <li key={t.id} className="flex items-center justify-between rounded-xl border p-3 text-sm">
+                  <li key={t.id} className="card-hover flex items-center justify-between rounded-xl border p-3 text-sm shadow-sm">
                     <div>
                       <p className="font-medium">
                         {categoryLabels[t.category]} — {t.title}

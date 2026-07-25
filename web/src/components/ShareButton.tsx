@@ -28,7 +28,7 @@ export default function ShareButton() {
       onClick={share}
       className="flex min-h-11 items-center justify-center rounded-full border px-5 text-sm font-semibold"
     >
-      {copied ? "Link copiat!" : "Distribuie cu un prieten"}
+      {copied ? "Link copiat!" : "Distribuie unui prieten"}
     </button>
   );
 }

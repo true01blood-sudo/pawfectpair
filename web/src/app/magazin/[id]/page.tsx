@@ -14,10 +14,12 @@ export default async function ProdusDetailPage({
 
   const { data: product } = await supabase
     .from("products")
-    .select("*")
+    .select("*, profiles(full_name)")
     .eq("id", id)
     .single();
   if (!product) notFound();
+
+  const seller = product.profiles as unknown as { full_name: string } | null;
 
   const {
     data: { user },
@@ -42,6 +44,12 @@ export default async function ProdusDetailPage({
           : `${(product.price_cents / 100).toFixed(2)} ${product.currency}`}
       </p>
       {product.category && <p className="text-sm text-zinc-500">{product.category}</p>}
+      <p className="mt-2 text-sm text-zinc-600">
+        Vândut de <span className="font-medium">{seller?.full_name ?? "PawfectPair"}</span>
+      </p>
+      {product.delivery_info && (
+        <p className="mt-1 text-sm text-zinc-600">🚚 {product.delivery_info}</p>
+      )}
       {product.description && <p className="mt-3 text-sm text-zinc-700">{product.description}</p>}
       <p className="mt-2 text-xs text-zinc-400">Stoc: {product.stock}</p>
 

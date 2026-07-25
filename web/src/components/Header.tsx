@@ -8,7 +8,7 @@ import { MenuIcon, CloseIcon } from "@/components/icons";
 
 const navLinks = [
   { href: "/adoptii", label: "Adopții" },
-  { href: "/veterinari", label: "Veterinari" },
+  { href: "/veterinari", label: "Servicii Medicale Veterinare" },
   { href: "/magazin", label: "Magazin" },
   { href: "/comunitate", label: "Comunitate" },
   { href: "/forum", label: "Forum" },
@@ -16,10 +16,13 @@ const navLinks = [
   { href: "/sos", label: "SOS", danger: true },
 ];
 
-export default function Header() {
+export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   if (pathname === "/login") return null;
+
+  const accountHref = isLoggedIn ? "/profil" : "/login";
+  const accountLabel = isLoggedIn ? "Profilul meu" : "Cont";
 
   return (
     <header className="sticky top-0 z-20 bg-dark">
@@ -40,10 +43,10 @@ export default function Header() {
             </Link>
           ))}
           <Link
-            href="/login"
+            href={accountHref}
             className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white"
           >
-            Cont
+            {accountLabel}
           </Link>
         </nav>
 
@@ -70,11 +73,11 @@ export default function Header() {
             </Link>
           ))}
           <Link
-            href="/login"
+            href={accountHref}
             onClick={() => setOpen(false)}
             className="mt-2 flex min-h-11 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white"
           >
-            Cont
+            {accountLabel}
           </Link>
         </nav>
       )}

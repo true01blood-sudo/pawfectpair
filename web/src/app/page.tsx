@@ -8,7 +8,7 @@ import { PetPlaceholder } from "@/components/PawPlaceholder";
 
 const valueProps = [
   { title: "Adopții verificate", text: "Anunțuri reale de la centre și asociații, fără intermediari care comercializează animale." },
-  { title: "Veterinari la un click", text: "Programează o vizită direct din aplicație, fără telefoane și așteptare." },
+  { title: "Servicii Medicale Veterinare", text: "Programează o vizită direct din aplicație, fără telefoane și așteptare." },
   { title: "Comunitate activă", text: "Sfaturi, povești și susținere de la alți stăpâni care chiar înțeleg." },
 ];
 

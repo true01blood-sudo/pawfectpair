@@ -21,7 +21,7 @@ export default async function MagazinPage() {
 
   const { data: products } = await supabase
     .from("products")
-    .select("id, name, price_cents, currency, photo_url, category")
+    .select("id, name, price_cents, currency, photo_url, category, delivery_info, profiles(full_name)")
     .order("created_at", { ascending: false });
 
   return (
@@ -64,6 +64,10 @@ export default async function MagazinPage() {
                 <p className="truncate font-medium">{p.name}</p>
                 <p className="text-sm font-semibold text-primary">
                   {formatPrice(p.price_cents, p.currency)}
+                </p>
+                <p className="truncate text-xs text-zinc-400">
+                  {(p.profiles as unknown as { full_name: string } | null)?.full_name ?? "PawfectPair"}
+                  {p.delivery_info ? ` · ${p.delivery_info}` : ""}
                 </p>
               </Link>
             ))}

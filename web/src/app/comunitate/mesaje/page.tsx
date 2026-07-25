@@ -38,7 +38,7 @@ export default async function MesajePage() {
                 <li key={m.id}>
                   <Link
                     href={`/comunitate/mesaje/${m.id}`}
-                    className="flex min-h-11 items-center justify-between rounded-xl border p-3 text-sm"
+                    className="card-hover flex min-h-11 items-center justify-between rounded-xl border p-3 text-sm shadow-sm hover:border-primary"
                   >
                     <span>
                       <strong>{myPet?.name}</strong> ↔ {otherPet?.name}
