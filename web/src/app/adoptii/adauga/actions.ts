@@ -22,6 +22,7 @@ export async function createListing(formData: FormData) {
   const size = String(formData.get("size") ?? "medium");
   const city = String(formData.get("city") ?? "").trim() || null;
   const description = String(formData.get("description") ?? "").trim() || null;
+  const photo_url = String(formData.get("photo_url") ?? "").trim() || null;
 
   if (!name || !species) {
     throw new Error("Numele și specia sunt obligatorii.");
@@ -39,6 +40,7 @@ export async function createListing(formData: FormData) {
       size,
       city,
       description,
+      photo_url,
     })
     .select("id")
     .single();

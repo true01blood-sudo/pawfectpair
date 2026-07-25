@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createListing } from "./actions";
+import ImageUpload from "@/components/ImageUpload";
+import { SPECIES_OPTIONS } from "@/lib/species";
 
 export default async function AdaugaAdoptiePage() {
   const supabase = await createClient();
@@ -27,9 +29,9 @@ export default async function AdaugaAdoptiePage() {
         <div className="grid grid-cols-2 gap-4">
           <select name="species" required className="min-h-11 rounded-xl border px-4">
             <option value="">Specie</option>
-            <option value="Câine">Câine</option>
-            <option value="Pisică">Pisică</option>
-            <option value="Altele">Altele</option>
+            {SPECIES_OPTIONS.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
           </select>
           <input
             name="breed"
@@ -64,6 +66,8 @@ export default async function AdaugaAdoptiePage() {
           placeholder="Oraș"
           className="min-h-11 rounded-xl border px-4"
         />
+
+        <ImageUpload name="photo_url" label="Poză animal" />
 
         <textarea
           name="description"

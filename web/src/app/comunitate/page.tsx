@@ -4,11 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { swipePet } from "./actions";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
+import { SPECIES_OPTIONS } from "@/lib/species";
 
 export default async function ComunitatePage({
   searchParams,
 }: {
-  searchParams: Promise<{ pet?: string }>;
+  searchParams: Promise<{ pet?: string; specie?: string; sex?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -37,7 +38,7 @@ export default async function ComunitatePage({
     );
   }
 
-  const { pet: petParam } = await searchParams;
+  const { pet: petParam, specie, sex } = await searchParams;
   const activePetId = petParam || myPets[0].id;
 
   const { data: alreadySwiped } = await supabase
@@ -49,12 +50,14 @@ export default async function ComunitatePage({
     ...(alreadySwiped?.map((s) => s.to_pet_id) ?? []),
   ];
 
-  const { data: candidates } = await supabase
+  let candidateQuery = supabase
     .from("pets")
-    .select("id, name, species, breed, owner_id")
+    .select("id, name, species, breed, sex, photo_url, owner_id")
     .neq("owner_id", user.id)
-    .not("id", "in", `(${excludedIds.join(",")})`)
-    .limit(1);
+    .not("id", "in", `(${excludedIds.join(",")})`);
+  if (specie) candidateQuery = candidateQuery.eq("species", specie);
+  if (sex) candidateQuery = candidateQuery.eq("sex", sex);
+  const { data: candidates } = await candidateQuery.limit(1);
 
   const candidate = candidates?.[0];
 
@@ -65,6 +68,14 @@ export default async function ComunitatePage({
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
+
+  function buildHref(next: { specie?: string; sex?: string }) {
+    const sp = new URLSearchParams();
+    sp.set("pet", activePetId);
+    if (next.specie) sp.set("specie", next.specie);
+    if (next.sex) sp.set("sex", next.sex);
+    return `/comunitate?${sp.toString()}`;
+  }
 
   return (
     <>
@@ -81,7 +92,7 @@ export default async function ComunitatePage({
             {myPets.map((p) => (
               <Link
                 key={p.id}
-                href={`/comunitate?pet=${p.id}`}
+                href={buildHref({ specie, sex })}
                 className={`flex min-h-11 items-center rounded-full border px-4 text-sm ${
                   p.id === activePetId ? "border-primary bg-primary text-white" : "text-zinc-600"
                 }`}
@@ -91,6 +102,24 @@ export default async function ComunitatePage({
             ))}
           </div>
         )}
+
+        <form method="get" className="mt-4 flex flex-wrap gap-2">
+          <input type="hidden" name="pet" value={activePetId} />
+          <select name="specie" defaultValue={specie ?? ""} className="min-h-11 rounded-full border px-4 text-sm">
+            <option value="">Orice specie</option>
+            {SPECIES_OPTIONS.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+          <select name="sex" defaultValue={sex ?? ""} className="min-h-11 rounded-full border px-4 text-sm">
+            <option value="">Orice sex</option>
+            <option value="male">Mascul</option>
+            <option value="female">Femelă</option>
+          </select>
+          <button className="min-h-11 rounded-full bg-primary px-4 text-sm font-semibold text-white">
+            Filtrează
+          </button>
+        </form>
 
         {recentMatch && (
           <div className="mt-4 rounded-2xl bg-primary/10 p-4 text-center text-sm text-primary">
@@ -102,9 +131,17 @@ export default async function ComunitatePage({
         <div className="mt-6">
           {candidate ? (
             <div className="rounded-2xl border p-4">
-              <PetPlaceholder className="aspect-square w-full rounded-xl" />
+              {candidate.photo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={candidate.photo_url} alt={candidate.name} className="aspect-square w-full rounded-xl object-cover" />
+              ) : (
+                <PetPlaceholder className="aspect-square w-full rounded-xl" />
+              )}
               <p className="mt-3 text-lg font-semibold">{candidate.name}</p>
-              <p className="text-sm text-zinc-500">{candidate.breed || candidate.species}</p>
+              <p className="text-sm text-zinc-500">
+                {candidate.breed || candidate.species}
+                {candidate.sex === "male" ? " · mascul" : candidate.sex === "female" ? " · femelă" : ""}
+              </p>
 
               <div className="mt-4 flex gap-3">
                 <form action={swipePet.bind(null, activePetId, candidate.id, false)} className="flex-1">
@@ -121,7 +158,7 @@ export default async function ComunitatePage({
             </div>
           ) : (
             <p className="rounded-2xl border border-dashed p-8 text-center text-sm text-zinc-500">
-              Nu mai sunt animale noi de descoperit momentan. Revino mai
+              Nu mai sunt animale noi de descoperit pentru acest filtru. Încearcă alte criterii sau revino mai
               târziu!
             </p>
           )}

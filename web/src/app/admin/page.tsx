@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { updateMarkup, importDemoProducts, importPetFoodFacts, addArticle } from "./actions";
+import BackLink from "@/components/BackLink";
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -25,6 +26,7 @@ export default async function AdminPage() {
 
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+      <BackLink href="/profil" label="Profil" />
       <h1 className="text-xl font-bold sm:text-2xl">Panou Admin</h1>
 
       <div className="mt-4 flex flex-wrap gap-2">
