@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
-import { SearchIcon, PawIcon, VetIcon, BagIcon, ChatIcon } from "@/components/icons";
+import { SearchIcon, FilterIcon, PawIcon, VetIcon, BagIcon, ChatIcon } from "@/components/icons";
 import ShareButton from "@/components/ShareButton";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
 
@@ -35,13 +35,14 @@ export default async function Home() {
   return (
     <>
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-4 pb-24 sm:px-6 lg:px-8 md:pb-8">
-        <div className="flex min-h-11 items-center gap-2 rounded-full bg-zinc-100 px-5 py-2">
-          <SearchIcon className="h-5 w-5 text-zinc-400" />
+        <div className="flex min-h-11 items-center gap-2 rounded-full bg-zinc-100 px-5 py-2 shadow-sm">
+          <SearchIcon className="h-5 w-5 shrink-0 text-zinc-400" />
           <input
             type="search"
             placeholder="Caută animale, servicii, produse..."
             className="flex-1 bg-transparent text-sm outline-none"
           />
+          <FilterIcon className="h-5 w-5 shrink-0 text-primary" />
         </div>
 
         <section className="mt-6 flex items-center justify-between gap-4 overflow-hidden rounded-2xl bg-dark p-6 text-white sm:p-8">
@@ -77,7 +78,9 @@ export default async function Home() {
                 href={href}
                 className="card-hover flex min-h-11 flex-col items-center gap-2 rounded-2xl border p-4 text-center shadow-sm hover:border-primary"
               >
-                <Icon className="h-7 w-7 text-primary" />
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                  <Icon className="h-6 w-6 text-primary" />
+                </span>
                 <span className="text-xs text-zinc-600 sm:text-sm">{label}</span>
               </Link>
             ))}
@@ -94,7 +97,7 @@ export default async function Home() {
           {listings && listings.length > 0 ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {listings.map((pet) => (
-                <div key={pet.id} className="rounded-2xl border p-3">
+                <div key={pet.id} className="card-hover rounded-2xl border p-3 shadow-sm">
                   {pet.photo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={pet.photo_url} alt={pet.name} className="mb-2 aspect-square w-full rounded-xl object-cover" />
@@ -119,7 +122,7 @@ export default async function Home() {
           <h3 className="mb-3 font-semibold">De ce PawfectPair</h3>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             {valueProps.map((v) => (
-              <div key={v.title} className="rounded-2xl border p-4">
+              <div key={v.title} className="rounded-2xl border p-4 shadow-sm">
                 <p className="font-medium">{v.title}</p>
                 <p className="mt-1 text-sm text-zinc-500">{v.text}</p>
               </div>

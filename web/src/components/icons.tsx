@@ -71,3 +71,12 @@ export const PlusIcon = ({ className = base }: IconProps) => (
     <path d="M12 5v14M5 12h14" strokeLinecap="round" />
   </svg>
 );
+
+export const FilterIcon = ({ className = base }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+    <path d="M4 6h16M7 12h10M10 18h4" strokeLinecap="round" />
+    <circle cx="8" cy="6" r="1.6" fill="currentColor" stroke="none" />
+    <circle cx="15" cy="12" r="1.6" fill="currentColor" stroke="none" />
+    <circle cx="12" cy="18" r="1.6" fill="currentColor" stroke="none" />
+  </svg>
+);
