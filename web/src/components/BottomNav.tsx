@@ -5,7 +5,7 @@ const items = [
   { href: "/", label: "Acasă", Icon: HomeIcon },
   { href: "/adoptii", label: "Adopții", Icon: PawIcon },
   { href: "/adoptii/adauga", label: "Adaugă", Icon: PlusIcon, isFab: true },
-  { href: "/programari", label: "Vet", Icon: VetIcon },
+  { href: "/veterinari", label: "Vet", Icon: VetIcon },
   { href: "/profil", label: "Profil", Icon: UserIcon },
 ];
 

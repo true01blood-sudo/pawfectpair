@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { SearchIcon, PawIcon, VetIcon, BagIcon, ChatIcon } from "@/components/icons";
@@ -35,21 +36,28 @@ export default async function Home() {
           />
         </div>
 
-        <section className="mt-6 flex flex-col items-start gap-4 rounded-2xl bg-dark p-6 text-white sm:p-8 md:flex-row md:items-center md:justify-between">
+        <section className="mt-6 flex items-center justify-between gap-4 overflow-hidden rounded-2xl bg-dark p-6 text-white sm:p-8">
           <div>
             <p className="text-xs font-semibold tracking-wide text-primary uppercase">
               Adoptă, nu cumpăra
             </p>
-            <h2 className="mt-1 text-xl font-bold sm:text-2xl md:text-3xl">
+            <h2 className="mt-1 max-w-xs text-xl font-bold sm:text-2xl md:text-3xl">
               Ai grijă de un animal fără stăpân
             </h2>
+            <Link
+              href="/adoptii"
+              className="mt-4 flex min-h-11 w-fit items-center rounded-full bg-primary px-5 py-2 text-sm font-semibold"
+            >
+              Vezi adopțiile
+            </Link>
           </div>
-          <Link
-            href="/adoptii"
-            className="flex min-h-11 shrink-0 items-center rounded-full bg-primary px-5 py-2 text-sm font-semibold"
-          >
-            Vezi adopțiile
-          </Link>
+          <Image
+            src="/images/hero-pets.png"
+            alt="Cățel și pisică"
+            width={150}
+            height={165}
+            className="hidden shrink-0 rounded-full sm:block"
+          />
         </section>
 
         <section className="mt-8">

@@ -7,7 +7,7 @@ import { MenuIcon, CloseIcon } from "@/components/icons";
 
 const navLinks = [
   { href: "/adoptii", label: "Adopții" },
-  { href: "/programari", label: "Veterinari" },
+  { href: "/veterinari", label: "Veterinari" },
   { href: "/magazin", label: "Magazin" },
   { href: "/comunitate", label: "Comunitate" },
 ];
