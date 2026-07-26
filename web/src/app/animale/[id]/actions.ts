@@ -34,6 +34,48 @@ export async function addMedicalRecord(petId: string, formData: FormData) {
   revalidatePath(`/animale/${petId}`);
 }
 
+export async function updatePet(petId: string, formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const name = String(formData.get("name") ?? "").trim();
+  const species = String(formData.get("species") ?? "").trim();
+  const breed = String(formData.get("breed") ?? "").trim() || null;
+  const sex = String(formData.get("sex") ?? "unknown");
+  const birth_date = String(formData.get("birth_date") ?? "").trim() || null;
+  const photo_url = String(formData.get("photo_url") ?? "").trim() || null;
+  const notes = String(formData.get("notes") ?? "").trim() || null;
+
+  if (!name || !species) throw new Error("Numele și specia sunt obligatorii.");
+
+  const { error } = await supabase
+    .from("pets")
+    .update({ name, species, breed, sex, birth_date, photo_url, notes })
+    .eq("id", petId)
+    .eq("owner_id", user.id);
+
+  if (error) throw new Error(error.message);
+  revalidatePath(`/animale/${petId}`);
+  revalidatePath("/profil");
+}
+
+export async function deletePet(petId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { error } = await supabase.from("pets").delete().eq("id", petId).eq("owner_id", user.id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/profil");
+  redirect("/profil");
+}
+
 export async function addWeightLog(petId: string, formData: FormData) {
   const supabase = await createClient();
   const {

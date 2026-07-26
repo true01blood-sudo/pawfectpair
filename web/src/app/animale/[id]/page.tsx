@@ -1,8 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { addMedicalRecord, addWeightLog } from "./actions";
+import { addMedicalRecord, addWeightLog, updatePet, deletePet } from "./actions";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
 import BackLink from "@/components/BackLink";
+import ImageUpload from "@/components/ImageUpload";
+import DeleteButton from "@/components/DeleteButton";
+import { SPECIES_OPTIONS } from "@/lib/species";
 
 const typeLabels: Record<string, string> = {
   vaccination: "Vaccinare",
@@ -68,6 +71,50 @@ export default async function PetHealthPage({
         {pet.breed || pet.species}
         {pet.weight_kg ? ` · ${pet.weight_kg} kg` : ""}
       </p>
+
+      <section className="mt-6">
+        <h2 className="mb-3 font-semibold">Editează profilul animalului</h2>
+        <form action={updatePet.bind(null, id)} className="grid grid-cols-2 gap-3 rounded-2xl border p-4 shadow-sm sm:grid-cols-3">
+          <input name="name" placeholder="Nume" defaultValue={pet.name} required className="min-h-11 rounded-xl border px-3 text-sm" />
+          <select name="species" defaultValue={pet.species} required className="min-h-11 rounded-xl border px-3 text-sm">
+            <option value="">Specie</option>
+            {SPECIES_OPTIONS.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+          <select name="sex" defaultValue={pet.sex ?? "unknown"} className="min-h-11 rounded-xl border px-3 text-sm">
+            <option value="unknown">Sex necunoscut</option>
+            <option value="male">Mascul</option>
+            <option value="female">Femelă</option>
+          </select>
+          <input name="breed" placeholder="Rasă (opțional)" defaultValue={pet.breed ?? ""} className="min-h-11 rounded-xl border px-3 text-sm" />
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-zinc-500">Data nașterii</label>
+            <input name="birth_date" type="date" defaultValue={pet.birth_date ?? ""} className="min-h-11 rounded-xl border px-3 text-sm" />
+          </div>
+          <div className="col-span-2 sm:col-span-1">
+            <ImageUpload name="photo_url" label="Poză" defaultValue={pet.photo_url ?? ""} />
+          </div>
+          <textarea
+            name="notes"
+            placeholder="Fișă medicală / carnet de vaccinare (opțional)"
+            defaultValue={pet.notes ?? ""}
+            rows={2}
+            className="col-span-2 rounded-xl border p-3 text-sm sm:col-span-3"
+          />
+          <div className="col-span-2 flex items-center gap-3 sm:col-span-3">
+            <button className="min-h-11 rounded-full bg-primary px-5 text-sm font-semibold text-white">
+              Salvează modificările
+            </button>
+            <DeleteButton
+              action={deletePet.bind(null, id)}
+              confirmText={`Ștergi definitiv profilul lui ${pet.name}, inclusiv fișa medicală? Nu poți anula acțiunea.`}
+            >
+              Șterge animalul
+            </DeleteButton>
+          </div>
+        </form>
+      </section>
 
       {upcoming.length > 0 && (
         <section className="mt-4 rounded-2xl bg-primary/10 p-4">
