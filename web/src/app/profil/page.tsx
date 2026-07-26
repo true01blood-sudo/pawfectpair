@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
-import { addPet, signOut } from "./actions";
+import { addPet, signOut, updateProfile, updatePassword } from "./actions";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
 import { UserIcon } from "@/components/icons";
 import ImageUpload from "@/components/ImageUpload";
@@ -24,7 +24,7 @@ export default async function ProfilPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, role")
+    .select("full_name, phone, avatar_url, role")
     .eq("id", user.id)
     .single();
 
@@ -38,9 +38,14 @@ export default async function ProfilPage() {
     <>
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
         <div className="flex flex-col items-center text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-            <UserIcon className="h-9 w-9 text-primary" />
-          </div>
+          {profile?.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={profile.avatar_url} alt={profile.full_name || "Avatar"} className="h-20 w-20 rounded-full object-cover" />
+          ) : (
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+              <UserIcon className="h-9 w-9 text-primary" />
+            </div>
+          )}
           <h1 className="mt-3 text-xl font-bold sm:text-2xl">
             {profile?.full_name || "Profilul meu"}
           </h1>
@@ -117,6 +122,63 @@ export default async function ProfilPage() {
             />
             <button className="min-h-11 self-start rounded-full bg-primary px-5 text-sm font-semibold text-white">
               Adaugă animal
+            </button>
+          </form>
+        </section>
+
+        <section className="mt-8">
+          <h2 className="mb-3 font-semibold">Datele mele</h2>
+          <form action={updateProfile} className="flex flex-col gap-3 rounded-2xl border p-4 shadow-sm">
+            <div>
+              <label className="text-xs text-zinc-500">Nume complet</label>
+              <input
+                name="full_name"
+                defaultValue={profile?.full_name ?? ""}
+                required
+                className="mt-1 min-h-11 w-full rounded-xl border px-3 text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-zinc-500">Telefon</label>
+              <input
+                name="phone"
+                type="tel"
+                defaultValue={profile?.phone ?? ""}
+                placeholder="07xx xxx xxx"
+                className="mt-1 min-h-11 w-full rounded-xl border px-3 text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-zinc-500">Poză de profil</label>
+              <div className="mt-1">
+                <ImageUpload name="avatar_url" label="Schimbă poza" defaultValue={profile?.avatar_url ?? ""} />
+              </div>
+            </div>
+            <button className="min-h-11 self-start rounded-full bg-primary px-5 text-sm font-semibold text-white">
+              Salvează datele
+            </button>
+          </form>
+
+          <form action={updatePassword} className="mt-4 flex flex-col gap-3 rounded-2xl border p-4 shadow-sm">
+            <p className="text-sm font-medium">Schimbă parola</p>
+            <input
+              name="password"
+              type="password"
+              placeholder="Parolă nouă"
+              minLength={6}
+              required
+              className="min-h-11 rounded-xl border px-3 text-sm"
+            />
+            <input
+              name="confirm"
+              type="password"
+              placeholder="Confirmă parola nouă"
+              minLength={6}
+              required
+              className="min-h-11 rounded-xl border px-3 text-sm"
+            />
+            <button className="min-h-11 self-start rounded-full bg-dark px-5 text-sm font-semibold text-white">
+              Actualizează parola
             </button>
           </form>
         </section>

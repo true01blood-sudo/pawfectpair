@@ -6,13 +6,15 @@ import { createClient } from "@/lib/supabase/client";
 export default function ImageUpload({
   name,
   label = "Poză",
+  defaultValue = "",
 }: {
   name: string;
   label?: string;
+  defaultValue?: string;
 }) {
   const supabase = createClient();
   const [preview, setPreview] = useState<string | null>(null);
-  const [uploadedUrl, setUploadedUrl] = useState<string>("");
+  const [uploadedUrl, setUploadedUrl] = useState<string>(defaultValue);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,9 +58,9 @@ export default function ImageUpload({
       <label className="text-xs text-zinc-500">{label}</label>
       <input type="hidden" name={name} value={uploadedUrl} />
       <div className="flex items-center gap-3">
-        {preview && (
+        {(preview || uploadedUrl) && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt="Previzualizare" className="h-16 w-16 rounded-xl object-cover" />
+          <img src={preview || uploadedUrl} alt="Previzualizare" className="h-16 w-16 rounded-xl object-cover" />
         )}
         <input
           type="file"
