@@ -10,15 +10,15 @@ export default function DeleteButton({
   children: React.ReactNode;
 }) {
   return (
-    <form
-      action={action}
-      onSubmit={(e) => {
+    <button
+      type="submit"
+      formAction={action}
+      onClick={(e) => {
         if (!window.confirm(confirmText)) e.preventDefault();
       }}
+      className="min-h-11 rounded-full border border-red-300 px-5 text-sm font-semibold text-red-600"
     >
-      <button className="min-h-11 rounded-full border border-red-300 px-5 text-sm font-semibold text-red-600">
-        {children}
-      </button>
-    </form>
+      {children}
+    </button>
   );
 }

@@ -54,19 +54,19 @@ export default function ImageUpload({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex min-w-0 flex-col gap-2">
       <label className="text-xs text-zinc-500">{label}</label>
       <input type="hidden" name={name} value={uploadedUrl} />
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-3">
         {(preview || uploadedUrl) && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview || uploadedUrl} alt="Previzualizare" className="h-16 w-16 rounded-xl object-cover" />
+          <img src={preview || uploadedUrl} alt="Previzualizare" className="h-16 w-16 shrink-0 rounded-xl object-cover" />
         )}
         <input
           type="file"
           accept="image/*"
           onChange={handleFile}
-          className="min-h-11 flex-1 rounded-xl border px-3 py-2 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
+          className="min-h-11 w-full min-w-0 rounded-xl border px-3 py-2 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
         />
       </div>
       {uploading && <p className="text-xs text-zinc-500">Se încarcă...</p>}

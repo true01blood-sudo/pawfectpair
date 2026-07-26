@@ -92,7 +92,7 @@ export default async function PetHealthPage({
             <label className="text-xs text-zinc-500">Data nașterii</label>
             <input name="birth_date" type="date" defaultValue={pet.birth_date ?? ""} className="min-h-11 rounded-xl border px-3 text-sm" />
           </div>
-          <div className="col-span-2 sm:col-span-1">
+          <div className="col-span-2 min-w-0 sm:col-span-1">
             <ImageUpload name="photo_url" label="Poză" defaultValue={pet.photo_url ?? ""} />
           </div>
           <textarea
