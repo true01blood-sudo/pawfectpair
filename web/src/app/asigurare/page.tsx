@@ -9,16 +9,18 @@ export const metadata: Metadata = {
   description: "Gestionează polițele de asigurare ale animalelor tale și dosarele de daune.",
 };
 
-const COVERAGE_LABELS: Record<string, string> = {
-  basic: "Basic",
+const POLICY_TYPE_LABELS: Record<string, string> = {
+  accident: "Accident",
+  illness: "Boală",
   comprehensive: "Comprehensive",
-  premium: "Premium",
+  liability: "Răspundere civilă",
 };
 
-const COVERAGE_COLORS: Record<string, { bg: string; text: string }> = {
-  basic: { bg: "color-mix(in srgb, #6b7280 12%, transparent)", text: "#6b7280" },
-  comprehensive: { bg: "color-mix(in srgb, #3b82f6 12%, transparent)", text: "#2563eb" },
-  premium: { bg: "color-mix(in srgb, var(--primary) 12%, transparent)", text: "var(--primary)" },
+const POLICY_TYPE_COLORS: Record<string, { bg: string; text: string }> = {
+  accident: { bg: "color-mix(in srgb, #f59e0b 12%, transparent)", text: "#d97706" },
+  illness: { bg: "color-mix(in srgb, #3b82f6 12%, transparent)", text: "#2563eb" },
+  comprehensive: { bg: "color-mix(in srgb, var(--primary) 12%, transparent)", text: "var(--primary)" },
+  liability: { bg: "color-mix(in srgb, #6b7280 12%, transparent)", text: "#6b7280" },
 };
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
@@ -29,7 +31,6 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 
 const CLAIM_STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   submitted: { bg: "color-mix(in srgb, #f59e0b 12%, transparent)", text: "#d97706" },
-  processing: { bg: "color-mix(in srgb, #3b82f6 12%, transparent)", text: "#2563eb" },
   approved: { bg: "color-mix(in srgb, #16a34a 12%, transparent)", text: "#16a34a" },
   rejected: { bg: "color-mix(in srgb, #ef4444 12%, transparent)", text: "#ef4444" },
   paid: { bg: "color-mix(in srgb, var(--primary) 12%, transparent)", text: "var(--primary)" },
@@ -37,17 +38,15 @@ const CLAIM_STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 
 const CLAIM_STATUS_LABELS: Record<string, string> = {
   submitted: "Depus",
-  processing: "În analiză",
   approved: "Aprobat",
   rejected: "Respins",
   paid: "Plătit",
 };
 
-// Insurance providers for comparison
 const PROVIDERS = [
-  { name: "Omniasig", logo: "🏛️", basic: "150 RON/an", comprehensive: "320 RON/an", premium: "580 RON/an" },
-  { name: "Groupama", logo: "🌿", basic: "180 RON/an", comprehensive: "380 RON/an", premium: "650 RON/an" },
-  { name: "Allianz", logo: "🔵", basic: "200 RON/an", comprehensive: "420 RON/an", premium: "720 RON/an" },
+  { name: "Omniasig", logo: "🏛️", accident: "150 RON/an", illness: "280 RON/an", comprehensive: "580 RON/an" },
+  { name: "Groupama", logo: "🌿", accident: "180 RON/an", illness: "340 RON/an", comprehensive: "650 RON/an" },
+  { name: "Allianz", logo: "🔵", accident: "200 RON/an", illness: "380 RON/an", comprehensive: "720 RON/an" },
 ];
 
 export default async function AsigurarePage() {
@@ -58,13 +57,13 @@ export default async function AsigurarePage() {
   const { data: policies } = await supabase
     .from("insurance_policies")
     .select("*, pets(name, species)")
-    .eq("owner_id", user.id)
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
   const { data: claims } = await supabase
     .from("insurance_claims")
     .select("*")
-    .eq("owner_id", user.id)
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(5);
 
@@ -106,7 +105,7 @@ export default async function AsigurarePage() {
               style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
             >
               <div className="text-xl font-bold" style={{ color: "var(--primary)" }}>
-                {((claims ?? []).filter((c) => c.status === "paid").length)}
+                {(claims ?? []).filter((c) => c.status === "paid").length}
               </div>
               <div className="text-[11px]" style={{ color: "var(--muted)" }}>Daune plătite</div>
             </div>
@@ -115,7 +114,7 @@ export default async function AsigurarePage() {
               style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
             >
               <div className="text-xl font-bold" style={{ color: "var(--primary)" }}>
-                {(activePolicies.reduce((s, p) => s + p.annual_premium_cents, 0) / 100).toFixed(0)} RON
+                {(activePolicies.reduce((s, p) => s + (p.premium_cents ?? 0), 0) / 100).toFixed(0)} RON
               </div>
               <div className="text-[11px]" style={{ color: "var(--muted)" }}>Prime/an total</div>
             </div>
@@ -132,7 +131,7 @@ export default async function AsigurarePage() {
             <div className="space-y-3">
               {policies.map((policy) => {
                 const pet = policy.pets as unknown as { name: string; species: string } | null;
-                const coverageColor = COVERAGE_COLORS[policy.coverage_type] ?? COVERAGE_COLORS.basic;
+                const typeColor = POLICY_TYPE_COLORS[policy.policy_type] ?? POLICY_TYPE_COLORS.comprehensive;
                 const statusColor = STATUS_COLORS[policy.status] ?? STATUS_COLORS.active;
                 const expiresAt = policy.end_date ? new Date(policy.end_date) : null;
                 const daysLeft = expiresAt
@@ -149,13 +148,13 @@ export default async function AsigurarePage() {
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>
-                            {policy.provider_name}
+                            {policy.provider}
                           </p>
                           <span
                             className="rounded-full px-2 py-0.5 text-[10px] font-bold"
-                            style={{ background: coverageColor.bg, color: coverageColor.text }}
+                            style={{ background: typeColor.bg, color: typeColor.text }}
                           >
-                            {COVERAGE_LABELS[policy.coverage_type]}
+                            {POLICY_TYPE_LABELS[policy.policy_type] ?? policy.policy_type}
                           </span>
                           <span
                             className="rounded-full px-2 py-0.5 text-[10px] font-bold"
@@ -164,20 +163,20 @@ export default async function AsigurarePage() {
                             {policy.status === "active" ? "Activ" : policy.status === "expired" ? "Expirat" : "Anulat"}
                           </span>
                         </div>
-                        {policy.plan_name && (
-                          <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>
-                            {policy.plan_name}
-                          </p>
-                        )}
                         {pet && (
                           <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>
                             🐾 {pet.name}
                           </p>
                         )}
+                        {policy.notes && (
+                          <p className="text-xs mt-0.5 line-clamp-1" style={{ color: "var(--muted)" }}>
+                            {policy.notes}
+                          </p>
+                        )}
                       </div>
                       <div className="text-right shrink-0">
                         <p className="font-bold text-sm" style={{ color: "var(--primary)" }}>
-                          {(policy.annual_premium_cents / 100).toFixed(0)} {policy.currency}/an
+                          {((policy.premium_cents ?? 0) / 100).toFixed(0)} RON/an
                         </p>
                         {daysLeft !== null && daysLeft > 0 && daysLeft < 60 && (
                           <p className="text-[10px] mt-0.5" style={{ color: "#f59e0b" }}>
@@ -206,17 +205,6 @@ export default async function AsigurarePage() {
                       >
                         📋 Depune daună
                       </Link>
-                      {policy.documents_url && (
-                        <a
-                          href={policy.documents_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 flex items-center justify-center rounded-xl border py-2 text-xs font-medium transition-colors hover:border-primary hover:text-primary"
-                          style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
-                        >
-                          📄 Document
-                        </a>
-                      )}
                     </div>
                   </div>
                 );
@@ -261,18 +249,20 @@ export default async function AsigurarePage() {
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate" style={{ color: "var(--foreground)" }}>
-                        {claim.title}
+                        {claim.description}
                       </p>
                       <p className="text-xs" style={{ color: "var(--muted)" }}>
-                        {(claim.amount_cents / 100).toFixed(2)} RON ·{" "}
-                        {new Date(claim.created_at).toLocaleDateString("ro-RO")}
+                        {((claim.amount_cents ?? 0) / 100).toFixed(2)} RON ·{" "}
+                        {claim.claim_date
+                          ? new Date(claim.claim_date).toLocaleDateString("ro-RO")
+                          : new Date(claim.created_at).toLocaleDateString("ro-RO")}
                       </p>
                     </div>
                     <span
                       className="rounded-full px-2.5 py-0.5 text-[10px] font-bold shrink-0"
                       style={{ background: claimStatusColor.bg, color: claimStatusColor.text }}
                     >
-                      {CLAIM_STATUS_LABELS[claim.status]}
+                      {CLAIM_STATUS_LABELS[claim.status] ?? claim.status}
                     </span>
                   </div>
                 );
@@ -295,9 +285,9 @@ export default async function AsigurarePage() {
               style={{ background: "var(--surface)", color: "var(--muted)" }}
             >
               <span>Asigurător</span>
-              <span className="text-center">Basic</span>
+              <span className="text-center">Accident</span>
+              <span className="text-center">Boală</span>
               <span className="text-center">Comprehensive</span>
-              <span className="text-center">Premium</span>
             </div>
             {PROVIDERS.map((p, i) => (
               <div
@@ -311,9 +301,9 @@ export default async function AsigurarePage() {
                   <span className="text-lg">{p.logo}</span>
                   <span className="text-xs font-semibold" style={{ color: "var(--foreground)" }}>{p.name}</span>
                 </div>
-                <span className="text-center text-xs" style={{ color: "var(--muted)" }}>{p.basic}</span>
-                <span className="text-center text-xs" style={{ color: "var(--muted)" }}>{p.comprehensive}</span>
-                <span className="text-center text-xs font-bold" style={{ color: "var(--primary)" }}>{p.premium}</span>
+                <span className="text-center text-xs" style={{ color: "var(--muted)" }}>{p.accident}</span>
+                <span className="text-center text-xs" style={{ color: "var(--muted)" }}>{p.illness}</span>
+                <span className="text-center text-xs font-bold" style={{ color: "var(--primary)" }}>{p.comprehensive}</span>
               </div>
             ))}
             <div className="border-t px-4 py-3" style={{ borderColor: "var(--card-border)" }}>

@@ -108,15 +108,8 @@ CREATE TABLE IF NOT EXISTS insurance_claims (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- RLS Insurance
-ALTER TABLE insurance_policies ENABLE ROW LEVEL SECURITY;
-ALTER TABLE insurance_claims ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Owners view their policies" ON insurance_policies FOR SELECT USING (owner_id = auth.uid());
-CREATE POLICY "Owners manage their policies" ON insurance_policies FOR ALL USING (owner_id = auth.uid());
-
-CREATE POLICY "Owners view their claims" ON insurance_claims FOR SELECT USING (owner_id = auth.uid());
-CREATE POLICY "Owners manage their claims" ON insurance_claims FOR ALL USING (owner_id = auth.uid());
+-- RLS Insurance (tables already exist from 0034 with user_id column)
+-- Policies are already created in 0034; skip to avoid conflicts
 
 -- Seed breeding demo
 INSERT INTO breeding_listings (owner_id, title, description, species, breed, gender, age_years, health_tests, price_info, city, status)
