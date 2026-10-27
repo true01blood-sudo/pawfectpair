@@ -16,10 +16,10 @@ export function Logo({ size = 80, showText = true, variant = 'color' }: LogoProp
   const theme = useAppTheme();
   const source =
     variant === 'white'
-      ? require('../../assets/images/logo-white.png')
+      ? require('../assets/images/logo-white.png')
       : variant === 'black'
-      ? require('../../assets/images/logo-black.png')
-      : require('../../assets/images/logo-color.png');
+      ? require('../assets/images/logo-black.png')
+      : require('../assets/images/logo-color.png');
 
   return (
     <View style={{ alignItems: 'center' }}>
