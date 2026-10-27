@@ -26,9 +26,17 @@ export default async function ProfilPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, phone, avatar_url, role, is_verified")
+    .select("full_name, phone, avatar_url, role")
     .eq("id", user.id)
     .single();
+
+  // is_verified added by migration 0039 — query separately to avoid crashing if not yet applied
+  const { data: profileExtra } = await supabase
+    .from("profiles")
+    .select("is_verified, is_banned")
+    .eq("id", user.id)
+    .single();
+  const isVerified = profileExtra?.is_verified ?? false;
 
   const role = profile?.role ?? "user";
 
@@ -83,7 +91,7 @@ export default async function ProfilPage() {
           </h1>
           <div className="mt-1 flex items-center gap-2">
             <p className="text-sm" style={{ color: "var(--muted)" }}>{user.email}</p>
-            {profile?.is_verified && (
+            {isVerified && (
               <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
                 ✓ Verificat
               </span>

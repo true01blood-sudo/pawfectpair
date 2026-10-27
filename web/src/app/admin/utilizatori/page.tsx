@@ -19,6 +19,7 @@ export default async function AdminUtilizatoriPage() {
     .from("profiles")
     .select("id, full_name, role, created_at, is_banned, is_verified")
     .order("created_at", { ascending: false });
+  // is_banned / is_verified added by migration 0039 — safe: null if not yet applied
 
   const total = profiles?.length ?? 0;
   const banned = profiles?.filter((p) => p.is_banned).length ?? 0;
