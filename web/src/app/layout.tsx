@@ -114,7 +114,7 @@ export const metadata: Metadata = {
 
   // ── Verificări webmaster ───────────────────────────────────────
   verification: {
-    google: "26Wz4ntSHauNtpGfMNJ_N1fpccvLoDChBgny",
+    google: "26Wz4ntSHauNtpGfMNJ_N1fpccvLoDChBgnyiZNvB54",
   },
 
   // ── App manifest & icons ───────────────────────────────────────
