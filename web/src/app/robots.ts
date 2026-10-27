@@ -24,6 +24,5 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: "https://pawfectpair.app/sitemap.xml",
-    host: "https://pawfectpair.app",
   };
 }

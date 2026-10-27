@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import Script from "next/script";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -130,6 +129,15 @@ export const metadata: Metadata = {
 
   // ── Categoria & clasificare ────────────────────────────────────
   category: "pets",
+
+  // ── Meta tags custom (geo, rating) ────────────────────────────
+  other: {
+    "geo.region": "RO",
+    "geo.country": "Romania",
+    "language": "Romanian",
+    "revisit-after": "7 days",
+    "rating": "general",
+  },
 };
 
 export const viewport: Viewport = {
@@ -207,21 +215,11 @@ export default async function RootLayout({
 
   return (
     <html lang="ro" className={`${plusJakarta.variable} h-full antialiased`}>
-      <head>
-        {/* Geo tags */}
-        <meta name="geo.region" content="RO" />
-        <meta name="geo.country" content="Romania" />
-        <meta name="language" content="Romanian" />
-        <meta name="revisit-after" content="7 days" />
-        <meta name="rating" content="general" />
-        {/* JSON-LD */}
-        <Script
-          id="json-ld"
+      <body className="min-h-full flex flex-col" style={{ background: "var(--background)", color: "var(--foreground)", fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-      </head>
-      <body className="min-h-full flex flex-col" style={{ background: "var(--background)", color: "var(--foreground)", fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
         <ThemeProvider>
           <Header isLoggedIn={!!user} />
           <div className="flex-1 flex flex-col">{children}</div>
