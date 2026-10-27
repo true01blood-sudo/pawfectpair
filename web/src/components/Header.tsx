@@ -55,8 +55,15 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
     <header className="sticky top-0 z-20" style={{ background: "var(--header-bg)" }}>
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-          <Image src="/logo.png" alt="Pet Care Services" width={40} height={20} className="rounded" priority />
-          <span className="text-lg font-bold" style={{ color: "var(--header-text)" }}>Pet Care Services</span>
+          <Image
+            src={theme === "dark" ? "/logo-white.png" : "/logo.png"}
+            alt="Pet Care Services"
+            width={44}
+            height={44}
+            className="rounded object-contain"
+            priority
+          />
+          <span className="hidden sm:block text-lg font-bold" style={{ color: "var(--header-text)" }}>Pet Care Services</span>
         </Link>
 
         <nav className="hidden md:flex md:items-center md:gap-5">
@@ -64,7 +71,8 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
             <Link
               key={l.href}
               href={l.href}
-              className={`text-sm font-medium hover:text-primary ${l.danger ? "text-red-400 font-bold" : "text-zinc-300"}`}
+              className={`text-sm font-medium hover:text-primary transition-colors ${l.danger ? "text-red-500 font-bold" : ""}`}
+              style={!l.danger ? { color: "var(--header-text)", opacity: 0.75 } : undefined}
             >
               {l.label}
             </Link>
@@ -74,7 +82,8 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
             type="button"
             aria-label={theme === "dark" ? "Activează modul luminos" : "Activează modul întunecat"}
             onClick={toggle}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-zinc-300 hover:text-primary hover:border-primary/40 transition-colors"
+            className="flex h-9 w-9 items-center justify-center rounded-full border hover:text-primary hover:border-primary/40 transition-colors"
+            style={{ borderColor: "var(--card-border)", color: "var(--header-text)" }}
           >
             {theme === "dark" ? <SunIcon /> : <MoonIcon />}
           </button>
@@ -92,7 +101,8 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
             type="button"
             aria-label={theme === "dark" ? "Activează modul luminos" : "Activează modul întunecat"}
             onClick={toggle}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-zinc-300"
+            className="flex h-9 w-9 items-center justify-center rounded-full border transition-colors"
+            style={{ borderColor: "var(--card-border)", color: "var(--header-text)" }}
           >
             {theme === "dark" ? <SunIcon /> : <MoonIcon />}
           </button>
@@ -100,7 +110,8 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
             type="button"
             aria-label={open ? "Închide meniul" : "Deschide meniul"}
             onClick={() => setOpen((v) => !v)}
-            className="flex h-11 w-11 items-center justify-center text-white"
+            className="flex h-11 w-11 items-center justify-center"
+            style={{ color: "var(--header-text)" }}
           >
             {open ? <CloseIcon /> : <MenuIcon />}
           </button>
@@ -108,13 +119,14 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
       </div>
 
       {open && (
-        <nav className="flex flex-col gap-1 border-t border-white/10 px-4 pb-4 md:hidden" style={{ background: "var(--header-bg)" }}>
+        <nav className="flex flex-col gap-1 border-t px-4 pb-4 md:hidden" style={{ background: "var(--header-bg)", borderColor: "var(--card-border)" }}>
           {navLinks.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className={`flex min-h-11 items-center rounded-lg px-2 text-sm font-medium ${l.danger ? "text-red-400 font-bold" : "text-zinc-200"}`}
+              className={`flex min-h-11 items-center rounded-lg px-2 text-sm font-medium ${l.danger ? "text-red-500 font-bold" : ""}`}
+              style={!l.danger ? { color: "var(--header-text)" } : undefined}
             >
               {l.label}
             </Link>

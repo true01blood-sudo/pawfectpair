@@ -57,7 +57,7 @@ export default async function Home() {
       <main className="flex-1 pb-24 md:pb-0" style={{ background: "var(--background)" }}>
 
         {/* ── HERO ── */}
-        <section style={{ background: "#fdf8f0" }} className="border-b">
+        <section style={{ background: "var(--background)" }} className="border-b">
           <div className="mx-auto max-w-6xl px-4 pt-10 pb-8 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2">
               <div>
@@ -121,7 +121,7 @@ export default async function Home() {
               <div className="relative flex justify-center lg:justify-end">
                 {petProfile ? (
                   /* Pet profile card for logged-in users */
-                  <div className="w-full max-w-sm rounded-3xl border bg-white p-6 shadow-md">
+                  <div className="w-full max-w-sm rounded-3xl border p-6 shadow-md" style={{ background: "var(--card-bg)" }}>
                     <div className="mb-1 flex items-center justify-between">
                       <p className="text-xs font-semibold uppercase tracking-widest text-primary">Animalul tău</p>
                       <Link href="/animale" className="text-xs text-zinc-400 hover:text-primary">Gestionează →</Link>
@@ -166,7 +166,7 @@ export default async function Home() {
                 ) : (
                   /* Decorative card for logged-out users */
                   <div className="w-full max-w-sm space-y-3">
-                    <div className="rounded-3xl border bg-white p-5 shadow-sm">
+                    <div className="rounded-3xl border p-5 shadow-sm" style={{ background: "var(--card-bg)" }}>
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-xl">🐶</div>
                         <div>
@@ -179,7 +179,7 @@ export default async function Home() {
                         💉 Antirabic scadent în <strong>12 zile</strong>
                       </div>
                     </div>
-                    <div className="rounded-3xl border bg-white p-5 shadow-sm">
+                    <div className="rounded-3xl border p-5 shadow-sm" style={{ background: "var(--card-bg)" }}>
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-xl">🐱</div>
                         <div>
@@ -417,7 +417,7 @@ export default async function Home() {
         </section>
 
         {/* ── PAWFECT+ ── */}
-        <section className="bg-dark py-14">
+        <section style={{ background: "#111827" }} className="py-14">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="rounded-3xl border border-white/10 bg-white/5 p-8 sm:p-12">
               <div className="flex flex-col gap-8 lg:flex-row lg:items-center">
@@ -444,7 +444,7 @@ export default async function Home() {
 
         {/* ── DOWNLOAD CTA ── */}
         <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-orange-100 bg-gradient-to-br from-orange-50 to-amber-50 p-10 text-center">
+          <div className="rounded-3xl border p-10 text-center" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
             <span className="text-5xl">📱</span>
             <h2 className="font-heading mt-4 text-2xl font-bold text-dark sm:text-3xl">{t.download.title}</h2>
             <p className="mt-2 text-zinc-500">{t.download.subtitle}</p>
