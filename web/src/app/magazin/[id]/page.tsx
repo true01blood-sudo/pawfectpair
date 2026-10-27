@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { placeOrder } from "../actions";
 import BackLink from "@/components/BackLink";
 import { ProductPlaceholder } from "@/components/PawPlaceholder";
+import AddToCartButton from "@/components/AddToCartButton";
 
 export default async function ProdusDetailPage({
   params,
@@ -59,11 +60,23 @@ export default async function ProdusDetailPage({
         </p>
       ) : product.stock > 0 ? (
         user ? (
-          <form action={placeOrder.bind(null, id)} className="mt-6">
-            <button className="min-h-11 rounded-full bg-primary px-6 font-semibold text-white">
-              Comandă acum
-            </button>
-          </form>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <AddToCartButton
+              product={{
+                id: product.id,
+                name: product.name,
+                price_cents: product.price_cents,
+                currency: product.currency ?? "RON",
+                photo_url: product.photo_url ?? null,
+                stock: product.stock,
+              }}
+            />
+            <form action={placeOrder.bind(null, id)}>
+              <button className="min-h-11 rounded-full bg-primary px-6 font-semibold text-white hover:bg-primary-dark transition-colors">
+                Comandă acum
+              </button>
+            </form>
+          </div>
         ) : (
           <p className="mt-6 text-sm text-zinc-600">
             <a href="/login" className="text-primary underline">Autentifică-te</a> pentru a comanda.

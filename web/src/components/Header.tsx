@@ -6,7 +6,17 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { MenuIcon, CloseIcon } from "@/components/icons";
 import { useTheme } from "@/components/ThemeProvider";
+import { useCart } from "@/components/CartContext";
 import type { Locale } from "@/lib/i18n";
+
+function CartIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+    </svg>
+  );
+}
 
 const LOCALES: { code: Locale; label: string }[] = [
   { code: "ro", label: "RO" },
@@ -105,6 +115,7 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const { theme, toggle } = useTheme();
+  const { count } = useCart();
 
   if (pathname === "/login") return null;
 
@@ -151,6 +162,19 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
           </button>
 
           <Link
+            href="/magazin/cos"
+            aria-label="Coș de cumpărături"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full border hover:text-primary hover:border-primary/40 transition-colors"
+            style={{ borderColor: "var(--card-border)", color: "var(--header-text)" }}
+          >
+            <CartIcon />
+            {count > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+                {count > 99 ? "99" : count}
+              </span>
+            )}
+          </Link>
+          <Link
             href={accountHref}
             className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark"
           >
@@ -159,6 +183,19 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
         </nav>
 
         <div className="flex items-center gap-2 md:hidden">
+          <Link
+            href="/magazin/cos"
+            aria-label="Coș de cumpărături"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full border transition-colors"
+            style={{ borderColor: "var(--card-border)", color: "var(--header-text)" }}
+          >
+            <CartIcon />
+            {count > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+                {count > 99 ? "99" : count}
+              </span>
+            )}
+          </Link>
           <button
             type="button"
             aria-label={theme === "dark" ? "Activează modul luminos" : "Activează modul întunecat"}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const SUPPORTED = ["ro", "en", "fr", "de"] as const;
+const SUPPORTED = ["ro", "en", "fr", "de", "it"] as const;
 type Locale = (typeof SUPPORTED)[number];
 
 const COUNTRY_LOCALE: Record<string, Locale> = {
@@ -12,6 +12,9 @@ const COUNTRY_LOCALE: Record<string, Locale> = {
   DE: "de",
   AT: "de",
   LI: "de",
+  IT: "it",
+  SM: "it",
+  VA: "it",
 };
 
 function detect(req: NextRequest): Locale {
@@ -28,6 +31,7 @@ function detect(req: NextRequest): Locale {
   if (primary === "ro") return "ro";
   if (primary === "fr") return "fr";
   if (primary === "de") return "de";
+  if (primary === "it") return "it";
 
   return "en";
 }

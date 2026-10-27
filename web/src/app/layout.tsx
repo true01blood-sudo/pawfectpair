@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { CartProvider } from "@/components/CartContext";
 import { createClient } from "@/lib/supabase/server";
 import "./globals.css";
 
@@ -221,9 +222,11 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <ThemeProvider>
-          <Header isLoggedIn={!!user} />
-          <div className="flex-1 flex flex-col">{children}</div>
-          <Footer />
+          <CartProvider>
+            <Header isLoggedIn={!!user} />
+            <div className="flex-1 flex flex-col">{children}</div>
+            <Footer />
+          </CartProvider>
         </ThemeProvider>
       </body>
     </html>
