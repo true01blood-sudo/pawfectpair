@@ -130,7 +130,7 @@ export default async function ProfilPage() {
             style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>
             <div className="flex items-center justify-between">
               <h2 className="font-semibold">Profilul meu veterinar</h2>
-              <Link href="/veterinari/inregistrare" className="text-xs text-primary hover:underline">
+              <Link href="/veterinari/adauga" className="text-xs text-primary hover:underline">
                 {vetData ? "Editează" : "Înregistrează-te"} →
               </Link>
             </div>
@@ -142,7 +142,7 @@ export default async function ProfilPage() {
             ) : (
               <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
                 Nu ai un profil veterinar înregistrat.{" "}
-                <Link href="/veterinari/inregistrare" className="text-primary hover:underline">Înregistrează-te acum →</Link>
+                <Link href="/veterinari/adauga" className="text-primary hover:underline">Înregistrează-te acum →</Link>
               </p>
             )}
           </section>
@@ -177,7 +177,7 @@ export default async function ProfilPage() {
             ) : (
               <p className="text-sm" style={{ color: "var(--muted)" }}>
                 Nu ai produse adăugate.{" "}
-                <Link href="/magazin/adauga" className="text-primary hover:underline">Adaugă primul produs →</Link>
+                <Link href="/magazin/produsele-mele" className="text-primary hover:underline">Administrează produsele →</Link>
               </p>
             )}
           </section>
@@ -337,10 +337,8 @@ export default async function ProfilPage() {
           <div className="overflow-hidden rounded-2xl border shadow-sm" style={{ borderColor: "var(--card-border)" }}>
             {settingsLinks.map((s, i) => (
               <Link key={s.href} href={s.href}
-                className={`flex min-h-11 items-center gap-3 px-4 py-3 text-sm ${i > 0 ? "border-t" : ""}`}
-                style={{ borderColor: "var(--card-border)" }}
-                onMouseEnter={e => (e.currentTarget.style.background = "var(--surface)")}
-                onMouseLeave={e => (e.currentTarget.style.background = "")}>
+                className={`flex min-h-11 items-center gap-3 px-4 py-3 text-sm hover:bg-[var(--surface)] ${i > 0 ? "border-t" : ""}`}
+                style={{ borderColor: "var(--card-border)" }}>
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-base">
                   {s.icon}
                 </span>
