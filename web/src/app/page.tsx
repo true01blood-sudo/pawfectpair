@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
 import { getT, type Locale } from "@/lib/i18n";
+import AppSidebar from "@/components/AppSidebar";
+import SocialFeed from "@/components/SocialFeed";
+import HomePetWidget from "@/components/HomePetWidget";
 
 const CATEGORY_HREFS = ["/veterinari", "/adoptii", "/magazin", "/sos", "/educatie", "/comunitate", "/resq", "/sos"];
 const CATEGORY_EMOJIS = ["🩺", "🐾", "🛒", "📍", "🏋️", "💬", "🔍", "🚨"];
@@ -42,14 +45,51 @@ export default async function Home() {
     .limit(6);
 
   let petProfile = null;
+  let nextAppointment = null;
   if (user) {
-    const { data } = await supabase
+    const { data: pet } = await supabase
       .from("pets")
       .select("id, name, species, breed, birth_date, photo_url")
       .eq("owner_id", user.id)
       .limit(1)
       .single();
-    petProfile = data;
+    petProfile = pet;
+
+    if (pet) {
+      const { data: appt } = await supabase
+        .from("appointments")
+        .select("id, scheduled_at, status, notes, vet_id")
+        .eq("pet_id", pet.id)
+        .gte("scheduled_at", new Date().toISOString())
+        .neq("status", "cancelled")
+        .order("scheduled_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      nextAppointment = appt;
+    }
+  }
+
+  // ── AppShell layout for authenticated users ──
+  if (user) {
+    const userName = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? "tu";
+    const avatarUrl = (user.user_metadata?.avatar_url as string | undefined) ?? null;
+    return (
+      <>
+        <div className="h-full flex overflow-hidden">
+          <AppSidebar />
+          <main className="flex-1 overflow-y-auto min-h-0">
+            <SocialFeed userName={userName} avatarUrl={avatarUrl} />
+          </main>
+          <aside
+            className="w-72 shrink-0 hidden xl:block overflow-y-auto border-l"
+            style={{ borderColor: "var(--card-border)" }}
+          >
+            <HomePetWidget pet={petProfile} nextAppointment={nextAppointment} userName={userName} />
+          </aside>
+        </div>
+        <BottomNav />
+      </>
+    );
   }
 
   return (

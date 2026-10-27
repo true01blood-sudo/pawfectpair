@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname === "/login") return null;
+  if (pathname === "/login" || pathname === "/") return null;
 
   return (
     <footer className="hidden border-t md:block" style={{ background: "var(--header-bg)", borderColor: "var(--card-border)" }}>

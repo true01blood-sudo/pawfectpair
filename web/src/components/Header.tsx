@@ -118,6 +118,7 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
   const { count } = useCart();
 
   if (pathname === "/login") return null;
+  if (pathname === "/" && isLoggedIn) return null;
 
   const accountHref = isLoggedIn ? "/profil" : "/login";
   const accountLabel = isLoggedIn ? "Profilul meu" : "Cont";
