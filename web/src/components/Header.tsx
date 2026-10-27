@@ -3,9 +3,68 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { MenuIcon, CloseIcon } from "@/components/icons";
 import { useTheme } from "@/components/ThemeProvider";
+import type { Locale } from "@/lib/i18n";
+
+const LOCALES: { code: Locale; label: string }[] = [
+  { code: "ro", label: "RO" },
+  { code: "en", label: "EN" },
+  { code: "fr", label: "FR" },
+  { code: "de", label: "DE" },
+];
+
+function LanguageSwitcher() {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+
+  function getCurrent(): Locale {
+    if (typeof document === "undefined") return "ro";
+    const match = document.cookie.match(/(?:^|;\s*)locale=([^;]+)/);
+    return (match?.[1] as Locale) ?? "ro";
+  }
+
+  function setLocale(code: Locale) {
+    document.cookie = `locale=${code}; path=/; max-age=31536000; SameSite=Lax`;
+    setOpen(false);
+    router.refresh();
+  }
+
+  const current = getCurrent();
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex h-9 items-center gap-1 rounded-full border px-3 text-xs font-bold transition-colors hover:border-primary/40 hover:text-primary"
+        style={{ borderColor: "var(--card-border)", color: "var(--header-text)" }}
+      >
+        {current.toUpperCase()}
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M5 7 1 3h8z"/></svg>
+      </button>
+      {open && (
+        <div
+          className="absolute right-0 top-11 z-50 rounded-xl border py-1 shadow-lg"
+          style={{ background: "var(--card-bg)", borderColor: "var(--card-border)", minWidth: 72 }}
+        >
+          {LOCALES.map((l) => (
+            <button
+              key={l.code}
+              type="button"
+              onClick={() => setLocale(l.code)}
+              className="flex w-full items-center justify-center py-2 text-xs font-semibold transition-colors hover:text-primary"
+              style={{ color: l.code === current ? "var(--primary)" : "var(--header-text)" }}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const navLinks = [
   { href: "/adoptii", label: "Adopții" },
@@ -78,6 +137,8 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
             </Link>
           ))}
 
+          <LanguageSwitcher />
+
           <button
             type="button"
             aria-label={theme === "dark" ? "Activează modul luminos" : "Activează modul întunecat"}
@@ -131,6 +192,33 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
               {l.label}
             </Link>
           ))}
+          <div className="mt-2 flex items-center gap-2">
+            {LOCALES.map((l) => {
+              function setLocale(code: Locale) {
+                document.cookie = `locale=${code}; path=/; max-age=31536000; SameSite=Lax`;
+                setOpen(false);
+                window.location.reload();
+              }
+              const current = typeof document !== "undefined"
+                ? ((document.cookie.match(/(?:^|;\s*)locale=([^;]+)/)?.[1] as Locale) ?? "ro")
+                : "ro";
+              return (
+                <button
+                  key={l.code}
+                  type="button"
+                  onClick={() => setLocale(l.code)}
+                  className="flex-1 rounded-lg py-2 text-xs font-bold transition-colors border"
+                  style={{
+                    background: l.code === current ? "var(--primary)" : "transparent",
+                    color: l.code === current ? "#fff" : "var(--header-text)",
+                    borderColor: l.code === current ? "var(--primary)" : "var(--card-border)",
+                  }}
+                >
+                  {l.label}
+                </button>
+              );
+            })}
+          </div>
           <Link
             href={accountHref}
             onClick={() => setOpen(false)}
