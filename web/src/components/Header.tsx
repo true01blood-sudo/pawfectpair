@@ -120,7 +120,7 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
             width={240}
             height={76}
             className="object-contain h-[51px] sm:h-14 md:h-16"
-            style={{ width: "auto" }}
+            style={{ width: "auto", mixBlendMode: theme === "dark" ? "screen" : "multiply" }}
             priority
           />
         </Link>
