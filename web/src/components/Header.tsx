@@ -13,6 +13,7 @@ const LOCALES: { code: Locale; label: string }[] = [
   { code: "en", label: "EN" },
   { code: "fr", label: "FR" },
   { code: "de", label: "DE" },
+  { code: "it", label: "IT" },
 ];
 
 function LanguageSwitcher() {

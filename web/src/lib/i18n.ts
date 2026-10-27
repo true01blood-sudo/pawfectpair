@@ -1,4 +1,4 @@
-export type Locale = "ro" | "en" | "fr" | "de";
+export type Locale = "ro" | "en" | "fr" | "de" | "it";
 
 export const translations = {
   ro: {
@@ -370,6 +370,75 @@ export const translations = {
       subtitle: "Verfügbar auf Android. iOS — demnächst.",
       googlePlay: "Google Play",
       webAccount: "Oder Webkonto erstellen →",
+    },
+  },
+  it: {
+    nav: {
+      adoptii: "Adozioni", veterinari: "Veterinari", magazin: "Negozio",
+      comunitate: "Comunità", forum: "Forum", petresq: "PetResQ", sos: "SOS",
+      cont: "Account", profilMeu: "Il mio profilo",
+    },
+    hero: {
+      badge: "La piattaforma n°1 per i proprietari di animali",
+      title: "Tutto per",
+      accent: "il tuo animale",
+      titleEnd: ",\nin un'unica app.",
+      subtitle: "Cura, sicurezza, servizi e prodotti — gratis, nella tua lingua.",
+      searchPlaceholder: "Cerca veterinari, adozioni, prodotti...",
+      searchBtn: "Cerca",
+      downloadAndroid: "Scarica su Android",
+      createAccount: "Crea account gratuito →",
+    },
+    categories: [
+      "Veterinari", "Adozioni", "Negozio", "GPS & Sicurezza",
+      "Addestramento", "Comunità", "Perso/Trovato", "Emergenze SOS",
+    ],
+    offers: { label: "Cosa offriamo", title: "Quattro promesse. Un'unica app." },
+    promises: [
+      { title: "Cura", subtitle: "La salute del tuo animale, sempre a portata di mano", desc: "Cartelle cliniche, vaccini, peso, promemoria e consultazioni.", cta: "Scopri la cura" },
+      { title: "Sicurezza", subtitle: "Sai sempre dove si trova e cosa gli succede", desc: "GPS in tempo reale, geofencing, emergenze mediche e recupero animali smarriti.", cta: "Scopri la sicurezza" },
+      { title: "Servizi", subtitle: "Specialisti verificati, prenotazioni rapide", desc: "Veterinari vicini, addestratori certificati e pensioni — prenotazioni dirette.", cta: "Scopri i servizi" },
+      { title: "Prodotti", subtitle: "Consigli adattati a razza ed età", desc: "Negozio personalizzato — cibo, giocattoli, accessori e altro.", cta: "Scopri i prodotti" },
+    ],
+    profile: {
+      label: "Il centro dell'esperienza", title: "Il profilo del tuo animale —", titleLine2: "il motivo per cui torni ogni giorno",
+      desc: "Aggiungi il tuo animale una volta sola. Pet Care Services organizza automaticamente salute, appuntamenti e cronologia completa.",
+      createCta: "Crea profilo gratuito →", goToProfile: "Vai al profilo dell'animale →",
+      features: [
+        { label: "Vaccini & trattamenti", sub: "Promemoria automatici" },
+        { label: "Grafico del peso", sub: "Evoluzione nel tempo" },
+        { label: "Cartella medica completa", sub: "Esporta PDF" },
+        { label: "Calendario delle cure", sub: "Eventi & scadenze" },
+      ],
+    },
+    services: {
+      label: "Servizi", title: "Veterinari, prodotti e GPS",
+      items: [
+        { title: "Veterinari", desc: "Trova, confronta e prenota in pochi secondi", cta: "Cerca veterinari" },
+        { title: "PetMarket", desc: "Prodotti consigliati per la razza e l'età del tuo animale", cta: "Apri il negozio" },
+        { title: "PetGuardian", desc: "GPS in tempo reale + avvisi quando esce dalla zona sicura", cta: "Attiva nell'app" },
+      ],
+    },
+    adoptii: { label: "Adozioni", title: "Animali che cercano una famiglia", viewAll: "Vedi tutti →", addListing: "Aggiungi annuncio", noListings: "Nessuna adozione disponibile al momento" },
+    community: {
+      label: "Comunità", title: "Insieme ad altri proprietari",
+      items: [
+        { title: "Forum & Consigli", desc: "Domande, raccomandazioni ed esperienze di altri proprietari." },
+        { title: "Animali Persi / Trovati", desc: "Avvisa la comunità. Ogni aiuto conta." },
+        { title: "PetSOS — Emergenze", desc: "Primo soccorso e accesso immediato ai dati del tuo animale." },
+      ],
+    },
+    plus: {
+      badge: "✦ Pawfect+",
+      title: "Un solo livello.\nTutto ciò di cui il tuo animale ha bisogno.",
+      desc: "Non comprare moduli separati. Compra la tranquillità che il tuo animale sia al sicuro.",
+      comingSoon: "Disponibile presto",
+    },
+    download: {
+      title: "Scarica Pet Care Services gratuitamente",
+      subtitle: "Disponibile su Android. iOS — prossimamente.",
+      googlePlay: "Google Play",
+      webAccount: "O crea un account web →",
     },
   },
 } as const;

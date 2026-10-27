@@ -424,7 +424,7 @@ export default async function Home() {
               <div className="flex flex-col gap-8 lg:flex-row lg:items-center">
                 <div className="flex-1">
                   <div className="inline-flex items-center gap-2 rounded-full bg-primary/15 px-4 py-1.5 text-sm font-bold text-primary">{t.plus.badge}</div>
-                  <h2 className="font-heading mt-3 text-2xl font-bold text-white sm:text-3xl">
+                  <h2 className="font-heading mt-3 text-2xl font-bold sm:text-3xl" style={{ color: "#ffffff" }}>
                     {t.plus.title.split("\n")[0]}<br />{t.plus.title.split("\n")[1]}
                   </h2>
                   <p className="mt-2 text-zinc-400">{t.plus.desc}</p>

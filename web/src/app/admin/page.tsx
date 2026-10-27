@@ -1,118 +1,150 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { updateMarkup, importDemoProducts, importPetFoodFacts, addArticle } from "./actions";
-import Breadcrumb from "@/components/Breadcrumb";
 
 export default async function AdminPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "admin") redirect("/");
 
-  const { data: settings } = await supabase
-    .from("app_settings")
-    .select("markup_percent")
-    .eq("id", true)
-    .single();
+  const [
+    { count: usersCount },
+    { count: listingsCount },
+    { count: ordersCount },
+    { count: resqCount },
+    { count: postsCount },
+    { count: productsCount },
+    { data: recentOrders },
+    { data: recentUsers },
+  ] = await Promise.all([
+    supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase.from("adoption_listings").select("*", { count: "exact", head: true }).eq("status", "available"),
+    supabase.from("orders").select("*", { count: "exact", head: true }),
+    supabase.from("resq_cases").select("*", { count: "exact", head: true }).neq("status", "closed"),
+    supabase.from("forum_posts").select("*", { count: "exact", head: true }),
+    supabase.from("products").select("*", { count: "exact", head: true }),
+    supabase.from("orders").select("id, total_cents, currency, status, created_at, profiles(full_name)").order("created_at", { ascending: false }).limit(5),
+    supabase.from("profiles").select("id, full_name, role, created_at").order("created_at", { ascending: false }).limit(5),
+  ]);
+
+  const stats = [
+    { label: "Utilizatori înregistrați", value: usersCount ?? 0, icon: "👥", href: "/admin/utilizatori", accent: "#3b82f6" },
+    { label: "Anunțuri adopție active", value: listingsCount ?? 0, icon: "🐾", href: "/admin/continut", accent: "#10b981" },
+    { label: "Comenzi totale", value: ordersCount ?? 0, icon: "🛒", href: "/admin/comenzi", accent: "#f59e0b" },
+    { label: "Cazuri ResQ deschise", value: resqCount ?? 0, icon: "🚨", href: "/admin/continut", accent: "#ef4444" },
+    { label: "Postări forum", value: postsCount ?? 0, icon: "💬", href: "/admin/continut", accent: "#8b5cf6" },
+    { label: "Produse în magazin", value: productsCount ?? 0, icon: "📦", href: "/admin/produse", accent: "#ec4899" },
+  ];
+
+  const roleLabels: Record<string, string> = {
+    user: "Utilizator", vet: "Veterinar", shop: "Magazin", shelter: "Centru", admin: "Admin",
+  };
 
   return (
-    <main className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
-      <Breadcrumb items={[{ href: "/", label: "Acasă" }, { href: "/profil", label: "Profil" }, { label: "Panou Admin" }]} />
-      <h1 className="text-xl font-bold sm:text-2xl">Panou Admin</h1>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Link href="/admin/utilizatori" className="flex min-h-11 items-center rounded-full border px-4 text-sm">
-          Utilizatori
-        </Link>
-        <Link href="/admin/comenzi" className="flex min-h-11 items-center rounded-full border px-4 text-sm">
-          Comenzi
-        </Link>
+    <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mb-6">
+        <h1 className="text-xl font-bold sm:text-2xl">Dashboard Admin</h1>
+        <p className="mt-0.5 text-sm" style={{ color: "var(--muted)" }}>
+          {new Date().toLocaleDateString("ro-RO", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+        </p>
       </div>
 
-      <section className="mt-6 rounded-2xl border p-4 sm:p-6">
-        <h2 className="mb-3 font-semibold">Adaos comercial (markup) magazin</h2>
-        <p className="mb-3 text-sm text-zinc-500">
-          Se aplică automat la produsele importate. Valoare curentă:{" "}
-          <strong>{settings?.markup_percent ?? 15}%</strong>
-        </p>
-        <form action={updateMarkup} className="flex items-center gap-3">
-          <input
-            name="markup_percent"
-            type="number"
-            step="0.5"
-            min="0"
-            defaultValue={settings?.markup_percent ?? 15}
-            className="min-h-11 w-32 rounded-xl border px-4"
-          />
-          <button className="min-h-11 rounded-full bg-primary px-5 text-sm font-semibold text-white">
-            Salvează
-          </button>
-        </form>
-      </section>
+      {/* Stats grid */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {stats.map((s) => (
+          <Link
+            key={s.label}
+            href={s.href}
+            className="card-hover rounded-2xl border p-4 shadow-sm transition-colors hover:border-primary/30"
+            style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-3xl font-bold" style={{ color: s.accent }}>{s.value}</p>
+              <span className="text-xl">{s.icon}</span>
+            </div>
+            <p className="mt-1.5 text-xs" style={{ color: "var(--muted)" }}>{s.label}</p>
+          </Link>
+        ))}
+      </div>
 
-      <section className="mt-6 rounded-2xl border p-4 sm:p-6">
-        <h2 className="mb-2 font-semibold">Import produse demo</h2>
-        <p className="mb-3 text-sm text-zinc-500">
-          Importă produse dintr-un API public gratuit de test (DummyJSON) și
-          aplică automat markup-ul curent la preț. Nu este un furnizor real —
-          util doar pentru a popula magazinul până la integrarea furnizorilor
-          reali.
-        </p>
-        <form action={importDemoProducts}>
-          <button className="min-h-11 rounded-full border px-5 text-sm font-semibold">
-            Importă produse demo
-          </button>
-        </form>
-      </section>
-
-      <section className="mt-6 rounded-2xl border p-4 sm:p-6">
-        <h2 className="mb-2 font-semibold">Import produse reale (Open Pet Food Facts)</h2>
-        <p className="mb-3 text-sm text-zinc-500">
-          Bază de date deschisă și gratuită, specifică animalelor de companie
-          (nume, brand, poză). Nu conține prețuri de retail — produsele
-          importate apar cu &quot;Preț de stabilit&quot; până când le
-          actualizezi din Produsele mele.
-        </p>
-        <form action={importPetFoodFacts} className="flex flex-wrap items-center gap-3">
-          <select name="category" className="min-h-11 rounded-xl border px-4 text-sm">
-            <option value="dog-food">Hrană câini</option>
-            <option value="cat-food">Hrană pisici</option>
-            <option value="dog-treats">Recompense câini</option>
-          </select>
-          <button className="min-h-11 rounded-full border px-5 text-sm font-semibold">
-            Importă produse reale
-          </button>
-        </form>
-      </section>
-
-      <section className="mt-6 rounded-2xl border p-4 sm:p-6">
-        <h2 className="mb-3 font-semibold">Adaugă articol educațional (PetEdu)</h2>
-        <form action={addArticle} className="flex flex-col gap-3">
-          <input name="title" placeholder="Titlu" required className="min-h-11 rounded-xl border px-4 text-sm" />
-          <div className="grid grid-cols-2 gap-3">
-            <select name="species" className="min-h-11 rounded-xl border px-3 text-sm">
-              <option value="general">General</option>
-              <option value="caine">Câini</option>
-              <option value="pisica">Pisici</option>
-              <option value="altele">Altele</option>
-            </select>
-            <input name="category" placeholder="Categorie (ex: nutriție)" className="min-h-11 rounded-xl border px-3 text-sm" />
+      {/* Recent activity */}
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-2xl border p-4 shadow-sm" style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-semibold">Comenzi recente</h2>
+            <Link href="/admin/comenzi" className="text-xs text-primary hover:underline">Vezi toate →</Link>
           </div>
-          <textarea name="body" placeholder="Conținut sfat/articol" rows={4} required className="rounded-xl border p-3 text-sm" />
-          <button className="min-h-11 self-start rounded-full bg-primary px-5 text-sm font-semibold text-white">
-            Publică articolul
-          </button>
-        </form>
-      </section>
+          {recentOrders && recentOrders.length > 0 ? (
+            <ul className="flex flex-col divide-y" style={{ borderColor: "var(--card-border)" }}>
+              {recentOrders.map((o) => {
+                const buyer = o.profiles as unknown as { full_name: string } | null;
+                return (
+                  <li key={o.id} className="flex items-center justify-between py-2.5 text-sm">
+                    <div>
+                      <p className="font-medium">{buyer?.full_name ?? "Client"}</p>
+                      <p className="text-xs" style={{ color: "var(--muted)" }}>
+                        {new Date(o.created_at).toLocaleDateString("ro-RO")} · {o.status}
+                      </p>
+                    </div>
+                    <span className="font-semibold text-primary">{(o.total_cents / 100).toFixed(2)} {o.currency}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="text-sm" style={{ color: "var(--muted)" }}>Nicio comandă încă.</p>
+          )}
+        </div>
+
+        <div className="rounded-2xl border p-4 shadow-sm" style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-semibold">Utilizatori noi</h2>
+            <Link href="/admin/utilizatori" className="text-xs text-primary hover:underline">Vezi toți →</Link>
+          </div>
+          {recentUsers && recentUsers.length > 0 ? (
+            <ul className="flex flex-col divide-y" style={{ borderColor: "var(--card-border)" }}>
+              {recentUsers.map((u) => (
+                <li key={u.id} className="flex items-center justify-between py-2.5 text-sm">
+                  <p className="font-medium">{u.full_name || "(fără nume)"}</p>
+                  <span
+                    className="rounded-full px-2 py-0.5 text-xs font-medium"
+                    style={{ background: "var(--surface)", color: "var(--muted)" }}
+                  >
+                    {roleLabels[u.role] ?? u.role}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm" style={{ color: "var(--muted)" }}>Niciun utilizator.</p>
+          )}
+        </div>
+      </div>
+
+      {/* Quick links */}
+      <div className="mt-6">
+        <h2 className="mb-3 font-semibold">Acțiuni rapide</h2>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { href: "/admin/utilizatori", label: "👥 Gestionare utilizatori" },
+            { href: "/admin/continut", label: "🛡️ Moderare conținut" },
+            { href: "/admin/produse", label: "📦 Gestionare produse" },
+            { href: "/admin/comenzi", label: "🛒 Vizualizare comenzi" },
+            { href: "/admin/setari", label: "⚙️ Setări platformă" },
+          ].map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className="flex min-h-10 items-center rounded-full border px-4 text-sm font-medium transition-colors hover:border-primary/50 hover:text-primary"
+              style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
+            >
+              {l.label}
+            </Link>
+          ))}
+        </div>
+      </div>
     </main>
   );
 }
