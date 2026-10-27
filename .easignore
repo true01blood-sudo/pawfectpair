@@ -36,4 +36,3 @@ __tests__/
 # Lock files
 package-lock.json
 web/package-lock.json
-mobile/package-lock.json

@@ -3,7 +3,7 @@ Petcare services/
 !.env.example
 node_modules/
 .claude/settings.local.json
-# Lock files — generate per-platform at build time
+# Lock files — web lockfile excluded (tailwindcss/oxide Windows/Linux binary conflict)
 package-lock.json
 web/package-lock.json
-mobile/package-lock.json
+# mobile/package-lock.json is committed — needed by EAS Build
