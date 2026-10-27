@@ -377,5 +377,5 @@ export const translations = {
 export type Translations = (typeof translations)["ro"];
 
 export function getT(locale: Locale): Translations {
-  return translations[locale] ?? translations.en;
+  return (translations[locale] ?? translations.en) as Translations;
 }
