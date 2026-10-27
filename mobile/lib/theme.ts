@@ -1,7 +1,7 @@
 /**
- * Tema Pet Care Services — aliniată cu designul web (web/src/app/globals.css).
- * Token-uri brand din design-ul userului: primary #FA871B, primary-dark #E0740F,
- * dark #1A1A1A. Light: fundal alb + accente calde; Dark: #1A1A1A precum header-ul web.
+ * Tema PetCare — valorile exacte din design system (imagini atașate):
+ * Primary Orange #FF6B2D · Charcoal #111827 · Sage #DCE7D6 · Ivory #FFFAF4
+ * Font: Plus Jakarta Sans (Light / Regular / Medium / Semibold)
  */
 
 export type ThemeMode = 'light' | 'dark';
@@ -88,9 +88,9 @@ const baseRadius = {
 };
 
 const baseTypography = {
-  fontFamilyRegular: 'System',
-  fontFamilyMedium: 'System',
-  fontFamilyBold: 'System',
+  fontFamilyRegular: 'PlusJakartaSans_400Regular',
+  fontFamilyMedium: 'PlusJakartaSans_500Medium',
+  fontFamilyBold: 'PlusJakartaSans_600SemiBold',
   fontSizeXs: 11,
   fontSizeSm: 13,
   fontSizeMd: 15,
@@ -102,22 +102,22 @@ const baseTypography = {
 export const lightTheme: AppTheme = {
   mode: 'light',
   colors: {
-    background: '#FFFFFF',          // alb — ca în design-ul web
-    surface: '#FFFFFF',
-    surfaceAlt: '#FFF6EC',          // tentă caldă pentru inputuri/header
-    border: '#E4E4E7',              // zinc-200 — ca în web
-    text: '#1A1A1A',                // --dark din globals.css
-    textMuted: '#52525B',           // zinc-600
+    background: '#FFFAF4',          // Ivory — fundal exact din design system
+    surface: '#FFFFFF',             // carduri albe
+    surfaceAlt: '#F5F5F0',          // suprafațe alternative subtile
+    border: '#E5E7EB',              // border gri deschis
+    text: '#111827',                // Charcoal exact din design system
+    textMuted: '#6B7280',           // gri mediu
     textInverse: '#FFFFFF',
-    primary: '#FA871B',             // --primary din globals.css
-    primaryDark: '#E0740F',         // --primary-dark din globals.css
-    primaryLight: '#FFE8D1',        // tint 15% al primary-ului
-    accent: '#FBBF24',              // amber
+    primary: '#FF6B2D',             // Primary Orange exact din design system
+    primaryDark: '#E85A1E',
+    primaryLight: '#FFF0E8',        // tint deschis orange
+    accent: '#DCE7D6',              // Sage — culoare accent secundară
     success: '#16A34A',
     warning: '#EAB308',
     danger: '#DC2626',
-    like: '#EF4444',
-    dislike: '#64748B',
+    like: '#FF6B2D',
+    dislike: '#6B7280',
     speciesDog: '#D97706',
     speciesCat: '#7C3AED',
   },
@@ -134,22 +134,22 @@ export const lightTheme: AppTheme = {
 export const darkTheme: AppTheme = {
   mode: 'dark',
   colors: {
-    background: '#1A1A1A',          // --dark din globals.css
-    surface: '#232323',
-    surfaceAlt: '#2C2C2C',
-    border: '#3A3A3A',
-    text: '#FAFAFA',
-    textMuted: '#A1A1AA',
-    textInverse: '#1A1A1A',
-    primary: '#FA871B',             // primary rămâne identic pentru brand
-    primaryDark: '#E0740F',
-    primaryLight: '#7A3E10',
-    accent: '#FCD34D',
+    background: '#111827',          // Charcoal dark — din design system
+    surface: '#1F2937',
+    surfaceAlt: '#374151',
+    border: '#374151',
+    text: '#F9FAFB',
+    textMuted: '#9CA3AF',
+    textInverse: '#111827',
+    primary: '#FF6B2D',             // Primary Orange rămâne identic brand
+    primaryDark: '#E85A1E',
+    primaryLight: '#7A2E10',
+    accent: '#3D5A3E',              // Sage dark
     success: '#22C55E',
     warning: '#FACC15',
     danger: '#F87171',
-    like: '#F87171',
-    dislike: '#94A3B8',
+    like: '#FF6B2D',
+    dislike: '#9CA3AF',
     speciesDog: '#F59E0B',
     speciesCat: '#A78BFA',
   },

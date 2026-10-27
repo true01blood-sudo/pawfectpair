@@ -395,7 +395,7 @@ export async function fetchPetMatchCandidates(
   const { data: liked } = await supabase
     .from('pet_likes')
     .select('to_pet_id')
-    .eq('from_pet_owner_id', userId);
+    .eq('from_user_id', userId);
   const likedIds = (liked ?? []).map((l) => l.to_pet_id);
   if (likedIds.length) q = q.not('id', 'in', `(${likedIds.join(',')})`);
 
@@ -405,7 +405,9 @@ export async function fetchPetMatchCandidates(
 }
 
 export async function likePet(fromPetId: string, toPetId: string): Promise<{ matched: boolean; match?: Match }> {
-  // Edge function recomandat pentru atomicitate; aici varianta simplificată:
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
   const { data: existing } = await supabase
     .from('pet_likes')
     .select('id')
@@ -415,7 +417,7 @@ export async function likePet(fromPetId: string, toPetId: string): Promise<{ mat
 
   const { error: likeErr } = await supabase
     .from('pet_likes')
-    .insert({ from_pet_id: fromPetId, to_pet_id: toPetId });
+    .insert({ from_pet_id: fromPetId, to_pet_id: toPetId, from_user_id: user.id });
   if (likeErr) throw likeErr;
 
   if (existing) {
@@ -432,12 +434,12 @@ export async function likePet(fromPetId: string, toPetId: string): Promise<{ mat
 }
 
 export async function passPet(fromPetId: string, toPetId: string): Promise<void> {
-  // Înregistrăm un like cu flag pass, sau pur și simplu nu facem nimic —
-  // depinde de schema. Aici doar marcăm că a fost văzut:
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
   const { error } = await supabase
     .from('pet_likes')
-    .insert({ from_pet_id: fromPetId, to_pet_id: toPetId, passed: true });
-  // Ignorăm erorile de unique constraint (deja evaluat)
+    .insert({ from_pet_id: fromPetId, to_pet_id: toPetId, from_user_id: user.id, passed: true });
   if (error && !error.message.includes('duplicate')) throw error;
 }
 

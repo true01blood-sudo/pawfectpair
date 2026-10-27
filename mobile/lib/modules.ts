@@ -41,6 +41,10 @@ export const MODULES: AppModule[] = [
   { id: 'petresq', icon: 'search', emoji: '🔍', nameKey: 'petresqName', descKey: 'petresqDesc', phase: 2, route: '/modul/petresq', color: '#84CC16', status: 'live' },
   { id: 'petinsurance', icon: 'shield-checkmark', emoji: '🛡️', nameKey: 'petinsuranceName', descKey: 'petinsuranceDesc', phase: 2, route: '/modul/petinsurance', color: '#0F766E', status: 'live' },
 
+  // ===== MODULE NOI FAZA 1/2 =====
+  { id: 'petbreeding', icon: 'flower', emoji: '🌸', nameKey: 'petbreedingName', descKey: 'petbreedingDesc', phase: 1, route: '/modul/petbreeding', color: '#EC4899', status: 'live' },
+  { id: 'petpassport', icon: 'airplane', emoji: '✈️', nameKey: 'petpassportName', descKey: 'petpassportDesc', phase: 2, route: '/modul/petpassport', color: '#3B82F6', status: 'live' },
+
   // ===== FAZA 3 — planificate =====
   { id: 'petanalytics', icon: 'stats-chart', emoji: '📊', nameKey: 'petanalyticsName', descKey: 'petanalyticsDesc', phase: 3, route: '/modul/petanalytics', color: '#6366F1', status: 'live' },
   { id: 'petlegacy', icon: 'flower', emoji: '🌷', nameKey: 'petlegacyName', descKey: 'petlegacyDesc', phase: 3, route: '/modul/petlegacy', color: '#A855F7', status: 'live' },

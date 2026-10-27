@@ -2,11 +2,35 @@
 @plugin "@tailwindcss/typography";
 
 :root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --primary: #fa871b;
-  --primary-dark: #e0740f;
-  --dark: #1a1a1a;
+  /* PetCare Design System — valori exacte din design */
+  --background: #fffaf4;         /* Ivory */
+  --foreground: #111827;         /* Charcoal */
+  --primary: #ff6b2d;            /* Primary Orange */
+  --primary-dark: #e85a1e;
+  --primary-light: #fff0e8;
+  --sage: #dce7d6;               /* Sage */
+  --dark: #111827;               /* Charcoal */
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --surface: #f9fafb;
+  --muted: #6b7280;
+  --header-bg: #ffffff;
+  --header-text: #111827;
+  --success: #16a34a;
+  --warning: #eab308;
+  --danger: #dc2626;
+}
+
+[data-theme="dark"] {
+  --background: #111111;
+  --foreground: #f0f0f0;
+  --dark: #f0f0f0;
+  --card-bg: #1e1e1e;
+  --card-border: #2d2d2d;
+  --surface: #181818;
+  --muted: #9ca3af;
+  --header-bg: #0a0a0a;
+  --header-text: #f0f0f0;
 }
 
 @theme inline {
@@ -14,20 +38,22 @@
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
+  --color-sage: var(--sage);
   --color-dark: var(--dark);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-heading);
+  --font-sans: var(--font-plus-jakarta);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-plus-jakarta), "Plus Jakarta Sans", Arial, Helvetica, sans-serif;
 }
 
-h1, h2, h3 {
-  font-family: var(--font-heading), var(--font-sans), sans-serif;
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-plus-jakarta), "Plus Jakarta Sans", sans-serif;
+  font-weight: 600;
+  color: var(--dark);
 }
 
 ::selection {

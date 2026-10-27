@@ -14,7 +14,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#FFF7ED"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.pawfectpair.mobile",
@@ -28,24 +30,32 @@
         "usesNonExemptEncryption": false
       },
       "entitlements": {
-        "com.apple.developer.applesignin": ["Default"]
+        "com.apple.developer.applesignin": [
+          "Default"
+        ]
       }
     },
     "android": {
       "package": "app.pawfectpair.mobile",
-      "versionCode": 1,
+      "versionCode": 10,
+      "targetSdkVersion": 36,
+      "compileSdkVersion": 36,
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAB-vdzeqLYPS4_nIdRuCmixLP0JmEdvlw"
+        }
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#FFF7ED"
       },
       "permissions": [
-        "CAMERA",
-        "READ_MEDIA_IMAGES",
-        "POST_NOTIFICATIONS",
-        "INTERNET"
-      ],
-      "enableProguardInReleaseBuilds": true,
-      "enableShrinkResourcesInReleaseBuilds": true
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.INTERNET",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -57,22 +67,40 @@
       "expo-secure-store",
       [
         "expo-image-picker",
-        { "photosPermission": "Pet Care Services accesează galeria pentru a selecta o poză a animalului tău." }
+        {
+          "photosPermission": "Pet Care Services accesează galeria pentru a selecta o poză a animalului tău."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "targetSdkVersion": 36,
+            "compileSdkVersion": 36,
+            "buildToolsVersion": "36.0.0"
+          }
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "eas": { "projectId": "" },
-      "router": { "origin": false }
+      "eas": {
+        "projectId": "872815b8-4c75-4e15-b141-28b026fb5b1c"
+      },
+      "router": {
+        "origin": false
+      }
     },
     "updates": {
       "url": "https://u.expo.dev/",
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 3000
     },
-    "runtimeVersion": { "policy": "sdkVersion" },
-    "owner": "pawfectpair"
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "owner": "truebloods-team"
   }
 }

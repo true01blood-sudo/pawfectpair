@@ -1,10 +1,15 @@
 {
-  "cli": { "version": ">= 7.0.0" },
+  "cli": {
+    "version": ">= 7.0.0",
+    "appVersionSource": "local"
+  },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "ios": { "simulator": true },
+      "ios": {
+        "simulator": true
+      },
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://fjfsyybsdvpxbugoxbkp.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqZnN5eWJzZHZweGJ1Z294YmtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5Mzk1ODIsImV4cCI6MjEwMDUxNTU4Mn0.W9VxDmQg8AH-1Fx2Av2eQ_JybxtBKcWmVLWhLh_XIBo"
@@ -12,7 +17,9 @@
     },
     "preview": {
       "distribution": "internal",
-      "android": { "buildType": "apk" },
+      "android": {
+        "buildType": "apk"
+      },
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://fjfsyybsdvpxbugoxbkp.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqZnN5eWJzZHZweGJ1Z294YmtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5Mzk1ODIsImV4cCI6MjEwMDUxNTU4Mn0.W9VxDmQg8AH-1Fx2Av2eQ_JybxtBKcWmVLWhLh_XIBo"
@@ -20,7 +27,9 @@
     },
     "production": {
       "autoIncrement": true,
-      "android": { "buildType": "app-bundle" },
+      "android": {
+        "buildType": "app-bundle"
+      },
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://fjfsyybsdvpxbugoxbkp.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqZnN5eWJzZHZweGJ1Z294YmtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5Mzk1ODIsImV4cCI6MjEwMDUxNTU4Mn0.W9VxDmQg8AH-1Fx2Av2eQ_JybxtBKcWmVLWhLh_XIBo"
@@ -29,7 +38,10 @@
   },
   "submit": {
     "production": {
-      "android": { "serviceAccountKeyPath": "./google-play-key.json", "track": "internal" }
+      "android": {
+        "serviceAccountKeyPath": "./google-play-key.json",
+        "track": "internal"
+      }
     }
   }
 }

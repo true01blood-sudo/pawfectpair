@@ -12,6 +12,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { QUERY_CACHE_CONFIG } from '@pawfectpair/shared';
 import { ThemeProvider } from '../components/theme-provider';
 import { setupNotifications } from '../lib/push';
+import {
+  useFonts,
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+} from '@expo-google-fonts/plus-jakarta-sans';
 // Inițializează i18n (important: importat pentru efect lateral)
 import '../lib/i18n';
 
@@ -25,9 +32,18 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+  });
+
   useEffect(() => {
     setupNotifications();
   }, []);
+
+  if (!fontsLoaded) return null;
 
   return (
     <SafeAreaProvider>

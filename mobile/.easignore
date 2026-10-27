@@ -13,3 +13,9 @@ __tests__
 *.test.tsx
 *.spec.ts
 *.spec.tsx
+*.docx
+*.doc
+*.pdf
+*.xlsx
+*.pptx
+pawfectpair-design/

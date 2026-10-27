@@ -102,7 +102,7 @@ create policy "Sellers view orders with their products"
     exists (
       select 1 from public.order_items oi
       join public.products p on p.id = oi.product_id
-      where oi.order_id = id and p.seller_id = auth.uid()
+      where oi.order_id = orders.id and p.seller_id = auth.uid()
     )
   );
 
@@ -113,7 +113,7 @@ create policy "Sellers update orders with their products"
     exists (
       select 1 from public.order_items oi
       join public.products p on p.id = oi.product_id
-      where oi.order_id = id and p.seller_id = auth.uid()
+      where oi.order_id = orders.id and p.seller_id = auth.uid()
     )
   );
 
