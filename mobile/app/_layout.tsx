@@ -11,7 +11,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { QUERY_CACHE_CONFIG } from '@pawfectpair/shared';
 import { ThemeProvider } from '../components/theme-provider';
-import { setupNotifications } from '../lib/push';
+import { setupNotifications, registerForPushNotifications } from '../lib/push';
+import { supabase } from '../lib/supabase/client';
 import {
   useFonts,
   PlusJakartaSans_400Regular,
@@ -41,6 +42,17 @@ export default function RootLayout() {
 
   useEffect(() => {
     setupNotifications();
+
+    // Înregistrează token push la fiecare login (email, OAuth, restore sesiune)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
+          registerForPushNotifications(session.user.id).catch(console.error);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, []);
 
   if (!fontsLoaded) return null;

@@ -6,6 +6,9 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { supabase } from './supabase/client';
 
+// Alias folosit în _layout.tsx
+export const setupNotifications = configurePushHandler;
+
 // Configurare handler notificări (apelat o singură dată la init app)
 export function configurePushHandler() {
   Notifications.setNotificationHandler({
