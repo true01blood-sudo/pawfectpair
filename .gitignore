@@ -3,3 +3,7 @@ Petcare services/
 !.env.example
 node_modules/
 .claude/settings.local.json
+# Lock files — generate per-platform at build time
+package-lock.json
+web/package-lock.json
+mobile/package-lock.json
