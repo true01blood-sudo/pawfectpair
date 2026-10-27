@@ -19,20 +19,36 @@ const SEGMENT_LABELS: Record<string, string> = {
   adauga: "Adaugă",
   pasaport: "Pașaport",
   profil: "Profil",
+  admin: "Admin",
+  utilizatori: "Utilizatori",
+  comenzi: "Comenzi",
+  produse: "Produse",
+  continut: "Conținut",
+  setari: "Setări",
 };
 
-export default function Breadcrumb() {
+interface BreadcrumbItem {
+  href?: string;
+  label: string;
+}
+
+export default function Breadcrumb({ items }: { items?: BreadcrumbItem[] }) {
   const pathname = usePathname();
-  const segments = pathname.split("/").filter(Boolean);
 
-  if (segments.length <= 1) return null;
-
-  const crumbs = [{ label: "Acasă", href: "/" }];
-  let running = "";
-  for (const seg of segments) {
-    running += "/" + seg;
-    const label = SEGMENT_LABELS[seg] ?? (seg.length > 8 ? `${seg.slice(0, 8)}…` : seg);
-    crumbs.push({ label, href: running });
+  // If items prop provided (legacy admin pages), use those directly
+  let crumbs: BreadcrumbItem[];
+  if (items && items.length > 0) {
+    crumbs = items;
+  } else {
+    const segments = pathname.split("/").filter(Boolean);
+    if (segments.length <= 1) return null;
+    crumbs = [{ label: "Acasă", href: "/" }];
+    let running = "";
+    for (const seg of segments) {
+      running += "/" + seg;
+      const label = SEGMENT_LABELS[seg] ?? (seg.length > 8 ? `${seg.slice(0, 8)}…` : seg);
+      crumbs.push({ label, href: running });
+    }
   }
 
   return (
@@ -40,11 +56,11 @@ export default function Breadcrumb() {
       {crumbs.map((crumb, i) => {
         const isLast = i === crumbs.length - 1;
         return (
-          <span key={crumb.href} className="flex items-center gap-1">
+          <span key={crumb.href ?? crumb.label} className="flex items-center gap-1">
             {i > 0 && (
               <span style={{ color: "var(--muted)" }}>/</span>
             )}
-            {isLast ? (
+            {isLast || !crumb.href ? (
               <span className="font-semibold" style={{ color: "var(--foreground)" }}>
                 {crumb.label}
               </span>
