@@ -1,13 +1,39 @@
-node_modules
-web/node_modules
-web/.next
-packages/*/node_modules
-.git
-*.log
-Petcare services
+# Documente design & specificații
+Petcare services/
+pawfectpair-design/
 *.docx
 *.doc
 *.pdf
 *.xlsx
 *.pptx
-pawfectpair-design/
+
+# Fișiere sensibile
+supabase/migrations/0036_seed_test_admin.sql
+.env*
+!.env.example
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+google-play-key.json
+
+# Build output & dependencies
+node_modules/
+web/.next/
+web/node_modules/
+mobile/.expo/
+mobile/android/
+mobile/ios/
+
+# Tests
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Lock files
+package-lock.json
+web/package-lock.json
+mobile/package-lock.json
