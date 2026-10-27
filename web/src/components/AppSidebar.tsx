@@ -100,10 +100,10 @@ const NAV_ITEMS = [
 ];
 
 const SHORTCUTS = [
-  { href: "/educatie", label: "Educație", Icon: LearnIcon },
+  { href: "/sanatate", label: "Sănătate", Icon: LearnIcon },
   { href: "/magazin", label: "Magazin", Icon: ShopIcon },
   { href: "/reproductie", label: "Reproducție", Icon: BreedingIcon },
-  { href: "/adoptii", label: "Adopții", Icon: AdoptionIcon },
+  { href: "/asigurare", label: "Asigurare", Icon: AdoptionIcon },
 ];
 
 export default function AppSidebar() {
