@@ -112,15 +112,15 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
 
   return (
     <header className="sticky top-0 z-20" style={{ background: "var(--header-bg)" }}>
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 sm:py-3 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
           <Image
             src={theme === "dark" ? "/logo.png" : "/logo-white.png"}
             alt="Pet Care Services"
-            width={160}
-            height={44}
-            className="object-contain"
-            style={{ maxHeight: 44, width: "auto" }}
+            width={240}
+            height={76}
+            className="object-contain h-11 sm:h-14 md:h-16"
+            style={{ width: "auto" }}
             priority
           />
         </Link>
