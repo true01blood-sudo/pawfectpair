@@ -39,7 +39,7 @@ create policy "Users manage own push tokens"
 -- Index spațial — query rapid ST_DWithin
 create index if not exists push_tokens_geo_idx
   on public.push_tokens
-  using gist (st_point(lng, lat)::geography)
+  using gist (geography(st_makepoint(lng, lat)))
   where lat is not null and lng is not null;
 
 comment on table public.push_tokens is
@@ -54,7 +54,7 @@ alter table public.resq_cases
 
 create index if not exists resq_cases_geo_idx
   on public.resq_cases
-  using gist (st_point(lng, lat)::geography)
+  using gist (geography(st_makepoint(lng, lat)))
   where lat is not null and lng is not null;
 
 comment on column public.resq_cases.lat is
@@ -78,8 +78,8 @@ as $$
   where  pt.lat is not null
     and  pt.lng is not null
     and  st_dwithin(
-           st_point(pt.lng, pt.lat)::geography,
-           st_point(case_lng, case_lat)::geography,
+           geography(st_makepoint(pt.lng, pt.lat)),
+           geography(st_makepoint(case_lng, case_lat)),
            pt.notification_radius_km * 1000   -- km → metri
          );
 $$;
