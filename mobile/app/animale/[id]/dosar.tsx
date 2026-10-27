@@ -93,8 +93,8 @@ export default function DosarScreen() {
         <Text style={{ color: theme.colors.text, fontSize: 18, fontFamily: theme.typography.fontFamilyBold }}>
           {pet ? `${t('dosar.title', 'Dosar medical')} — ${pet.name}` : t('dosar.title', 'Dosar medical')}
         </Text>
-        <Pressable onPress={() => router.push(`/animale/${id}/edit` as any)} hitSlop={8}>
-          <Ionicons name="create-outline" size={22} color={theme.colors.primary} />
+        <Pressable onPress={() => router.push(`/animale/${id}/adauga-inregistrare` as any)} hitSlop={8}>
+          <Ionicons name="add-circle-outline" size={24} color={theme.colors.primary} />
         </Pressable>
       </View>
 
