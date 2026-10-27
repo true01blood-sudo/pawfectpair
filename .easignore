@@ -4,3 +4,4 @@ web/.next
 packages/*/node_modules
 .git
 *.log
+Petcare services
