@@ -1,0 +1,78 @@
+{
+  "expo": {
+    "name": "Pet Care Services",
+    "slug": "pawfectpair",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "pawfectpair",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "jsEngine": "hermes",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFF7ED"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.pawfectpair.mobile",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Pet Care Services folosește camera pentru a fotografia animalul tău de companie.",
+        "NSPhotoLibraryUsageDescription": "Pet Care Services accesează galeria pentru a selecta o poză a animalului tău.",
+        "NSUserNotificationsUsageDescription": "Pet Care Services te anunță despre scadențe medicale și match-uri noi."
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "com.apple.developer.applesignin": ["Default"]
+      }
+    },
+    "android": {
+      "package": "app.pawfectpair.mobile",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#FFF7ED"
+      },
+      "permissions": [
+        "CAMERA",
+        "READ_MEDIA_IMAGES",
+        "POST_NOTIFICATIONS",
+        "INTERNET"
+      ],
+      "enableProguardInReleaseBuilds": true,
+      "enableShrinkResourcesInReleaseBuilds": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        { "photosPermission": "Pet Care Services accesează galeria pentru a selecta o poză a animalului tău." }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": { "projectId": "" },
+      "router": { "origin": false }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 3000
+    },
+    "runtimeVersion": { "policy": "sdkVersion" },
+    "owner": "pawfectpair"
+  }
+}

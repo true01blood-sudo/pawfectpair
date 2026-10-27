@@ -1,13 +1,25 @@
 {
   "name": "pawfectpair",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "packages/*",
+    "mobile",
+    "web"
+  ],
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "postinstall": "cd web && npm install && npm run build",
-    "build": "cd web && npm run build",
-    "start": "cd web && npm start"
+    "web:dev": "cd web && npm run dev",
+    "web:build": "cd web && npm run build",
+    "web:start": "cd web && npm start",
+    "mobile:start": "cd mobile && npx expo start",
+    "mobile:android": "cd mobile && npx expo run:android",
+    "mobile:ios": "cd mobile && npx expo run:ios",
+    "mobile:tsc": "cd mobile && npx tsc --noEmit",
+    "mobile:test": "cd mobile && npm test",
+    "shared:test": "cd packages/shared && npm test",
+    "shared:build": "cd packages/shared && npm run build"
   }
 }
