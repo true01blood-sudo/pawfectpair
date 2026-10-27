@@ -6,9 +6,24 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin", "/profil", "/adoptii/adauga", "/magazin/produsele-mele", "/auth"],
+        disallow: [
+          "/admin",
+          "/profil",
+          "/animale",
+          "/adoptii/adauga",
+          "/magazin/produsele-mele",
+          "/auth",
+          "/api/",
+          "/_next/",
+        ],
+      },
+      // Permite explicit crawlere mari pentru imagini
+      {
+        userAgent: ["Googlebot-Image", "Bingbot"],
+        allow: "/",
       },
     ],
     sitemap: "https://pawfectpair.app/sitemap.xml",
+    host: "https://pawfectpair.app",
   };
 }

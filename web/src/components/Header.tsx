@@ -117,12 +117,12 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
           <Image
             src={theme === "dark" ? "/logo-white.png" : "/logo.png"}
             alt="Pet Care Services"
-            width={44}
+            width={160}
             height={44}
-            className="rounded object-contain"
+            className="object-contain"
+            style={{ maxHeight: 44, width: "auto" }}
             priority
           />
-          <span className="hidden sm:block text-lg font-bold" style={{ color: "var(--header-text)" }}>Pet Care Services</span>
         </Link>
 
         <nav className="hidden md:flex md:items-center md:gap-5">
