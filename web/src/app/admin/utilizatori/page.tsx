@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { changeRole, removeUserContent } from "./actions";
-import BackLink from "@/components/BackLink";
+import Breadcrumb from "@/components/Breadcrumb";
 
 const roleLabels: Record<string, string> = {
   user: "Utilizator",
@@ -28,7 +28,7 @@ export default async function AdminUtilizatoriPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
-      <BackLink href="/admin" label="Panou Admin" />
+      <Breadcrumb items={[{ href: "/", label: "Acasă" }, { href: "/profil", label: "Profil" }, { href: "/admin", label: "Panou Admin" }, { label: "Utilizatori" }]} />
       <h1 className="text-xl font-bold sm:text-2xl">Utilizatori</h1>
       <p className="mt-1 text-sm text-zinc-500">{profiles?.length ?? 0} conturi înregistrate</p>
 

@@ -177,7 +177,7 @@ export default async function ProfilPage() {
               required
               className="min-h-11 rounded-xl border px-3 text-sm"
             />
-            <button className="min-h-11 self-start rounded-full bg-dark px-5 text-sm font-semibold text-white">
+            <button className="min-h-11 self-start rounded-full px-5 text-sm font-semibold" style={{ background: "#111827", color: "#fff" }}>
               Actualizează parola
             </button>
           </form>
@@ -190,7 +190,10 @@ export default async function ProfilPage() {
               <Link
                 key={s.href}
                 href={s.href}
-                className={`flex min-h-11 items-center gap-3 px-4 py-3 text-sm hover:bg-zinc-50 ${i > 0 ? "border-t" : ""}`}
+                className={`flex min-h-11 items-center gap-3 px-4 py-3 text-sm ${i > 0 ? "border-t" : ""}`}
+              style={{ borderColor: "var(--card-border)" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "var(--surface)")}
+              onMouseLeave={e => (e.currentTarget.style.background = "")}
               >
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-base">
                   {s.icon}
@@ -202,7 +205,7 @@ export default async function ProfilPage() {
           </div>
 
           <form action={signOut} className="mt-4">
-            <button className="min-h-11 w-full rounded-full bg-dark text-sm font-semibold text-white">
+            <button className="min-h-11 w-full rounded-full text-sm font-semibold" style={{ background: "#111827", color: "#fff" }}>
               Ieși din cont
             </button>
           </form>

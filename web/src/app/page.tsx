@@ -99,7 +99,8 @@ export default async function Home() {
                     href="https://play.google.com/store/apps/details?id=app.pawfectpair.mobile"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-2xl bg-dark px-5 py-2.5 text-sm font-bold text-white hover:bg-zinc-800 transition-colors"
+                    className="inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-bold text-white hover:opacity-90 transition-opacity"
+                    style={{ background: "#111827" }}
                   >
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M3.18 23.76a2 2 0 0 0 2.9.29l9.66-9.66-2.9-2.9-9.66 9.37zM20.65 9.54l-3.37-1.94-3.24 3.17 3.24 3.17 3.4-1.96a1.72 1.72 0 0 0 0-2.44zm-17.47-7.3a2 2 0 0 0-.32 1.1v18.32a2 2 0 0 0 .32 1.09l.08.08 10.26-10.26v-.24L3.26 2.16zm9.85 6.9 2.9 2.9-9.85 9.58a2.03 2.03 0 0 1-2.6.06z"/>
@@ -427,7 +428,7 @@ export default async function Home() {
                     {t.plus.title.split("\n")[0]}<br />{t.plus.title.split("\n")[1]}
                   </h2>
                   <p className="mt-2 text-zinc-400">{t.plus.desc}</p>
-                  <span className="mt-4 inline-block rounded-full border border-white/15 px-4 py-1.5 text-sm text-zinc-400">{t.plus.comingSoon}</span>
+                  <span className="mt-4 inline-block rounded-full border border-white/25 px-4 py-1.5 text-sm text-zinc-200">{t.plus.comingSoon}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {plusFeatures.map((f) => (
@@ -450,7 +451,8 @@ export default async function Home() {
             <p className="mt-2 text-zinc-500">{t.download.subtitle}</p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a href="https://play.google.com/store/apps/details?id=app.pawfectpair.mobile" target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-2xl bg-dark px-6 py-3 text-sm font-bold text-white hover:bg-zinc-800 transition-colors">
+                className="inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold text-white hover:opacity-90 transition-opacity"
+                style={{ background: "#111827" }}>
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M3.18 23.76a2 2 0 0 0 2.9.29l9.66-9.66-2.9-2.9-9.66 9.37zM20.65 9.54l-3.37-1.94-3.24 3.17 3.24 3.17 3.4-1.96a1.72 1.72 0 0 0 0-2.44zm-17.47-7.3a2 2 0 0 0-.32 1.1v18.32a2 2 0 0 0 .32 1.09l.08.08 10.26-10.26v-.24L3.26 2.16zm9.85 6.9 2.9 2.9-9.85 9.58a2.03 2.03 0 0 1-2.6.06z"/>
                 </svg>

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import BackLink from "@/components/BackLink";
+import Breadcrumb from "@/components/Breadcrumb";
 
 export default async function AdminComenziPage() {
   const supabase = await createClient();
@@ -33,7 +33,7 @@ export default async function AdminComenziPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
-      <BackLink href="/admin" label="Panou Admin" />
+      <Breadcrumb items={[{ href: "/", label: "Acasă" }, { href: "/profil", label: "Profil" }, { href: "/admin", label: "Panou Admin" }, { label: "Comenzi" }]} />
       <h1 className="text-xl font-bold sm:text-2xl">Comenzi (admin)</h1>
 
       <div className="mt-4 grid grid-cols-3 gap-3">
