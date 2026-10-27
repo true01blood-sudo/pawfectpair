@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
+import AppShell from "@/components/AppShell";
+import Breadcrumb from "@/components/Breadcrumb";
 
 export const metadata: Metadata = {
   title: "Dosar medical — PetCare",
@@ -107,8 +109,9 @@ export default async function PetHealthPage({
   }
 
   return (
-    <>
+    <AppShell>
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-10">
+        <Breadcrumb />
         {/* Header */}
         <div className="mb-5 flex items-center gap-3">
           <Link href="/sanatate" className="rounded-full p-2 hover:bg-card-bg transition-colors" style={{ color: "var(--muted)" }}>
@@ -395,6 +398,6 @@ export default async function PetHealthPage({
         </div>
       </main>
       <BottomNav />
-    </>
+    </AppShell>
   );
 }

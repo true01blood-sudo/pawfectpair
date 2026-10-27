@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
+import AppShell from "@/components/AppShell";
 
 export const metadata: Metadata = {
   title: "Sănătate & Dosar medical — PetCare",
@@ -83,7 +84,7 @@ export default async function SanatatePage() {
   }
 
   return (
-    <>
+    <AppShell>
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-10">
         {/* Header */}
         <div className="mb-6 flex items-start justify-between gap-4">
@@ -263,6 +264,6 @@ export default async function SanatatePage() {
         )}
       </main>
       <BottomNav />
-    </>
+    </AppShell>
   );
 }

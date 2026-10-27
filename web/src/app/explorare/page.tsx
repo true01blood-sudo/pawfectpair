@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
+import AppShell from "@/components/AppShell";
 
 export const metadata: Metadata = {
   title: "Explorare — PetCare",
@@ -127,7 +128,7 @@ export default async function ExplorePage({
   }
 
   return (
-    <>
+    <AppShell>
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-10">
         {/* Header */}
         <div className="mb-5">
@@ -343,6 +344,6 @@ export default async function ExplorePage({
         </div>
       </main>
       <BottomNav />
-    </>
+    </AppShell>
   );
 }

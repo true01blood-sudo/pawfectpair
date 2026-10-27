@@ -153,13 +153,6 @@ export const ro = {
     expiring: 'Expiră',
     openTravelPack: '✈ Deschide pachetul de călătorie',
   },
-  // Module names/desc
-  modules: {
-    petbreedingName: 'PetBreeding',
-    petbreedingDesc: 'Găsește parteneri de reproducere verificați',
-    petpassportName: 'PetPassport',
-    petpassportDesc: 'Pașaport digital & travel wallet',
-  },
   // Auth
   auth: {
     welcome: 'Bun venit',
@@ -345,6 +338,10 @@ export const ro = {
     marketplaceDesc: 'Produse pentru animale',
     petdayName: 'PetDay',
     petdayDesc: 'Pet-sitteri & pet-hotel — îngrijire și cazare cât ești plecat',
+    petbreedingName: 'PetBreeding',
+    petbreedingDesc: 'Găsește parteneri de reproducere verificați',
+    petpassportName: 'PetPassport',
+    petpassportDesc: 'Pașaport digital & travel wallet',
   },
   // Map
   map: {

@@ -1,4 +1,4 @@
-# PawfectPair — Specificații tehnice aplicație mobilă (iOS + Android)
+# PetCare Services — Specificații tehnice aplicație mobilă (iOS + Android)
 
 **Versiune document:** 1.0  
 **Data:** Octombrie 2026  
@@ -30,7 +30,7 @@
 
 ## 1. Viziune și scop
 
-PawfectPair este o platformă pentru deținătorii de animale de companie din România, oferind:
+PetCare Services este o platformă pentru deținătorii de animale de companie din România, oferind:
 
 - Profiluri digitale pentru animale (fișă medicală, calendar vaccinări, greutate)
 - PetMatch — sistem de tip „Tinder" pentru găsirea de companioni
@@ -765,7 +765,7 @@ export async function deleteUserAccount(userId: string) {
 
 ### 9.4 Copii sub 16 ani
 
-PawfectPair nu este destinat persoanelor sub 16 ani. La înregistrare:
+PetCare Services nu este destinat persoanelor sub 16 ani. La înregistrare:
 - Checkbox explicit: „Confirm că am cel puțin 16 ani"
 - Nu colectăm vârsta — declarație pe proprie răspundere
 
@@ -1029,7 +1029,7 @@ Stocate în GitHub Secrets / Expo EAS Secrets — niciodată hardcodate:
 
 | Model | Complexitate | Notă |
 |---|---|---|
-| Abonament premium (PawfectPair Plus) | Medie | RevenueCat + StoreKit2/Google Billing |
+| Abonament premium (PetCare Services Plus) | Medie | RevenueCat + StoreKit2/Google Billing |
 | Comision magazin | Mare | Necesită entitate juridică |
 | Anunțuri targetate | Medie | Necesită consimțământ GDPR explicit |
 | Donații adopții | Mică | Stripe Checkout |
@@ -1087,17 +1087,17 @@ const isPremium = entitlements.active['premium'] !== undefined;
 **iOS (Info.plist):**
 ```xml
 <key>NSCameraUsageDescription</key>
-<string>PawfectPair folosește camera pentru a fotografia animalul tău de companie.</string>
+<string>PetCare Services folosește camera pentru a fotografia animalul tău de companie.</string>
 
 <key>NSPhotoLibraryUsageDescription</key>
-<string>PawfectPair accesează galeria pentru a selecta o poză a animalului tău.</string>
+<string>PetCare Services accesează galeria pentru a selecta o poză a animalului tău.</string>
 
 <key>NSUserNotificationsUsageDescription</key>
-<string>PawfectPair te anunță despre scadențe medicale și match-uri noi.</string>
+<string>PetCare Services te anunță despre scadențe medicale și match-uri noi.</string>
 
 <!-- Faza 2: -->
 <key>NSLocationWhenInUseUsageDescription</key>
-<string>PawfectPair folosește locația pentru a găsi veterinari și animale apropiați.</string>
+<string>PetCare Services folosește locația pentru a găsi veterinari și animale apropiați.</string>
 ```
 
 **Android (AndroidManifest.xml):**

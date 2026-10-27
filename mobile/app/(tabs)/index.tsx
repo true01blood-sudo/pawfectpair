@@ -44,7 +44,9 @@ export default function HomeScreen() {
               {profile.data?.full_name ?? 'Proprietar'}!
             </Text>
           </View>
-          <Logo size={48} showText={false} />
+          <Pressable onPress={() => router.push('/(tabs)/profil')} hitSlop={8}>
+            <Logo size={40} showText={false} variant={theme.mode === 'dark' ? 'white' : 'color'} />
+          </Pressable>
         </View>
 
         {/* Card PetMatch promo */}

@@ -118,7 +118,17 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
   const { count } = useCart();
 
   if (pathname === "/login") return null;
-  if (pathname === "/" && isLoggedIn) return null;
+
+  // Hide public header on all app routes when user is authenticated (sidebar handles nav)
+  const APP_ROUTES = [
+    "/", "/animale", "/ingrijire", "/cercuri", "/explorare",
+    "/sanatate", "/asigurare", "/gps", "/reproductie", "/antrenament",
+    "/programari", "/planificator", "/statistici", "/educatie",
+    "/profil", "/suport",
+  ];
+  if (isLoggedIn && APP_ROUTES.some((r) => r === pathname || pathname.startsWith(r + "/"))) {
+    return null;
+  }
 
   const accountHref = isLoggedIn ? "/profil" : "/login";
   const accountLabel = isLoggedIn ? "Profilul meu" : "Cont";
