@@ -55,14 +55,12 @@ const DEMO_SERVICES = [
     tags: ["Liber acces", "Fântână câini", "Împrejmuit"],
     emoji: "🌳",
   },
-  {
-    id: "h1", type: "hotel", name: "PetHotel Napoca",
-    city: "Cluj-Napoca", address: "Str. Horea 8", rating: 4.9,
-    reviewCount: 78, phone: "0264-999888", openNow: true,
-    tags: ["Pensiune", "Grooming", "Supraveghere 24/7"],
-    emoji: "🏨",
-  },
 ];
+
+const SERVICE_LABELS: Record<string, string> = {
+  dog_walking: "Plimbare", home_visits: "Vizite acasă", sitting_at_owner: "Sitting la tine",
+  sitting_at_sitter: "Sitting la sitter", daycare: "Day care", boarding: "Pensiune", transport: "Transport",
+};
 
 export default async function ExplorePage({
   searchParams,
@@ -88,6 +86,14 @@ export default async function ExplorePage({
     .order("rating", { ascending: false })
     .limit(10);
 
+  // Pet boarding / day care listings from DB
+  const { data: listings } = await supabase
+    .from("petday_listings")
+    .select("id, title, city, address, phone, services, verified")
+    .eq("active", true)
+    .order("verified", { ascending: false })
+    .limit(10);
+
   // Merge DB data with demo
   const dbVets = (vets ?? []).map((v) => ({
     id: v.id, type: "vet" as const,
@@ -107,8 +113,17 @@ export default async function ExplorePage({
     emoji: "🎓",
   }));
 
-  const allServices = [...dbVets, ...dbTrainers, ...DEMO_SERVICES.filter(
-    (s) => s.type !== "vet" && s.type !== "trainer"
+  const dbListings = (listings ?? []).map((l) => ({
+    id: l.id, type: "hotel" as const,
+    name: l.title, city: l.city ?? "România",
+    address: l.address ?? "", rating: 0, reviewCount: 0,
+    phone: l.phone, openNow: true,
+    tags: (l.services as string[] ?? []).slice(0, 3).map((s) => SERVICE_LABELS[s] ?? s),
+    emoji: "🏨",
+  }));
+
+  const allServices = [...dbVets, ...dbTrainers, ...dbListings, ...DEMO_SERVICES.filter(
+    (s) => s.type !== "vet" && s.type !== "trainer" && s.type !== "hotel"
   )];
 
   const filtered = allServices.filter((s) => {
@@ -237,17 +252,19 @@ export default async function ExplorePage({
 
                 {/* Rating + status */}
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="flex items-center gap-1">
-                    <span className="text-yellow-400 text-xs">★</span>
-                    <span className="text-xs font-semibold" style={{ color: "var(--foreground)" }}>
-                      {svc.rating.toFixed(1)}
-                    </span>
-                    {svc.reviewCount > 0 && (
-                      <span className="text-[10px]" style={{ color: "var(--muted)" }}>
-                        ({svc.reviewCount})
+                  {svc.rating > 0 && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-yellow-400 text-xs">★</span>
+                      <span className="text-xs font-semibold" style={{ color: "var(--foreground)" }}>
+                        {svc.rating.toFixed(1)}
                       </span>
-                    )}
-                  </div>
+                      {svc.reviewCount > 0 && (
+                        <span className="text-[10px]" style={{ color: "var(--muted)" }}>
+                          ({svc.reviewCount})
+                        </span>
+                      )}
+                    </div>
+                  )}
                   <span
                     className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
                     style={{
@@ -287,17 +304,24 @@ export default async function ExplorePage({
                       📞 Sună
                     </a>
                   )}
-                  <Link
-                    href={
-                      svc.type === "vet" ? `/veterinari/${svc.id}`
-                      : svc.type === "trainer" ? `/antrenament/antrenori/${svc.id}`
-                      : `/explorare/${svc.id}`
-                    }
-                    className="flex-1 flex items-center justify-center rounded-xl border py-2 text-xs font-medium transition-colors hover:border-primary hover:text-primary"
-                    style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
-                  >
-                    Detalii →
-                  </Link>
+                  {svc.type === "vet" && (
+                    <Link
+                      href={`/veterinari/${svc.id}`}
+                      className="flex-1 flex items-center justify-center rounded-xl border py-2 text-xs font-medium transition-colors hover:border-primary hover:text-primary"
+                      style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
+                    >
+                      Detalii →
+                    </Link>
+                  )}
+                  {svc.type === "trainer" && (
+                    <Link
+                      href="/antrenament"
+                      className="flex-1 flex items-center justify-center rounded-xl border py-2 text-xs font-medium transition-colors hover:border-primary hover:text-primary"
+                      style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
+                    >
+                      Vezi profil →
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}
