@@ -36,15 +36,14 @@ export default async function GpsPage() {
     }
   }
 
-  // Active lost pet alerts
+  // Active lost pet alerts (shared with PetResQ — same resq_cases table)
   const { data: lostAlerts } = await supabase
-    .from("lost_pet_alerts")
-    .select("id, title, description, last_seen_location, last_seen_at, contact_phone, reward_info, status, pets(name, photo_url)")
+    .from("resq_cases")
+    .select("id, name, description, last_seen_location, contact_phone, status")
     .eq("status", "active")
+    .eq("type", "lost")
     .order("created_at", { ascending: false })
     .limit(10);
-
-  const myAlerts = (lostAlerts ?? []).filter((_a) => false); // filtered from public list; in prod would filter by owner_id
 
   return (
     <>
@@ -123,27 +122,27 @@ export default async function GpsPage() {
                         )}
                       </div>
                       <div className="flex flex-col gap-2">
-                        <Link
-                          href={`/gps/harta?pet=${pet.id}`}
+                        <a
+                          href="#harta-gps"
                           className="rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:border-primary hover:text-primary"
                           style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
                         >
                           Hartă
-                        </Link>
+                        </a>
                       </div>
                     </div>
 
                     {/* Quick GPS actions */}
                     <div className="mt-3 flex gap-2">
-                      <Link
-                        href={`/gps/traseu?pet=${pet.id}`}
+                      <a
+                        href="#harta-gps"
                         className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border py-2 text-xs font-medium transition-colors hover:border-primary hover:text-primary"
                         style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
                       >
                         📍 Istoric traseu
-                      </Link>
+                      </a>
                       <Link
-                        href={`/gps/alerta?pet=${pet.id}`}
+                        href={`/resq/nou?pet=${pet.id}`}
                         className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border py-2 text-xs font-medium transition-colors hover:border-red-300 hover:text-red-500"
                         style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
                       >
@@ -171,7 +170,7 @@ export default async function GpsPage() {
         </section>
 
         {/* Map preview placeholder */}
-        <section className="mb-8">
+        <section id="harta-gps" className="mb-8 scroll-mt-20">
           <div
             className="relative rounded-2xl overflow-hidden"
             style={{ background: "linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)", border: "1px solid #7dd3fc", height: 200 }}
@@ -203,7 +202,7 @@ export default async function GpsPage() {
             <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--muted)" }}>
               Alerte animale pierdute
             </h2>
-            <Link href="/gps/pierdute" className="text-xs font-medium text-primary hover:underline">
+            <Link href="/resq?tip=lost" className="text-xs font-medium text-primary hover:underline">
               Vezi toate →
             </Link>
           </div>
@@ -211,7 +210,6 @@ export default async function GpsPage() {
           {lostAlerts && lostAlerts.length > 0 ? (
             <div className="space-y-3">
               {lostAlerts.slice(0, 3).map((alert) => {
-                const pet = alert.pets as unknown as { name: string; photo_url: string | null } | null;
                 return (
                   <div
                     key={alert.id}
@@ -236,7 +234,7 @@ export default async function GpsPage() {
                           </span>
                         </div>
                         <p className="font-semibold text-sm mt-1" style={{ color: "var(--foreground)" }}>
-                          {alert.title}
+                          {alert.name}
                         </p>
                         {alert.last_seen_location && (
                           <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>
