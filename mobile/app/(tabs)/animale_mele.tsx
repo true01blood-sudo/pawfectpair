@@ -1,198 +1,194 @@
 /**
- * Tab Animalele mele — My Pets hub: lista animale, acces rapid la dosar/pedigree/passport.
- * Structură: header cu buton adaugă → lista animale → setări profil.
+ * My Pets tab — pet profiles, quick access to health / passport / pedigree
+ * Design: pawfectpair-design aesthetic, clean card list
  */
-import React, { useCallback } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, Pressable, Image, ActivityIndicator,
-} from 'react-native';
+import React from 'react';
+import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
+import { Image } from 'expo-image';
 import { useAppTheme } from '../../components/theme-provider';
-import { usePets } from '../../hooks/usePets';
+import { useMyPets } from '../../hooks';
 
 export default function AnimaleMeleScreen() {
-  const { t } = useTranslation();
   const theme = useAppTheme();
   const router = useRouter();
-  const { pets, loading } = usePets();
+  const pets = useMyPets();
 
-  const handleAddPet = useCallback(() => {
-    router.push('/animale/new' as any);
-  }, [router]);
+  const s = theme.colors;
+  const sp = theme.spacing;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top']}>
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: theme.spacing.xxl, maxWidth: 720, width: '100%', alignSelf: 'center' }}
-      >
-        {/* Header */}
-        <View style={[styles.headerRow, { paddingHorizontal: theme.spacing.lg, paddingTop: 16 }]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: s.background }} edges={['top']}>
+      <ScrollView contentContainerStyle={{ paddingBottom: sp.xxl + 16 }} showsVerticalScrollIndicator={false}>
+
+        {/* ── Header ── */}
+        <View style={[styles.header, { paddingHorizontal: sp.lg, paddingTop: sp.sm }]}>
           <View>
-            <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSize2xl, fontFamily: theme.typography.fontFamilyBold }}>
-              {t('myPets.title', 'Animalele mele')}
+            <Text style={{ color: s.text, fontSize: 24, fontFamily: theme.typography.fontFamilyBold }}>
+              My Pets
             </Text>
-            <Text style={{ color: theme.colors.textMuted, fontSize: theme.typography.fontSizeSm, marginTop: 2 }}>
-              {t('myPets.subtitle', 'Profiluri, dosare și pașapoarte')}
+            <Text style={{ color: s.textMuted, fontSize: 14, marginTop: 2 }}>
+              Profiles, health records & passports
             </Text>
           </View>
           <Pressable
-            onPress={handleAddPet}
-            style={[styles.addBtn, { backgroundColor: theme.colors.primary }]}
+            onPress={() => router.push('/animale/nou')}
+            style={[styles.addBtn, { backgroundColor: s.primary }]}
           >
-            <Ionicons name="add" size={22} color="#fff" />
+            <Ionicons name="add" size={20} color="#fff" />
+            <Text style={{ color: '#fff', fontSize: 13, fontFamily: theme.typography.fontFamilySemibold, marginLeft: 4 }}>
+              Add pet
+            </Text>
           </Pressable>
         </View>
 
-        {/* Lista animale */}
-        <View style={{ paddingHorizontal: theme.spacing.lg, marginTop: theme.spacing.lg }}>
-          {loading ? (
-            <ActivityIndicator color={theme.colors.primary} style={{ marginTop: 40 }} />
-          ) : pets && pets.length > 0 ? (
-            pets.map((pet: any) => (
-              <Pressable
-                key={pet.id}
-                onPress={() => router.push(`/animale/${pet.id}` as any)}
-                style={[styles.petCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
-              >
-                {/* Avatar */}
-                <View style={[styles.avatar, { backgroundColor: theme.colors.primaryLight }]}>
-                  {pet.photo_url ? (
-                    <Image source={{ uri: pet.photo_url }} style={styles.avatarImg} />
-                  ) : (
-                    <Text style={{ fontSize: 28 }}>🐾</Text>
-                  )}
-                </View>
-
-                {/* Info */}
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeMd, fontWeight: '700' }}>
-                    {pet.name}
-                  </Text>
-                  <Text style={{ color: theme.colors.textMuted, fontSize: theme.typography.fontSizeXs, marginTop: 2 }}>
-                    {pet.species}{pet.breed ? ` • ${pet.breed}` : ''}
-                  </Text>
-                </View>
-
-                {/* Shortcut-uri rapide */}
-                <View style={styles.quickActions}>
-                  <Pressable
-                    onPress={(e) => { e.stopPropagation(); router.push(`/animale/${pet.id}` as any); }}
-                    style={[styles.quickBtn, { backgroundColor: theme.colors.background }]}
-                    hitSlop={8}
-                  >
-                    <Ionicons name="medkit" size={16} color={theme.colors.primary} />
-                  </Pressable>
-                  <Pressable
-                    onPress={(e) => { e.stopPropagation(); router.push(`/animale/${pet.id}/pedigree` as any); }}
-                    style={[styles.quickBtn, { backgroundColor: theme.colors.background }]}
-                    hitSlop={8}
-                  >
-                    <Ionicons name="git-network" size={16} color={theme.colors.primary} />
-                  </Pressable>
-                  <Pressable
-                    onPress={(e) => { e.stopPropagation(); router.push(`/animale/${pet.id}/passport` as any); }}
-                    style={[styles.quickBtn, { backgroundColor: theme.colors.background }]}
-                    hitSlop={8}
-                  >
-                    <Ionicons name="airplane" size={16} color={theme.colors.primary} />
-                  </Pressable>
-                </View>
-
-                <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} style={{ marginLeft: 4 }} />
-              </Pressable>
-            ))
-          ) : (
-            <View style={styles.emptyState}>
-              <Text style={{ fontSize: 48, marginBottom: 12 }}>🐾</Text>
-              <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeLg, fontWeight: '700', marginBottom: 6 }}>
-                {t('myPets.empty', 'Nu ai animale înregistrate')}
+        {/* ── Pet list ── */}
+        <View style={{ paddingHorizontal: sp.lg, marginTop: sp.lg, gap: sp.md }}>
+          {pets.isLoading ? (
+            <ActivityIndicator color={s.primary} style={{ marginTop: 40 }} />
+          ) : (pets.data?.length ?? 0) === 0 ? (
+            <View style={[styles.emptyCard, { backgroundColor: s.surface, borderColor: s.border }]}>
+              <Ionicons name="paw-outline" size={48} color={s.textMuted} />
+              <Text style={{ color: s.text, fontSize: 16, fontFamily: theme.typography.fontFamilySemibold, marginTop: 12 }}>
+                No pets yet
               </Text>
-              <Text style={{ color: theme.colors.textMuted, fontSize: theme.typography.fontSizeSm, textAlign: 'center', marginBottom: 20 }}>
-                {t('myPets.emptyDesc', 'Adaugă primul tău animal pentru a accesa toate funcțiile platformei')}
+              <Text style={{ color: s.textMuted, fontSize: 13, textAlign: 'center', marginTop: 4 }}>
+                Add your first pet to start tracking their health and care.
               </Text>
               <Pressable
-                onPress={handleAddPet}
-                style={[styles.emptyAddBtn, { backgroundColor: theme.colors.primary }]}
+                onPress={() => router.push('/animale/nou')}
+                style={[styles.ctaBtn, { backgroundColor: s.primary, marginTop: 16 }]}
               >
-                <Ionicons name="add" size={18} color="#fff" />
-                <Text style={{ color: '#fff', fontWeight: '700', fontSize: theme.typography.fontSizeSm }}>
-                  {t('myPets.addFirst', 'Adaugă animal')}
+                <Text style={{ color: '#fff', fontSize: 14, fontFamily: theme.typography.fontFamilySemibold }}>
+                  Add my first pet
                 </Text>
               </Pressable>
             </View>
-          )}
-        </View>
+          ) : (
+            pets.data?.map((pet) => (
+              <Pressable key={pet.id} onPress={() => router.push(`/animale/${pet.id}` as any)}>
+                <View style={[styles.petCard, { backgroundColor: s.surface, borderColor: s.border }]}>
+                  {/* Hero section */}
+                  <View style={[styles.petHero, { backgroundColor: s.surfaceAlt }]}>
+                    {pet.photo_url ? (
+                      <Image source={{ uri: pet.photo_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+                    ) : (
+                      <Ionicons name="paw" size={40} color={s.primary} style={{ opacity: 0.3 }} />
+                    )}
+                    <View style={styles.speciesBadge}>
+                      <Text style={{ color: '#fff', fontSize: 11, fontFamily: theme.typography.fontFamilySemibold }}>
+                        {pet.species ?? 'Pet'}
+                      </Text>
+                    </View>
+                  </View>
 
-        {/* Setări profil utilizator */}
-        <View style={{ paddingHorizontal: theme.spacing.lg, marginTop: theme.spacing.xl }}>
-          <Text style={{ color: theme.colors.textMuted, fontSize: theme.typography.fontSizeXs, fontWeight: '700', letterSpacing: 1, marginBottom: theme.spacing.sm, textTransform: 'uppercase' }}>
-            {t('myPets.account', 'Cont')}
-          </Text>
-          <Pressable
-            onPress={() => router.push('/(tabs)/profil')}
-            style={[styles.settingsRow, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
-          >
-            <Ionicons name="person-circle" size={22} color={theme.colors.primary} />
-            <Text style={{ flex: 1, color: theme.colors.text, fontSize: theme.typography.fontSizeMd, fontWeight: '600' }}>
-              {t('myPets.profileSettings', 'Profil și setări')}
-            </Text>
-            <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
-          </Pressable>
-          <Pressable
-            onPress={() => router.push('/modul/petpassport' as any)}
-            style={[styles.settingsRow, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, marginTop: 8 }]}
-          >
-            <Ionicons name="airplane" size={22} color={theme.colors.primary} />
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeMd, fontWeight: '600' }}>
-                {t('myPets.petpassport', 'Pașaport & travel')}
-              </Text>
-              <Text style={{ color: theme.colors.textMuted, fontSize: theme.typography.fontSizeXs }}>
-                {t('myPets.petpassportDesc', 'Documente pentru călătorii')}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
-          </Pressable>
+                  {/* Info */}
+                  <View style={{ padding: 14 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <View>
+                        <Text style={{ color: s.text, fontSize: 17, fontFamily: theme.typography.fontFamilyBold }}>
+                          {pet.name}
+                        </Text>
+                        <Text style={{ color: s.textMuted, fontSize: 13, marginTop: 2 }}>
+                          {pet.breed ?? pet.species ?? ''}
+                          {pet.birth_date ? ` · ${getAge(pet.birth_date)}` : ''}
+                        </Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={18} color={s.textMuted} />
+                    </View>
+
+                    {/* Quick actions */}
+                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+                      <Pressable
+                        onPress={(e) => { e.stopPropagation(); router.push(`/animale/${pet.id}` as any); }}
+                        style={[styles.quickAction, { backgroundColor: s.surfaceAlt }]}
+                      >
+                        <Ionicons name="document-text-outline" size={15} color={s.text} />
+                        <Text style={{ color: s.text, fontSize: 12, marginLeft: 4 }}>Records</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={(e) => { e.stopPropagation(); router.push(`/animale/${pet.id}` as any); }}
+                        style={[styles.quickAction, { backgroundColor: s.surfaceAlt }]}
+                      >
+                        <Ionicons name="shield-outline" size={15} color={s.text} />
+                        <Text style={{ color: s.text, fontSize: 12, marginLeft: 4 }}>Insurance</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={(e) => { e.stopPropagation(); router.push(`/animale/${pet.id}` as any); }}
+                        style={[styles.quickAction, { backgroundColor: s.surfaceAlt }]}
+                      >
+                        <Ionicons name="airplane-outline" size={15} color={s.text} />
+                        <Text style={{ color: s.text, fontSize: 12, marginLeft: 4 }}>Passport</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                </View>
+              </Pressable>
+            ))
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+function getAge(birthDate: string): string {
+  const diff = Date.now() - new Date(birthDate).getTime();
+  const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365));
+  return years < 1 ? '< 1 yr' : `${years} yr${years > 1 ? 's' : ''}`;
+}
+
 const styles = StyleSheet.create({
-  headerRow: {
-    flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between',
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   addBtn: {
-    width: 40, height: 40, borderRadius: 20,
-    alignItems: 'center', justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  emptyCard: {
+    padding: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  ctaBtn: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
   },
   petCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    borderWidth: 1, borderRadius: 14, padding: 12, marginBottom: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
   },
-  avatar: {
-    width: 52, height: 52, borderRadius: 26,
-    alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+  petHero: {
+    height: 140,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
   },
-  avatarImg: { width: 52, height: 52 },
-  quickActions: { flexDirection: 'row', gap: 6 },
-  quickBtn: {
-    width: 30, height: 30, borderRadius: 8,
-    alignItems: 'center', justifyContent: 'center',
+  speciesBadge: {
+    position: 'absolute',
+    bottom: 10,
+    left: 12,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
   },
-  emptyState: {
-    alignItems: 'center', paddingTop: 40, paddingBottom: 20,
-  },
-  emptyAddBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12,
-  },
-  settingsRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    borderWidth: 1, borderRadius: 14, padding: 14,
+  quickAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 12,
   },
 });
