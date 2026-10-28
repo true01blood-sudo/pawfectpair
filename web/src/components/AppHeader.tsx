@@ -10,9 +10,11 @@ type Props = {
   userName?: string;
   avatarUrl?: string | null;
   isAdmin?: boolean;
+  isVet?: boolean;
+  clinicName?: string;
 };
 
-export default function AppHeader({ userName, avatarUrl, isAdmin }: Props) {
+export default function AppHeader({ userName, avatarUrl, isAdmin, isVet, clinicName }: Props) {
   const { theme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -50,6 +52,17 @@ export default function AppHeader({ userName, avatarUrl, isAdmin }: Props) {
           priority
         />
       </Link>
+
+      {/* Clinic context badge */}
+      {clinicName && (
+        <div className="hidden md:flex items-center gap-2 border-l pl-3" style={{ borderColor: "var(--card-border)" }}>
+          <div>
+            <p className="text-sm font-semibold leading-tight" style={{ color: "var(--foreground)" }}>{clinicName}</p>
+            <p className="text-[10px] leading-tight" style={{ color: "var(--muted)" }}>Professional workspace</p>
+          </div>
+          <svg width="12" height="12" viewBox="0 0 10 10" fill="currentColor" style={{ color: "var(--muted)" }}><path d="M5 7 1 3h8z"/></svg>
+        </div>
+      )}
 
       {/* Search */}
       <div className="flex-1 hidden md:block max-w-lg">
@@ -171,6 +184,20 @@ export default function AppHeader({ userName, avatarUrl, isAdmin }: Props) {
                 </svg>
                 Setări
               </Link>
+              {isVet && (
+                <Link
+                  href="/clinic"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:text-primary"
+                  style={{ color: "var(--foreground)" }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                  </svg>
+                  Clinic workspace
+                </Link>
+              )}
               {isAdmin && (
                 <Link
                   href="/admin"

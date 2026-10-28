@@ -16,6 +16,7 @@ export default async function AppShell({ children, mainClassName }: Props) {
   const avatarUrl = (user?.user_metadata?.avatar_url as string | undefined) ?? null;
 
   let isAdmin = false;
+  let isVet = false;
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -23,6 +24,16 @@ export default async function AppShell({ children, mainClassName }: Props) {
       .eq("id", user.id)
       .single();
     isAdmin = profile?.role === "admin";
+    isVet = profile?.role === "vet";
+    // Also check if user has a registered vet profile
+    if (!isVet) {
+      const { data: vetRow } = await supabase
+        .from("vets")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (vetRow) isVet = true;
+    }
   }
 
   let petProfile = null;
@@ -57,7 +68,7 @@ export default async function AppShell({ children, mainClassName }: Props) {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <AppHeader userName={userName} avatarUrl={avatarUrl} isAdmin={isAdmin} />
+      <AppHeader userName={userName} avatarUrl={avatarUrl} isAdmin={isAdmin} isVet={isVet} />
       <div className="flex-1 flex overflow-hidden min-h-0">
         <AppSidebar />
         <div className={`flex-1 min-h-0 flex flex-col ${mainClassName ?? "overflow-y-auto"}`}>
