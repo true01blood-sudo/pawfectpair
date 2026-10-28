@@ -40,6 +40,11 @@ export default async function AppShell({ children, mainClassName }: Props) {
     }
   }
 
+  // Fara autentificare: afisam doar continutul (header-ul public din layout.tsx e vizibil)
+  if (!user) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <AppHeader userName={userName} avatarUrl={avatarUrl} />
