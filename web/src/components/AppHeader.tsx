@@ -1,18 +1,33 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "@/components/ThemeProvider";
+import { signOut } from "@/app/profil/actions";
 
 type Props = {
   userName?: string;
   avatarUrl?: string | null;
+  isAdmin?: boolean;
 };
 
-export default function AppHeader({ userName, avatarUrl }: Props) {
+export default function AppHeader({ userName, avatarUrl, isAdmin }: Props) {
   const { theme } = useTheme();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const initials = userName ? userName.charAt(0).toUpperCase() : "U";
   const displayName = userName?.split(" ")[0] ?? "Cont";
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    if (menuOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [menuOpen]);
 
   return (
     <header
@@ -27,7 +42,7 @@ export default function AppHeader({ userName, avatarUrl }: Props) {
       {/* Logo */}
       <Link href="/" className="flex items-center shrink-0 mr-2">
         <Image
-          src={theme === "dark" ? "/logo.png" : "/logo-white.png"}
+          src={theme === "dark" ? "/logo-white.png" : "/logo.png"}
           alt="PetCare"
           width={140}
           height={44}
@@ -95,30 +110,96 @@ export default function AppHeader({ userName, avatarUrl }: Props) {
           <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-white">3</span>
         </Link>
 
-        {/* Avatar + name */}
-        <Link
-          href="/profil"
-          className="flex items-center gap-1.5 rounded-full border pl-1 pr-2.5 py-1 transition-colors hover:border-primary/40"
-          style={{ borderColor: "var(--card-border)" }}
-        >
-          {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatarUrl} alt={displayName} className="h-7 w-7 rounded-full object-cover" />
-          ) : (
-            <div
-              className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
-              style={{ background: "var(--primary)" }}
+        {/* Avatar dropdown */}
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            className="flex items-center gap-1.5 rounded-full border pl-1 pr-2.5 py-1 transition-colors hover:border-primary/40"
+            style={{ borderColor: menuOpen ? "var(--primary)" : "var(--card-border)" }}
+          >
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt={displayName} className="h-7 w-7 rounded-full object-cover" />
+            ) : (
+              <div
+                className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                style={{ background: "var(--primary)" }}
+              >
+                {initials}
+              </div>
+            )}
+            <span className="text-sm font-medium hidden lg:block" style={{ color: "var(--foreground)" }}>
+              {displayName}
+            </span>
+            <svg
+              width="9" height="9" viewBox="0 0 10 10" fill="currentColor"
+              style={{
+                color: "var(--muted)",
+                transform: menuOpen ? "rotate(180deg)" : "none",
+                transition: "transform 0.15s",
+              }}
             >
-              {initials}
+              <path d="M5 7 1 3h8z"/>
+            </svg>
+          </button>
+
+          {menuOpen && (
+            <div
+              className="absolute right-0 top-11 z-50 rounded-2xl border py-1.5 shadow-xl"
+              style={{ background: "var(--card-bg)", borderColor: "var(--card-border)", minWidth: 180 }}
+            >
+              <Link
+                href="/profil"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:text-primary"
+                style={{ color: "var(--foreground)" }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+                Profilul meu
+              </Link>
+              <Link
+                href="/setari"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:text-primary"
+                style={{ color: "var(--foreground)" }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                Setări
+              </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:text-primary"
+                  style={{ color: "var(--foreground)" }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                  </svg>
+                  Admin
+                </Link>
+              )}
+              <div style={{ borderTop: "1px solid var(--card-border)", margin: "4px 0" }} />
+              <form action={signOut}>
+                <button
+                  type="submit"
+                  className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:text-red-500"
+                  style={{ color: "var(--foreground)" }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                  </svg>
+                  Deconectare
+                </button>
+              </form>
             </div>
           )}
-          <span className="text-sm font-medium hidden lg:block" style={{ color: "var(--foreground)" }}>
-            {displayName}
-          </span>
-          <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor" style={{ color: "var(--muted)" }}>
-            <path d="M5 7 1 3h8z"/>
-          </svg>
-        </Link>
+        </div>
       </div>
     </header>
   );

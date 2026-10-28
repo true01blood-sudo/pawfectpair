@@ -26,7 +26,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <AppHeader userName={userName} avatarUrl={avatarUrl} />
+      <AppHeader userName={userName} avatarUrl={avatarUrl} isAdmin={true} />
       <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Desktop sidebar */}
         <aside

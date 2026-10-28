@@ -15,6 +15,16 @@ export default async function AppShell({ children, mainClassName }: Props) {
   const userName = (user?.user_metadata?.full_name as string | undefined) ?? user?.email ?? "";
   const avatarUrl = (user?.user_metadata?.avatar_url as string | undefined) ?? null;
 
+  let isAdmin = false;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    isAdmin = profile?.role === "admin";
+  }
+
   let petProfile = null;
   let nextAppointment = null;
   if (user) {
@@ -47,7 +57,7 @@ export default async function AppShell({ children, mainClassName }: Props) {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <AppHeader userName={userName} avatarUrl={avatarUrl} />
+      <AppHeader userName={userName} avatarUrl={avatarUrl} isAdmin={isAdmin} />
       <div className="flex-1 flex overflow-hidden min-h-0">
         <AppSidebar />
         <div className={`flex-1 min-h-0 flex flex-col ${mainClassName ?? "overflow-y-auto"}`}>
