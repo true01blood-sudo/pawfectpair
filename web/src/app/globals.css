@@ -41,6 +41,10 @@
   --color-primary-light: var(--primary-light);
   --color-sage: var(--sage);
   --color-dark: var(--dark);
+  --color-card: var(--card-bg);
+  --color-card-border: var(--card-border);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
   --font-sans: var(--font-plus-jakarta);
 }
 

@@ -54,20 +54,20 @@ export default async function VeterinariPage() {
                 <Link
                   key={vet.id}
                   href={`/veterinari/${vet.id}`}
-                  className="card-hover rounded-2xl border p-4 shadow-sm hover:border-primary"
+                  className="card-hover rounded-2xl border border-card-border bg-card p-4 shadow-sm hover:border-primary"
                 >
                   <p className="font-medium">{vet.clinic_name}</p>
                   {ratings && ratings.length > 0 && (
                     <div className="mt-0.5"><StarsDisplay rating={avg} count={ratings.length} /></div>
                   )}
-                  <p className="mt-1 text-sm text-zinc-500">{vet.city || "Oraș nespecificat"}{vet.address ? ` · ${vet.address}` : ""}</p>
-                  {vet.phone && <p className="text-xs text-zinc-400">{vet.phone}</p>}
+                  <p className="mt-1 text-sm text-muted">{vet.city || "Oraș nespecificat"}{vet.address ? ` · ${vet.address}` : ""}</p>
+                  {vet.phone && <p className="text-xs text-muted opacity-70">{vet.phone}</p>}
                 </Link>
               );
             })}
           </div>
         ) : (
-          <p className="mt-6 rounded-2xl border border-dashed p-8 text-center text-sm text-zinc-500">
+          <p className="mt-6 rounded-2xl border border-dashed border-card-border p-8 text-center text-sm text-muted">
             Niciun cabinet veterinar înregistrat încă.
           </p>
         )}

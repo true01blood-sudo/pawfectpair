@@ -43,11 +43,11 @@ export default async function ForumPage({
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <Link href="/forum" className={`flex min-h-11 items-center rounded-full border px-4 text-sm ${!categorie ? "border-primary bg-primary text-white" : "text-zinc-600"}`}>
+          <Link href="/forum" className={`flex min-h-11 items-center rounded-full border px-4 text-sm ${!categorie ? "border-primary bg-primary text-white" : "text-muted border-card-border"}`}>
             Toate
           </Link>
           {categories.map((c) => (
-            <Link key={c} href={`/forum?categorie=${encodeURIComponent(c)}`} className={`flex min-h-11 items-center rounded-full border px-4 text-sm ${categorie === c ? "border-primary bg-primary text-white" : "text-zinc-600"}`}>
+            <Link key={c} href={`/forum?categorie=${encodeURIComponent(c)}`} className={`flex min-h-11 items-center rounded-full border px-4 text-sm ${categorie === c ? "border-primary bg-primary text-white" : "text-muted border-card-border"}`}>
               {c}
             </Link>
           ))}
@@ -57,19 +57,19 @@ export default async function ForumPage({
           <ul className="mt-6 flex flex-col gap-3">
             {(posts as unknown as PostRow[]).map((p) => (
               <li key={p.id}>
-                <Link href={`/forum/${p.id}`} className="card-hover block rounded-2xl border p-4 shadow-sm hover:border-primary">
+                <Link href={`/forum/${p.id}`} className="card-hover block rounded-2xl border border-card-border bg-card p-4 shadow-sm hover:border-primary">
                   {p.category && (
                     <span className="text-xs font-semibold uppercase tracking-wide text-primary">{p.category}</span>
                   )}
                   <p className="mt-1 font-semibold">{p.title}</p>
-                  <p className="mt-1 line-clamp-2 text-sm text-zinc-600">{p.body}</p>
-                  <p className="mt-2 text-xs text-zinc-400">{p.profiles?.full_name || "Utilizator"}</p>
+                  <p className="mt-1 line-clamp-2 text-sm text-muted">{p.body}</p>
+                  <p className="mt-2 text-xs text-muted opacity-70">{p.profiles?.full_name || "Utilizator"}</p>
                 </Link>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="mt-6 rounded-2xl border border-dashed p-8 text-center text-sm text-zinc-500">
+          <p className="mt-6 rounded-2xl border border-dashed border-card-border p-8 text-center text-sm text-muted">
             Nicio postare încă. Fii primul care întreabă sau împărtășește ceva!
           </p>
         )}

@@ -50,7 +50,7 @@ export default async function AdoptiiPage({
                 key={s}
                 href={s === "Toate" ? "/adoptii" : `/adoptii?specie=${encodeURIComponent(s)}`}
                 className={`flex min-h-11 items-center rounded-full border px-4 text-sm ${
-                  active ? "border-primary bg-primary text-white" : "text-zinc-600"
+                  active ? "border-primary bg-primary text-white" : "text-muted border-card-border"
                 }`}
               >
                 {s}
@@ -65,7 +65,7 @@ export default async function AdoptiiPage({
               <Link
                 key={pet.id}
                 href={`/adoptii/${pet.id}`}
-                className="card-hover rounded-2xl border p-3 shadow-sm hover:border-primary"
+                className="card-hover rounded-2xl border border-card-border bg-card p-3 shadow-sm hover:border-primary"
               >
                 {pet.photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -74,7 +74,7 @@ export default async function AdoptiiPage({
                   <PetPlaceholder className="mb-2 aspect-square w-full rounded-xl" />
                 )}
                 <p className="truncate font-medium">{pet.name}</p>
-                <p className="truncate text-xs text-zinc-500">
+                <p className="truncate text-xs text-muted">
                   {pet.breed || pet.species}
                   {pet.age_years ? ` · ${pet.age_years} ani` : ""}
                   {pet.city ? ` · ${pet.city}` : ""}
@@ -83,7 +83,7 @@ export default async function AdoptiiPage({
             ))}
           </div>
         ) : (
-          <p className="mt-6 rounded-2xl border border-dashed p-8 text-center text-sm text-zinc-500">
+          <p className="mt-6 rounded-2xl border border-dashed border-card-border p-8 text-center text-sm text-muted">
             Nu există anunțuri pentru acest filtru.
           </p>
         )}

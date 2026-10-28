@@ -31,7 +31,7 @@ export default async function ComunitatePage({
         <main
         className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
           <PageBanner src="/images/pexels-comunitate.jpg" alt="Câine și pisică prieteni" title="Comunitate" subtitle="PetMatch — găsește companioni pentru animalul tău" />
-          <p className="mt-4 text-sm text-zinc-600">
+          <p className="mt-4 text-sm text-muted">
             Adaugă mai întâi un animal în{" "}
             <Link href="/profil" className="text-primary underline">profilul tău</Link>{" "}
             pentru a începe să faci PetMatch.
@@ -101,7 +101,7 @@ export default async function ComunitatePage({
                 key={p.id}
                 href={buildHref({ specie, sex })}
                 className={`flex min-h-11 items-center rounded-full border px-4 text-sm ${
-                  p.id === activePetId ? "border-primary bg-primary text-white" : "text-zinc-600"
+                  p.id === activePetId ? "border-primary bg-primary text-white" : "text-muted border-card-border"
                 }`}
               >
                 {p.name}
@@ -137,7 +137,7 @@ export default async function ComunitatePage({
 
         <div className="mt-6">
           {candidate ? (
-            <div className="rounded-2xl border p-4">
+            <div className="rounded-2xl border border-card-border bg-card p-4">
               {candidate.photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={candidate.photo_url} alt={candidate.name} className="aspect-square w-full rounded-xl object-cover" />
@@ -145,7 +145,7 @@ export default async function ComunitatePage({
                 <PetPlaceholder className="aspect-square w-full rounded-xl" />
               )}
               <p className="mt-3 text-lg font-semibold">{candidate.name}</p>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-muted">
                 {candidate.breed || candidate.species}
                 {candidate.sex === "male" ? " · mascul" : candidate.sex === "female" ? " · femelă" : ""}
               </p>
@@ -164,7 +164,7 @@ export default async function ComunitatePage({
               </div>
             </div>
           ) : (
-            <p className="rounded-2xl border border-dashed p-8 text-center text-sm text-zinc-500">
+            <p className="rounded-2xl border border-dashed border-card-border p-8 text-center text-sm text-muted">
               Nu mai sunt animale noi de descoperit pentru acest filtru. Încearcă alte criterii sau revino mai
               târziu!
             </p>

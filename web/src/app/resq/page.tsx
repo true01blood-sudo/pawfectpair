@@ -37,13 +37,13 @@ export default async function ResqPage({
         </div>
 
         <div className="mt-4 flex gap-2">
-          <Link href="/resq" className={`flex min-h-11 items-center rounded-full border px-4 text-sm ${!tip ? "border-primary bg-primary text-white" : "text-zinc-600"}`}>
+          <Link href="/resq" className={`flex min-h-11 items-center rounded-full border px-4 text-sm ${!tip ? "border-primary bg-primary text-white" : "text-muted border-card-border"}`}>
             Toate
           </Link>
-          <Link href="/resq?tip=lost" className={`flex min-h-11 items-center rounded-full border px-4 text-sm ${tip === "lost" ? "border-primary bg-primary text-white" : "text-zinc-600"}`}>
+          <Link href="/resq?tip=lost" className={`flex min-h-11 items-center rounded-full border px-4 text-sm ${tip === "lost" ? "border-primary bg-primary text-white" : "text-muted border-card-border"}`}>
             Pierdute
           </Link>
-          <Link href="/resq?tip=found" className={`flex min-h-11 items-center rounded-full border px-4 text-sm ${tip === "found" ? "border-primary bg-primary text-white" : "text-zinc-600"}`}>
+          <Link href="/resq?tip=found" className={`flex min-h-11 items-center rounded-full border px-4 text-sm ${tip === "found" ? "border-primary bg-primary text-white" : "text-muted border-card-border"}`}>
             Găsite
           </Link>
         </div>
@@ -51,7 +51,7 @@ export default async function ResqPage({
         {cases && cases.length > 0 ? (
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {cases.map((c) => (
-              <Link key={c.id} href={`/resq/${c.id}`} className="card-hover rounded-2xl border p-3 shadow-sm hover:border-primary">
+              <Link key={c.id} href={`/resq/${c.id}`} className="card-hover rounded-2xl border border-card-border bg-card p-3 shadow-sm hover:border-primary">
                 {c.photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={c.photo_url} alt={c.name} className="mb-2 aspect-square w-full rounded-xl object-cover" />
@@ -62,12 +62,12 @@ export default async function ResqPage({
                   {c.type === "lost" ? "PIERDUT" : "GĂSIT"}
                 </span>
                 <p className="truncate font-medium">{c.name}</p>
-                <p className="truncate text-xs text-zinc-500">{c.species} · {c.city}</p>
+                <p className="truncate text-xs text-muted">{c.species} · {c.city}</p>
               </Link>
             ))}
           </div>
         ) : (
-          <p className="mt-6 rounded-2xl border border-dashed p-8 text-center text-sm text-zinc-500">
+          <p className="mt-6 rounded-2xl border border-dashed border-card-border p-8 text-center text-sm text-muted">
             Niciun caz activ momentan.
           </p>
         )}
