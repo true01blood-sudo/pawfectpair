@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -29,20 +29,19 @@ const LOCALES: { code: Locale; label: string }[] = [
 function LanguageSwitcher() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [current, setCurrent] = useState<Locale>("ro");
 
-  function getCurrent(): Locale {
-    if (typeof document === "undefined") return "ro";
+  useEffect(() => {
     const match = document.cookie.match(/(?:^|;\s*)locale=([^;]+)/);
-    return (match?.[1] as Locale) ?? "ro";
-  }
+    setCurrent((match?.[1] as Locale) ?? "ro");
+  }, []);
 
   function setLocale(code: Locale) {
     document.cookie = `locale=${code}; path=/; max-age=31536000; SameSite=Lax`;
+    setCurrent(code);
     setOpen(false);
     router.refresh();
   }
-
-  const current = getCurrent();
 
   return (
     <div className="relative">
