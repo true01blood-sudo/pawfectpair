@@ -4,62 +4,55 @@ import { useState } from "react";
 
 type Tab = "following" | "foryou" | "local";
 
+export type SocialPost = {
+  id: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar: string | null;
+  authorRole: string;
+  authorVerified: boolean;
+  postType: string;
+  title: string;
+  body: string;
+  mediaUrl: string | null;
+  mediaType: string | null;
+  videoDuration: string | null;
+  location: string | null;
+  createdAt: string;
+  reactionCounts: { heart: number; thumbup: number; smile: number };
+  commentCount: number;
+};
+
 type Props = {
   userName: string;
   avatarUrl?: string | null;
+  initialPosts?: SocialPost[];
 };
 
-const SAMPLE_POSTS = [
-  {
-    id: "1",
-    avatarUrl: null as string | null,
-    avatarEmoji: "👩‍⚕️",
-    author: "Dr. Maya",
-    badge: "Veterinarian",
-    badgeColor: "#16a34a",
-    verified: true,
-    time: "2h ago",
-    location: "Lugano",
-    visibility: "public",
-    title: "A calmer vet visit starts at home",
-    subtitle: "Simple, positive training steps can make a big difference for your pet's wellbeing.",
-    imageUrl: null as string | null,
-    hasVideo: true,
-    videoDuration: "4:32",
-    reactions: { heart: true, thumbUp: false, smile: false, count: 248 },
-    comments: 42,
-    shares: 18,
-    ctaPrimary: "Save lesson",
-    ctaSecondary: "View professional",
-  },
-  {
-    id: "2",
-    avatarUrl: null as string | null,
-    avatarEmoji: "👩",
-    author: "Lara & Max",
-    badge: null as string | null,
-    badgeColor: "",
-    verified: false,
-    time: "5h ago",
-    location: "Parco Ciani, Lugano",
-    visibility: "public",
-    title: "Perfect morning at the lake 🧡",
-    subtitle: "Nothing beats fresh air, good company and happy dogs! 🐾",
-    imageUrl: null as string | null,
-    hasVideo: false,
-    videoDuration: "",
-    reactions: { heart: false, thumbUp: true, smile: true, count: 91 },
-    comments: 14,
-    shares: 6,
-    ctaPrimary: null as string | null,
-    ctaSecondary: null as string | null,
-  },
-];
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  return `${Math.floor(hrs / 24)}z`;
+}
 
-function PostCard({ post }: { post: typeof SAMPLE_POSTS[0] }) {
+function roleBadge(role: string): { label: string; color: string } | null {
+  if (role === "vet") return { label: "Veterinar", color: "#16a34a" };
+  if (role === "shelter") return { label: "Adăpost", color: "#2563eb" };
+  if (role === "admin") return { label: "Admin", color: "#7c3aed" };
+  return null;
+}
+
+function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: string }) {
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(post.reactionCounts.heart);
   const [saved, setSaved] = useState(false);
-  const [liked, setLiked] = useState(post.reactions.heart);
-  const [likeCount, setLikeCount] = useState(post.reactions.count);
+
+  const badge = roleBadge(post.authorRole);
+  const timeLabel = post.createdAt ? timeAgo(post.createdAt) : "";
+  const hasVideo = post.mediaType === "video";
 
   return (
     <article
@@ -71,35 +64,42 @@ function PostCard({ post }: { post: typeof SAMPLE_POSTS[0] }) {
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2.5">
             <div
-              className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center text-lg"
+              className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center text-lg overflow-hidden"
               style={{ background: "#fff7ed" }}
             >
-              {post.avatarEmoji}
+              {post.authorAvatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={post.authorAvatar} alt={post.authorName} className="h-10 w-10 object-cover rounded-full" />
+              ) : (
+                <span className="text-base font-bold" style={{ color: "var(--primary)" }}>
+                  {post.authorName.charAt(0).toUpperCase()}
+                </span>
+              )}
             </div>
             <div>
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="font-semibold text-sm" style={{ color: "var(--foreground)" }}>
-                  {post.author}
+                  {post.authorName}
                 </span>
-                {post.verified && (
+                {post.authorVerified && (
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--primary)">
                     <path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
                   </svg>
                 )}
-                {post.badge && (
+                {badge && (
                   <span
                     className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold"
                     style={{
-                      background: `color-mix(in srgb, ${post.badgeColor} 12%, transparent)`,
-                      color: post.badgeColor,
+                      background: `color-mix(in srgb, ${badge.color} 12%, transparent)`,
+                      color: badge.color,
                     }}
                   >
-                    🐾 {post.badge}
+                    🐾 {badge.label}
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-1 text-xs mt-0.5" style={{ color: "var(--muted)" }}>
-                <span>{post.time}</span>
+                {timeLabel && <span>{timeLabel}</span>}
                 {post.location && (
                   <>
                     <span>·</span>
@@ -108,86 +108,93 @@ function PostCard({ post }: { post: typeof SAMPLE_POSTS[0] }) {
                 )}
                 <span>·</span>
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
                 </svg>
               </div>
             </div>
           </div>
           <button type="button" className="p-1 rounded-full hover:bg-primary/10 transition-colors" style={{ color: "var(--muted)" }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="5" r="1.5"/>
+              <circle cx="12" cy="12" r="1.5"/>
+              <circle cx="12" cy="19" r="1.5"/>
+            </svg>
           </button>
         </div>
 
         {/* Title + body */}
         <div className="mt-3">
-          <h3 className="font-bold text-base leading-snug" style={{ color: "var(--foreground)" }}>
-            {post.title}
-          </h3>
-          <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            {post.subtitle}
+          {post.title && (
+            <h3 className="font-bold text-base leading-snug" style={{ color: "var(--foreground)" }}>
+              {post.title}
+            </h3>
+          )}
+          <p className="mt-1 text-sm leading-relaxed" style={{ color: post.title ? "var(--muted)" : "var(--foreground)" }}>
+            {post.body}
           </p>
         </div>
       </div>
 
-      {/* Image/video placeholder */}
-      {(post.imageUrl || post.hasVideo) && (
+      {/* Media */}
+      {(post.mediaUrl || hasVideo) && (
         <div
           className="relative mx-4 mb-3 rounded-xl overflow-hidden"
           style={{ background: "linear-gradient(135deg, #e8f4ea 0%, #c8ddc9 100%)", aspectRatio: "16/9" }}
         >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-7xl opacity-40">🐕</div>
-          </div>
-          {post.hasVideo && (
+          {post.mediaUrl && post.mediaType === "image" ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={post.mediaUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-7xl opacity-40">🐕</div>
+            </div>
+          )}
+          {hasVideo && (
             <>
-              <button
-                type="button"
-                className="absolute inset-0 flex items-center justify-center"
-              >
+              <button type="button" className="absolute inset-0 flex items-center justify-center">
                 <div className="h-14 w-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg hover:scale-105 transition-transform">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--primary)">
                     <polygon points="5 3 19 12 5 21 5 3"/>
                   </svg>
                 </div>
               </button>
-              <span
-                className="absolute bottom-2 right-2 rounded-md px-2 py-0.5 text-xs font-bold text-white"
-                style={{ background: "rgba(0,0,0,0.7)" }}
-              >
-                {post.videoDuration}
-              </span>
+              {post.videoDuration && (
+                <span
+                  className="absolute bottom-2 right-2 rounded-md px-2 py-0.5 text-xs font-bold text-white"
+                  style={{ background: "rgba(0,0,0,0.7)" }}
+                >
+                  {post.videoDuration}
+                </span>
+              )}
             </>
           )}
         </div>
       )}
 
       <div className="px-4 pb-4">
-        {/* Reactions row */}
+        {/* Reaction counts */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="flex -space-x-1">
-              {[
-                { emoji: "❤️", active: liked },
-                { emoji: "👍", active: post.reactions.thumbUp },
-                { emoji: "😊", active: post.reactions.smile },
-              ].filter((r) => r.active).map((r, i) => (
-                <span key={i} className="text-sm">{r.emoji}</span>
-              ))}
-              {!liked && !post.reactions.thumbUp && !post.reactions.smile && (
+            <div className="flex -space-x-0.5">
+              {(liked || post.reactionCounts.heart > 0) && <span className="text-sm">❤️</span>}
+              {post.reactionCounts.thumbup > 0 && <span className="text-sm">👍</span>}
+              {post.reactionCounts.smile > 0 && <span className="text-sm">😊</span>}
+              {!liked && post.reactionCounts.heart === 0 && post.reactionCounts.thumbup === 0 && post.reactionCounts.smile === 0 && (
                 <span className="text-sm">👍</span>
               )}
             </div>
             <span className="text-xs" style={{ color: "var(--muted)" }}>
-              {likeCount}
+              {likeCount + post.reactionCounts.thumbup + post.reactionCounts.smile}
             </span>
           </div>
           <div className="flex items-center gap-3 text-xs" style={{ color: "var(--muted)" }}>
-            <span>{post.comments} comments</span>
-            <span>{post.shares} shares</span>
+            {post.commentCount > 0 && <span>{post.commentCount} comentarii</span>}
           </div>
         </div>
 
-        {/* Action buttons */}
+        {/* Actions */}
         <div className="flex items-center gap-2 pt-2 border-t" style={{ borderColor: "var(--card-border)" }}>
           <button
             type="button"
@@ -213,7 +220,7 @@ function PostCard({ post }: { post: typeof SAMPLE_POSTS[0] }) {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
-            Comment
+            Comentariu
           </button>
           <button
             type="button"
@@ -229,8 +236,8 @@ function PostCard({ post }: { post: typeof SAMPLE_POSTS[0] }) {
           </button>
         </div>
 
-        {/* CTAs */}
-        {post.ctaPrimary && (
+        {/* Save CTA for lesson type */}
+        {post.postType === "lesson" && (
           <div className="flex gap-2 mt-3">
             <button
               type="button"
@@ -245,20 +252,19 @@ function PostCard({ post }: { post: typeof SAMPLE_POSTS[0] }) {
               <svg width="14" height="14" viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
                 <path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
               </svg>
-              {post.ctaPrimary}
+              {saved ? "Salvat" : "Salvează lecția"}
             </button>
-            {post.ctaSecondary && (
-              <button
-                type="button"
-                className="flex flex-1 items-center justify-center gap-2 rounded-full py-2.5 text-sm font-medium transition-colors hover:border-primary/40 hover:text-primary"
-                style={{ border: "1.5px solid var(--card-border)", color: "var(--foreground)" }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                </svg>
-                {post.ctaSecondary}
-              </button>
-            )}
+            <button
+              type="button"
+              className="flex flex-1 items-center justify-center gap-2 rounded-full py-2.5 text-sm font-medium transition-colors hover:border-primary/40 hover:text-primary"
+              style={{ border: "1.5px solid var(--card-border)", color: "var(--foreground)" }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              Vezi profesionistul
+            </button>
           </div>
         )}
       </div>
@@ -266,11 +272,52 @@ function PostCard({ post }: { post: typeof SAMPLE_POSTS[0] }) {
   );
 }
 
-export default function SocialFeed({ userName, avatarUrl }: Props) {
+// ── Sample fallback posts (shown when DB has no posts yet) ──
+const SAMPLE_POSTS: SocialPost[] = [
+  {
+    id: "sample-1",
+    authorId: "",
+    authorName: "Dr. Maya",
+    authorAvatar: null,
+    authorRole: "vet",
+    authorVerified: true,
+    postType: "lesson",
+    title: "O vizită la vet mai calmă începe acasă",
+    body: "Pași simpli de antrenament pozitiv care pot face o mare diferență pentru bunăstarea animalului tău.",
+    mediaUrl: null,
+    mediaType: "video",
+    videoDuration: "4:32",
+    location: "Cluj-Napoca",
+    createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+    reactionCounts: { heart: 248, thumbup: 0, smile: 0 },
+    commentCount: 42,
+  },
+  {
+    id: "sample-2",
+    authorId: "",
+    authorName: "Lara & Max",
+    authorAvatar: null,
+    authorRole: "user",
+    authorVerified: false,
+    postType: "photo",
+    title: "",
+    body: "Dimineață perfectă la lac 🧡 Nimic nu bate aerul proaspăt, compania bună și câinii fericiți! 🐾",
+    mediaUrl: null,
+    mediaType: null,
+    videoDuration: null,
+    location: "Parcul Cișmigiu",
+    createdAt: new Date(Date.now() - 5 * 3600000).toISOString(),
+    reactionCounts: { heart: 0, thumbup: 91, smile: 12 },
+    commentCount: 14,
+  },
+];
+
+export default function SocialFeed({ userName, avatarUrl, initialPosts }: Props) {
   const [tab, setTab] = useState<Tab>("following");
   const [composerText, setComposerText] = useState("");
 
   const initials = userName ? userName.charAt(0).toUpperCase() : "U";
+  const posts = (initialPosts && initialPosts.length > 0) ? initialPosts : SAMPLE_POSTS;
 
   return (
     <div className="max-w-2xl mx-auto px-3 py-4 space-y-3">
@@ -298,7 +345,9 @@ export default function SocialFeed({ userName, avatarUrl }: Props) {
             >
               {labels[t]}
               {t === "local" && (
-                <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><path d="M5 7 1 3h8z"/></svg>
+                <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor">
+                  <path d="M5 7 1 3h8z"/>
+                </svg>
               )}
             </button>
           );
@@ -309,9 +358,11 @@ export default function SocialFeed({ userName, avatarUrl }: Props) {
           style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+            <line x1="4" y1="6" x2="20" y2="6"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+            <line x1="11" y1="18" x2="13" y2="18"/>
           </svg>
-          Filter
+          Filtre
         </button>
       </div>
 
@@ -334,7 +385,7 @@ export default function SocialFeed({ userName, avatarUrl }: Props) {
             type="text"
             value={composerText}
             onChange={(e) => setComposerText(e.target.value)}
-            placeholder="Share a moment, ask a question or give a tip..."
+            placeholder="Împărtășește un moment, pune o întrebare sau dă un sfat..."
             className="flex-1 rounded-full border px-4 py-2 text-sm outline-none transition-colors focus:border-primary"
             style={{
               background: "var(--surface)",
@@ -345,10 +396,47 @@ export default function SocialFeed({ userName, avatarUrl }: Props) {
         </div>
         <div className="flex items-center gap-1 border-t pt-3" style={{ borderColor: "var(--card-border)" }}>
           {[
-            { icon: <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></>, label: "Photo/Video" },
-            { icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>, label: "Ask" },
-            { icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>, label: "Poll" },
-            { icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, label: "Event" },
+            {
+              label: "Foto/Video",
+              icon: (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+              ),
+            },
+            {
+              label: "Întreabă",
+              icon: (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              ),
+            },
+            {
+              label: "Sondaj",
+              icon: (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="20" x2="18" y2="10"/>
+                  <line x1="12" y1="20" x2="12" y2="4"/>
+                  <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+              ),
+            },
+            {
+              label: "Event",
+              icon: (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+              ),
+            },
           ].map((a) => (
             <button
               key={a.label}
@@ -366,7 +454,7 @@ export default function SocialFeed({ userName, avatarUrl }: Props) {
       {/* Feed */}
       {(tab === "following" || tab === "foryou") && (
         <>
-          {SAMPLE_POSTS.map((post) => (
+          {posts.map((post) => (
             <PostCard key={post.id} post={post} />
           ))}
         </>

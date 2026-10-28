@@ -47,11 +47,78 @@ export default async function Home() {
   if (user) {
     const userName = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? "tu";
     const avatarUrl = (user.user_metadata?.avatar_url as string | undefined) ?? null;
+
+    // Fetch social posts with author profile
+    const { data: rawPosts } = await supabase
+      .from("social_posts")
+      .select(`
+        id, post_type, title, body, media_url, media_type, video_duration, location, created_at,
+        author:profiles!author_id (id, full_name, avatar_url, role, is_verified)
+      `)
+      .eq("is_public", true)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    // Fetch reaction counts for fetched posts
+    const postIds = (rawPosts ?? []).map((p) => p.id as string);
+    const { data: reactions } = postIds.length
+      ? await supabase
+          .from("social_post_reactions")
+          .select("post_id, reaction")
+          .in("post_id", postIds)
+      : { data: [] };
+
+    // Fetch comment counts
+    const { data: commentRows } = postIds.length
+      ? await supabase
+          .from("social_post_comments")
+          .select("post_id")
+          .in("post_id", postIds)
+      : { data: [] };
+
+    // Aggregate counts
+    const reactionMap: Record<string, Record<string, number>> = {};
+    for (const r of reactions ?? []) {
+      const pid = r.post_id as string;
+      const rtype = r.reaction as string;
+      if (!reactionMap[pid]) reactionMap[pid] = {};
+      reactionMap[pid][rtype] = (reactionMap[pid][rtype] ?? 0) + 1;
+    }
+    const commentMap: Record<string, number> = {};
+    for (const c of commentRows ?? []) {
+      const pid = c.post_id as string;
+      commentMap[pid] = (commentMap[pid] ?? 0) + 1;
+    }
+
+    type AuthorRow = { id: string; full_name: string | null; avatar_url: string | null; role: string; is_verified: boolean | null };
+    const dbPosts = (rawPosts ?? []).map((p) => {
+      const author = (Array.isArray(p.author) ? p.author[0] : p.author) as AuthorRow | null;
+      const rc = reactionMap[p.id as string] ?? {};
+      return {
+        id: p.id as string,
+        authorId: author?.id ?? "",
+        authorName: author?.full_name ?? "Utilizator",
+        authorAvatar: author?.avatar_url ?? null,
+        authorRole: author?.role ?? "user",
+        authorVerified: author?.is_verified ?? false,
+        postType: (p.post_type ?? "tip") as string,
+        title: (p.title ?? "") as string,
+        body: (p.body ?? "") as string,
+        mediaUrl: (p.media_url ?? null) as string | null,
+        mediaType: (p.media_type ?? null) as string | null,
+        videoDuration: (p.video_duration ?? null) as string | null,
+        location: (p.location ?? null) as string | null,
+        createdAt: (p.created_at ?? "") as string,
+        reactionCounts: { heart: rc.heart ?? 0, thumbup: rc.thumbup ?? 0, smile: rc.smile ?? 0 },
+        commentCount: commentMap[p.id as string] ?? 0,
+      };
+    });
+
     return (
       <>
         <AppShell mainClassName="overflow-hidden">
           <main className="flex-1 overflow-y-auto min-h-0 pb-24 md:pb-0">
-            <SocialFeed userName={userName} avatarUrl={avatarUrl} />
+            <SocialFeed userName={userName} avatarUrl={avatarUrl} initialPosts={dbPosts} />
           </main>
         </AppShell>
         <BottomNav />
