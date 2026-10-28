@@ -200,6 +200,13 @@ export default async function AsigurarePage() {
 
                     <div className="mt-3 flex gap-2">
                       <Link
+                        href={`/asigurare/${policy.id}`}
+                        className="flex-1 flex items-center justify-center rounded-xl border py-2 text-xs font-medium transition-colors hover:border-primary hover:text-primary"
+                        style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
+                      >
+                        🔍 Detalii poliță
+                      </Link>
+                      <Link
                         href={`/asigurare/dauna/${policy.id}`}
                         className="flex-1 flex items-center justify-center rounded-xl border py-2 text-xs font-medium transition-colors hover:border-primary hover:text-primary"
                         style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
