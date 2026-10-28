@@ -37,7 +37,7 @@
     },
     "android": {
       "package": "app.pawfectpair.mobile",
-      "versionCode": 12,
+      "versionCode": 14,
       "targetSdkVersion": 36,
       "compileSdkVersion": 36,
       "config": {

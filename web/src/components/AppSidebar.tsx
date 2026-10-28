@@ -96,6 +96,7 @@ const NAV_ITEMS = [
   { href: "/animale", label: "Animalele mele", Icon: PetsIcon },
 ];
 
+
 const SHORTCUTS = [
   { href: "/educatie", label: "Educație", Icon: LearnIcon },
   { href: "/magazin", label: "Magazin", Icon: ShopIcon },

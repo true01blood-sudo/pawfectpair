@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import AppShell from "@/components/AppShell";
 import BottomNav from "@/components/BottomNav";
 import { sendContactMessage } from "./actions";
 
@@ -17,8 +16,7 @@ export default async function ContactPage({
 
   return (
     <>
-      <AppShell>
-        <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6 pb-24 md:pb-8">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6 pb-24 md:pb-8">
           <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--foreground)" }}>Contact</h1>
           <p className="text-sm mb-8" style={{ color: "var(--muted)" }}>
             Ai o întrebare, o problemă sau o sugestie? Suntem aici să te ajutăm.
@@ -138,7 +136,7 @@ export default async function ContactPage({
             </form>
           )}
         </main>
-      </AppShell>
+      </main>
       <BottomNav />
     </>
   );

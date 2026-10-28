@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable, Alert, KeyboardAvoidingView, Platform,
 } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -95,7 +96,7 @@ export default function LoginScreen() {
           <View style={styles.oauthRow}>
             <Button title="Google" variant="outline" onPress={() => handleOAuth('google')} leftIcon={<Text style={{ fontSize: 18 }}>G</Text>} style={{ flex: 1 }} />
             <Button title="Facebook" variant="outline" onPress={() => handleOAuth('facebook')} leftIcon={<Text style={{ fontSize: 18 }}>f</Text>} style={{ flex: 1 }} />
-            <Button title="Apple" variant="outline" onPress={() => handleOAuth('apple')} leftIcon={<Text style={{ fontSize: 18 }}>🍎</Text>} style={{ flex: 1 }} />
+            <Button title="Apple" variant="outline" onPress={() => handleOAuth('apple')} leftIcon={<Svg width={18} height={18} viewBox="0 0 814 1000"><Path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-42.4-150.9-110c-43.7-64.7-67.2-168.1-67.2-266.6 0-176.3 114.5-269 227.1-269 59.2 0 108.2 39.5 145.5 39.5 35.8 0 91.3-41.3 158-41.3 25.2 0 108.2 2.6 168.9 81zm-56.9-191.7c-28.5 34.2-78 60.2-118.8 60.2-5.2 0-10.3-.6-15.5-1.3C601 171 647 94.3 647 48.6c0-2.6 0-5.2-.6-7.8C599.5 42.5 549.5 77.4 520.3 113.3c-27.3 33-46.8 82.6-46.8 128.4 0 6.5 1.3 12.9 1.9 15.5 3.2.6 8.4 1.3 13.6 1.3 44.2 0 92.3-32.4 117.9-64.7z" fill="currentColor"/></Svg>} style={{ flex: 1 }} />
           </View>
 
           <View style={styles.footer}>
