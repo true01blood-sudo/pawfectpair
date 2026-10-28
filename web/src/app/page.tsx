@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
 import { getT, type Locale } from "@/lib/i18n";
-import AppSidebar from "@/components/AppSidebar";
+import AppShell from "@/components/AppShell";
 import SocialFeed from "@/components/SocialFeed";
 import HomePetWidget from "@/components/HomePetWidget";
 
@@ -75,18 +75,19 @@ export default async function Home() {
     const avatarUrl = (user.user_metadata?.avatar_url as string | undefined) ?? null;
     return (
       <>
-        <div className="h-full flex overflow-hidden">
-          <AppSidebar />
-          <main className="flex-1 overflow-y-auto min-h-0">
-            <SocialFeed userName={userName} avatarUrl={avatarUrl} />
-          </main>
-          <aside
-            className="w-72 shrink-0 hidden xl:block overflow-y-auto border-l"
-            style={{ borderColor: "var(--card-border)" }}
-          >
-            <HomePetWidget pet={petProfile} nextAppointment={nextAppointment} userName={userName} />
-          </aside>
-        </div>
+        <AppShell mainClassName="overflow-hidden">
+          <div className="flex flex-1 overflow-hidden min-h-0">
+            <main className="flex-1 overflow-y-auto min-h-0 pb-24 md:pb-0">
+              <SocialFeed userName={userName} avatarUrl={avatarUrl} />
+            </main>
+            <aside
+              className="w-80 shrink-0 hidden xl:flex xl:flex-col overflow-y-auto border-l"
+              style={{ borderColor: "var(--card-border)" }}
+            >
+              <HomePetWidget pet={petProfile} nextAppointment={nextAppointment} userName={userName} />
+            </aside>
+          </div>
+        </AppShell>
         <BottomNav />
       </>
     );

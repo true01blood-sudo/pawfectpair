@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useTheme } from "@/components/ThemeProvider";
 
 function HomeIcon({ active }: { active: boolean }) {
   return (
@@ -76,8 +74,7 @@ function ShopIcon() {
 function BreedingIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
     </svg>
   );
 }
@@ -100,37 +97,22 @@ const NAV_ITEMS = [
 ];
 
 const SHORTCUTS = [
-  { href: "/sanatate", label: "Sănătate", Icon: LearnIcon },
+  { href: "/educatie", label: "Educație", Icon: LearnIcon },
   { href: "/magazin", label: "Magazin", Icon: ShopIcon },
   { href: "/reproductie", label: "Reproducție", Icon: BreedingIcon },
-  { href: "/asigurare", label: "Asigurare", Icon: AdoptionIcon },
+  { href: "/adoptii", label: "Adopții", Icon: AdoptionIcon },
 ];
 
 export default function AppSidebar() {
   const pathname = usePathname();
-  const { theme } = useTheme();
 
   return (
     <aside
       className="hidden md:flex flex-col w-56 shrink-0 h-full overflow-y-auto border-r"
       style={{ background: "var(--background)", borderColor: "var(--card-border)" }}
     >
-      {/* Logo */}
-      <div className="px-4 pt-5 pb-4 shrink-0">
-        <Link href="/">
-          <Image
-            src={theme === "dark" ? "/logo.png" : "/logo-white.png"}
-            alt="PetCare Services"
-            width={160}
-            height={52}
-            style={{ width: "auto", height: 38 }}
-            priority
-          />
-        </Link>
-      </div>
-
       {/* Main nav */}
-      <nav className="flex flex-col px-2 gap-0.5 shrink-0">
+      <nav className="flex flex-col px-2 gap-0.5 shrink-0 pt-3">
         {NAV_ITEMS.map((item) => {
           const active =
             item.href === "/"
