@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { CartProvider } from "@/components/CartContext";
 import { createClient } from "@/lib/supabase/server";
+import { ANDROID_APP_URL_CANONICAL } from "@/lib/appLinks";
 import "./globals.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -185,9 +186,7 @@ const jsonLd = {
         width: 512,
         height: 512,
       },
-      sameAs: [
-        "https://play.google.com/store/apps/details?id=app.pawfectpair.mobile",
-      ],
+      sameAs: [ANDROID_APP_URL_CANONICAL],
       contactPoint: {
         "@type": "ContactPoint",
         contactType: "customer support",
@@ -205,7 +204,7 @@ const jsonLd = {
         price: "0",
         priceCurrency: "RON",
       },
-      url: "https://play.google.com/store/apps/details?id=app.pawfectpair.mobile",
+      url: ANDROID_APP_URL_CANONICAL,
     },
   ],
 };

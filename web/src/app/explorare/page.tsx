@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import AppShell from "@/components/AppShell";
+import { ANDROID_APP_URL } from "@/lib/appLinks";
 
 export const metadata: Metadata = {
   title: "Explorare — PetCare",
@@ -359,7 +360,7 @@ export default async function ExplorePage({
             </p>
           </div>
           <Link
-            href="https://play.google.com/store/apps/details?id=app.pawfectpair.mobile"
+            href={ANDROID_APP_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="shrink-0 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-white"

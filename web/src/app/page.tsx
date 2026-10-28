@@ -6,6 +6,7 @@ import { PetPlaceholder } from "@/components/PawPlaceholder";
 import { getT, type Locale } from "@/lib/i18n";
 import AppShell from "@/components/AppShell";
 import SocialFeed from "@/components/SocialFeed";
+import { ANDROID_APP_URL } from "@/lib/appLinks";
 
 const CATEGORY_HREFS = ["/veterinari", "/adoptii", "/magazin", "/sos", "/educatie", "/comunitate", "/resq", "/sos"];
 const CATEGORY_EMOJIS = ["🩺", "🐾", "🛒", "📍", "🏋️", "💬", "🔍", "🚨"];
@@ -170,7 +171,7 @@ export default async function Home() {
                 {/* CTAs */}
                 <div className="mt-4 flex flex-wrap gap-3">
                   <a
-                    href="https://play.google.com/store/apps/details?id=app.pawfectpair.mobile"
+                    href={ANDROID_APP_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-bold text-white hover:opacity-90 transition-opacity"
@@ -477,7 +478,7 @@ export default async function Home() {
             <h2 className="font-heading mt-4 text-2xl font-bold text-dark sm:text-3xl">{t.download.title}</h2>
             <p className="mt-2 text-zinc-500">{t.download.subtitle}</p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              <a href="https://play.google.com/store/apps/details?id=app.pawfectpair.mobile" target="_blank" rel="noopener noreferrer"
+              <a href={ANDROID_APP_URL} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold text-white hover:opacity-90 transition-opacity"
                 style={{ background: "#111827" }}>
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">

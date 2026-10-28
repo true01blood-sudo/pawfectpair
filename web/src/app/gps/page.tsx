@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import AppShell from "@/components/AppShell";
+import { ANDROID_APP_URL } from "@/lib/appLinks";
 
 export const metadata: Metadata = {
   title: "PetGuardian — GPS & Siguranță",
@@ -180,7 +181,7 @@ export default async function GpsPage() {
               <p className="font-bold text-sm" style={{ color: "#0369a1" }}>Hartă GPS interactivă</p>
               <p className="text-xs" style={{ color: "#0284c7" }}>Disponibilă în aplicația mobilă</p>
               <Link
-                href="https://play.google.com/store/apps/details?id=app.pawfectpair.mobile"
+                href={ANDROID_APP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-3 rounded-full px-4 py-1.5 text-xs font-bold"
