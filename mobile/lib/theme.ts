@@ -55,6 +55,7 @@ export interface AppTheme {
   typography: {
     fontFamilyRegular: string;
     fontFamilyMedium: string;
+    fontFamilySemibold: string;
     fontFamilyBold: string;
     fontSizeXs: number;
     fontSizeSm: number;
@@ -90,6 +91,7 @@ const baseRadius = {
 const baseTypography = {
   fontFamilyRegular: 'PlusJakartaSans_400Regular',
   fontFamilyMedium: 'PlusJakartaSans_500Medium',
+  fontFamilySemibold: 'PlusJakartaSans_600SemiBold',
   fontFamilyBold: 'PlusJakartaSans_600SemiBold',
   fontSizeXs: 11,
   fontSizeSm: 13,

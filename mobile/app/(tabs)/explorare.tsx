@@ -1,143 +1,190 @@
 /**
- * Tab Explorează — hub pentru descoperire servicii, hartă, module platform.
- * Structură: bară căutare → filtre rapide → hartă embedded → shortcut module hub.
+ * Explore tab — "Explore care near you"
+ * Design: pawfectpair-design/petcare-android1.png (middle panel)
  */
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../components/theme-provider';
 
-type Category = { key: string; emoji: string; labelKey: string };
+const SPECIES = ['Dogs', 'Cats', 'Birds', 'Horses', 'Other'] as const;
+const CATEGORIES = [
+  { id: 'care',      icon: 'paw',               label: 'Care' },
+  { id: 'hotels',   icon: 'bed-outline',        label: 'Hotels' },
+  { id: 'training', icon: 'school-outline',     label: 'Training' },
+  { id: 'breeding', icon: 'heart-circle-outline', label: 'Breeding' },
+  { id: 'adoption', icon: 'home-outline',       label: 'Adoption' },
+] as const;
 
-const CATEGORIES: Category[] = [
-  { key: 'vet',     emoji: '🏥', labelKey: 'map.vets' },
-  { key: 'park',   emoji: '🌳', labelKey: 'map.parks' },
-  { key: 'shop',   emoji: '🛍️', labelKey: 'map.shops' },
-  { key: 'shelter',emoji: '🏠', labelKey: 'map.shelters' },
-  { key: 'event',  emoji: '🎪', labelKey: 'map.events' },
+const SAMPLE_PROVIDERS = [
+  { id: '1', name: 'Lake Vet Clinic', verified: true, rating: 4.9, reviews: 120, distance: '1.2 km', services: ['General care', 'Vaccinations', 'Diagnostics'], price: 'From 80 RON' },
+  { id: '2', name: 'City Pet Hotel',  verified: true, rating: 4.7, reviews: 85,  distance: '2.4 km', services: ['Boarding', 'Grooming', 'Daycare'],              price: 'From 50 RON' },
+  { id: '3', name: 'Alpha Training',  verified: false,rating: 4.5, reviews: 42,  distance: '3.1 km', services: ['Basic', 'Advanced', 'Puppy classes'],           price: 'From 40 RON' },
 ];
 
-const MODULE_SHORTCUTS = [
-  { id: 'petday',      emoji: '🏡', nameKey: 'petdayName',      route: '/modul/petday' },
-  { id: 'pettraining', emoji: '🎓', nameKey: 'pettrainingName', route: '/modul/pettraining' },
-  { id: 'petmarket',   emoji: '🛍️', nameKey: 'petmarketName',   route: '/modul/petmarket' },
-  { id: 'adoptii',     emoji: '🏠', nameKey: 'adoptiiName',     route: '/modul/adoptii' },
-  { id: 'petpassport', emoji: '✈️', nameKey: 'petpassportName', route: '/modul/petpassport' },
-  { id: 'petbreeding', emoji: '🌸', nameKey: 'petbreedingName', route: '/modul/petbreeding' },
-];
-
-export default function ExplorareScreen() {
-  const { t } = useTranslation();
+export default function ExploreScreen() {
   const theme = useAppTheme();
   const router = useRouter();
   const [search, setSearch] = useState('');
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [species, setSpecies] = useState<string>('Dogs');
+  const [category, setCategory] = useState('care');
+  const [showSpeciesPicker, setShowSpeciesPicker] = useState(false);
+
+  const s = theme.colors;
+  const sp = theme.spacing;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top']}>
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: theme.spacing.xxl, maxWidth: 720, width: '100%', alignSelf: 'center' }}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Header */}
-        <View style={[styles.header, { paddingHorizontal: theme.spacing.lg }]}>
-          <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSize2xl, fontFamily: theme.typography.fontFamilyBold }}>
-            {t('explore.title', 'Explorează')}
+    <SafeAreaView style={{ flex: 1, backgroundColor: s.background }} edges={['top']}>
+      <ScrollView contentContainerStyle={{ paddingBottom: sp.xxl + 16 }} showsVerticalScrollIndicator={false}>
+
+        {/* ── Header ── */}
+        <View style={{ paddingHorizontal: sp.lg, paddingTop: sp.sm }}>
+          <Text style={{ color: s.text, fontSize: 26, fontFamily: theme.typography.fontFamilyBold, lineHeight: 32 }}>
+            Explore care near you
           </Text>
-          <Text style={{ color: theme.colors.textMuted, fontSize: theme.typography.fontSizeSm, marginTop: 2 }}>
-            {t('explore.subtitle', 'Găsește servicii, locuri și comunități')}
+          <Text style={{ color: s.textMuted, fontSize: 14, marginTop: 2 }}>
+            Trusted professionals, great care, close to home.
           </Text>
         </View>
 
-        {/* Search bar */}
-        <View style={[styles.searchRow, { marginHorizontal: theme.spacing.lg, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]}>
-          <Ionicons name="search" size={18} color={theme.colors.textMuted} />
-          <TextInput
-            style={[styles.searchInput, { color: theme.colors.text, fontSize: theme.typography.fontSizeMd }]}
-            placeholder={t('explore.searchPlaceholder', 'Caută veterinari, parcuri, traineri...')}
-            placeholderTextColor={theme.colors.textMuted}
-            value={search}
-            onChangeText={setSearch}
-          />
-          {search.length > 0 && (
-            <Pressable onPress={() => setSearch('')}>
-              <Ionicons name="close-circle" size={18} color={theme.colors.textMuted} />
-            </Pressable>
-          )}
+        {/* ── Search bar ── */}
+        <View style={{ paddingHorizontal: sp.lg, marginTop: sp.md, flexDirection: 'row', gap: 10 }}>
+          <View style={[styles.searchBar, { backgroundColor: s.surface, borderColor: s.border }]}>
+            <Ionicons name="search-outline" size={18} color={s.textMuted} />
+            <TextInput
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Search services, locations..."
+              placeholderTextColor={s.textMuted}
+              style={{ flex: 1, color: s.text, fontSize: 14, marginLeft: 8 }}
+            />
+          </View>
+          <Pressable style={[styles.filterBtn, { backgroundColor: s.surface, borderColor: s.border }]}>
+            <Ionicons name="options-outline" size={20} color={s.text} />
+          </Pressable>
         </View>
 
-        {/* Filtre rapide */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: theme.spacing.md }}
-          contentContainerStyle={{ paddingHorizontal: theme.spacing.lg, gap: 8, flexDirection: 'row' }}>
-          {CATEGORIES.map((c) => (
+        {/* ── Species filter + Filters ── */}
+        <View style={{ paddingHorizontal: sp.lg, marginTop: sp.sm, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Pressable
+            onPress={() => setShowSpeciesPicker(!showSpeciesPicker)}
+            style={[styles.speciesPill, { backgroundColor: s.primary }]}
+          >
+            <Ionicons name="paw" size={14} color="#fff" />
+            <Text style={{ color: '#fff', fontSize: 13, fontFamily: theme.typography.fontFamilySemibold, marginHorizontal: 6 }}>
+              {species}
+            </Text>
+            <Ionicons name="chevron-down" size={12} color="#fff" />
+          </Pressable>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="options-outline" size={15} color={s.textMuted} />
+            <Text style={{ color: s.text, fontSize: 13 }}>Filters</Text>
+          </View>
+        </View>
+
+        {/* Species picker dropdown */}
+        {showSpeciesPicker && (
+          <View style={{ paddingHorizontal: sp.lg, marginTop: 6 }}>
+            <View style={[styles.speciesDropdown, { backgroundColor: s.surface, borderColor: s.border }]}>
+              {SPECIES.map((sp_) => (
+                <Pressable
+                  key={sp_}
+                  onPress={() => { setSpecies(sp_); setShowSpeciesPicker(false); }}
+                  style={[styles.speciesOption, sp_ === species && { backgroundColor: `${s.primary}15` }]}
+                >
+                  <Text style={{ color: sp_ === species ? s.primary : s.text, fontSize: 14 }}>{sp_}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* ── Category tabs ── */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: sp.md }} contentContainerStyle={{ paddingHorizontal: sp.lg, gap: 10 }}>
+          {CATEGORIES.map((cat) => (
             <Pressable
-              key={c.key}
-              onPress={() => setActiveFilter(activeFilter === c.key ? null : c.key)}
+              key={cat.id}
+              onPress={() => setCategory(cat.id)}
               style={[
-                styles.chip,
+                styles.catTab,
                 {
-                  backgroundColor: activeFilter === c.key ? theme.colors.primaryLight : theme.colors.surface,
-                  borderColor: activeFilter === c.key ? theme.colors.primary : theme.colors.border,
+                  backgroundColor: cat.id === category ? `${s.primary}15` : s.surface,
+                  borderColor: cat.id === category ? s.primary : s.border,
                 },
               ]}
             >
-              <Text style={{ fontSize: 16 }}>{c.emoji}</Text>
-              <Text style={{ color: activeFilter === c.key ? theme.colors.primary : theme.colors.text, fontSize: theme.typography.fontSizeXs, fontWeight: '600' }}>
-                {t(c.labelKey, c.key)}
+              <Ionicons name={cat.icon as any} size={18} color={cat.id === category ? s.primary : s.textMuted} />
+              <Text style={{ color: cat.id === category ? s.primary : s.text, fontSize: 12, fontFamily: theme.typography.fontFamilySemibold, marginTop: 4 }}>
+                {cat.label}
               </Text>
             </Pressable>
           ))}
         </ScrollView>
 
-        {/* Buton hartă */}
-        <Pressable
-          onPress={() => router.push('/(tabs)/harta')}
-          style={[styles.mapBtn, { margin: theme.spacing.lg, backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
-        >
-          <View style={styles.mapBtnInner}>
-            <Ionicons name="map" size={28} color={theme.colors.primary} />
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeMd, fontFamily: theme.typography.fontFamilyBold }}>
-                {t('explore.openMap', 'Deschide harta')}
-              </Text>
-              <Text style={{ color: theme.colors.textMuted, fontSize: theme.typography.fontSizeXs }}>
-                {t('explore.mapDesc', 'Vets, parcuri, magazine, evenimente în apropiere')}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={theme.colors.textMuted} />
+        {/* ── Map placeholder ── */}
+        <Pressable onPress={() => router.push('/(tabs)/harta')} style={{ marginHorizontal: sp.lg, marginTop: sp.md }}>
+          <View style={[styles.mapPlaceholder, { backgroundColor: s.surfaceAlt, borderColor: s.border }]}>
+            <Ionicons name="map" size={40} color={s.primary} style={{ opacity: 0.5 }} />
+            <Text style={{ color: s.textMuted, fontSize: 13, marginTop: 6 }}>Tap to open map view</Text>
+            <Pressable style={[styles.viewListBtn, { backgroundColor: s.surface, borderColor: s.border }]}>
+              <Ionicons name="list-outline" size={14} color={s.text} />
+              <Text style={{ color: s.text, fontSize: 12, marginLeft: 4 }}>View list</Text>
+            </Pressable>
           </View>
         </Pressable>
 
-        {/* Servicii & module */}
-        <View style={{ paddingHorizontal: theme.spacing.lg }}>
-          <View style={[styles.sectionHeader, { marginBottom: theme.spacing.md }]}>
-            <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeLg, fontFamily: theme.typography.fontFamilyBold }}>
-              {t('explore.services', 'Servicii')}
-            </Text>
-            <Pressable onPress={() => router.push('/(tabs)/module')}>
-              <Text style={{ color: theme.colors.primary, fontSize: theme.typography.fontSizeSm }}>
-                {t('explore.allModules', 'Toate modulele →')}
-              </Text>
+        {/* ── Provider cards ── */}
+        <View style={{ paddingHorizontal: sp.lg, marginTop: sp.md, gap: sp.md }}>
+          {SAMPLE_PROVIDERS.map((p) => (
+            <Pressable key={p.id}>
+              <View style={[styles.providerCard, { backgroundColor: s.surface, borderColor: s.border }]}>
+                <View style={[styles.providerImg, { backgroundColor: s.surfaceAlt }]}>
+                  <Ionicons name="medical" size={30} color={s.primary} style={{ opacity: 0.4 }} />
+                </View>
+                <Pressable style={styles.favBtn}>
+                  <Ionicons name="heart-outline" size={18} color={s.textMuted} />
+                </Pressable>
+                <View style={{ padding: 12, gap: 4 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={{ color: s.text, fontSize: 16, fontFamily: theme.typography.fontFamilyBold }}>
+                      {p.name}
+                    </Text>
+                    {p.verified && (
+                      <View style={[styles.verifiedBadge, { backgroundColor: '#22C55E15' }]}>
+                        <Ionicons name="checkmark-circle" size={12} color="#22C55E" />
+                        <Text style={{ color: '#22C55E', fontSize: 11, marginLeft: 3 }}>Verified</Text>
+                      </View>
+                    )}
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Ionicons name="star" size={13} color="#F59E0B" />
+                    <Text style={{ color: s.text, fontSize: 13 }}>{p.rating} ({p.reviews})</Text>
+                    <Text style={{ color: s.textMuted }}>·</Text>
+                    <Text style={{ color: s.textMuted, fontSize: 13 }}>{p.distance}</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                    {p.services.map((sv) => (
+                      <View key={sv} style={[styles.serviceBadge, { backgroundColor: s.surfaceAlt }]}>
+                        <Text style={{ color: s.textMuted, fontSize: 11 }}>{sv}</Text>
+                      </View>
+                    ))}
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+                    <Text style={{ color: s.text, fontSize: 14, fontFamily: theme.typography.fontFamilyBold }}>
+                      {p.price}
+                    </Text>
+                    <Pressable style={[styles.viewProfileBtn, { backgroundColor: s.primary }]}>
+                      <Text style={{ color: '#fff', fontSize: 13, fontFamily: theme.typography.fontFamilySemibold }}>
+                        View profile
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              </View>
             </Pressable>
-          </View>
-
-          <View style={styles.grid}>
-            {MODULE_SHORTCUTS.map((m) => (
-              <Pressable
-                key={m.id}
-                onPress={() => router.push(m.route as any)}
-                style={[styles.serviceCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
-              >
-                <Text style={{ fontSize: 28, marginBottom: 6 }}>{m.emoji}</Text>
-                <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeXs, fontWeight: '600', textAlign: 'center' }}>
-                  {t(`modules.${m.nameKey}`, m.nameKey)}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          ))}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -145,23 +192,102 @@ export default function ExplorareScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: { paddingTop: 16, paddingBottom: 8 },
-  searchRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
+  searchBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
   },
-  searchInput: { flex: 1 },
-  chip: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    borderWidth: 1, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7,
+  filterBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  mapBtn: { borderWidth: 1, borderRadius: 16, overflow: 'hidden' },
-  mapBtnInner: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  serviceCard: {
-    width: '30%', minWidth: 90, aspectRatio: 1,
-    borderWidth: 1, borderRadius: 14,
-    alignItems: 'center', justifyContent: 'center', padding: 10,
+  speciesPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  speciesDropdown: {
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  speciesOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  catTab: {
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    minWidth: 72,
+  },
+  mapPlaceholder: {
+    height: 160,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  viewListBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  providerCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  providerImg: {
+    height: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  favBtn: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  serviceBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  viewProfileBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
 });

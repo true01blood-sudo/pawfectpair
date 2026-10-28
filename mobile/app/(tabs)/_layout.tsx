@@ -25,7 +25,7 @@ export default function TabsLayout() {
   if (loading) return null;
   if (!session) return <Redirect href="/(auth)/login" />;
 
-  const bottomPad = Math.max(insets.bottom, 8);
+  const bottomPad = Math.max(insets.bottom, 16);
 
   return (
     <Tabs
@@ -38,8 +38,8 @@ export default function TabsLayout() {
           borderTopColor: t.colors.border,
           borderTopWidth: 1,
           paddingBottom: bottomPad,
-          paddingTop: 6,
-          height: 52 + bottomPad,
+          paddingTop: 8,
+          height: 60 + bottomPad,
         },
         tabBarLabelStyle: {
           fontSize: 10,
@@ -49,54 +49,51 @@ export default function TabsLayout() {
         },
       }}
     >
-      {/* ── Tab 1: Acasă ── */}
+      {/* ── Tab 1: Home ── */}
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Acasă',
-          tabBarIcon: ({ color, size }) => <Ionicons name="home" color={color} size={size} />,
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" color={color} size={size} />,
         }}
       />
-      {/* ── Tab 2: Explorează (hartă + căutare servicii) ── */}
+      {/* ── Tab 2: Explore ── */}
       <Tabs.Screen
         name="explorare"
         options={{
-          title: 'Explorează',
-          tabBarIcon: ({ color, size }) => <Ionicons name="compass" color={color} size={size} />,
+          title: 'Explore',
+          tabBarIcon: ({ color, size }) => <Ionicons name="search-outline" color={color} size={size} />,
         }}
       />
-      {/* ── Tab 3: Îngrijire (hub Care) ── */}
+      {/* ── Tab 3: Care (hub îngrijire) ── */}
       <Tabs.Screen
         name="ingrijire"
         options={{
-          title: 'Îngrijire',
-          tabBarIcon: ({ color, size }) => <Ionicons name="heart-circle" color={color} size={size} />,
+          title: 'Care',
+          tabBarIcon: ({ color, size }) => <Ionicons name="heart-outline" color={color} size={size} />,
         }}
       />
-      {/* ── Tab 4: Cercuri (comunitate + events + connect) ── */}
+      {/* ── Tab 4: Circles (comunitate) ── */}
       <Tabs.Screen
         name="cercuri"
         options={{
-          title: 'Cercuri',
-          tabBarIcon: ({ color, size }) => <Ionicons name="people" color={color} size={size} />,
+          title: 'Circles',
+          tabBarIcon: ({ color, size }) => <Ionicons name="people-outline" color={color} size={size} />,
         }}
       />
-      {/* ── Tab 5: Animalele mele (My Pets) ── */}
+      {/* ── Tab 5: My Pets ── */}
       <Tabs.Screen
         name="animale_mele"
         options={{
-          title: 'Animale',
-          tabBarIcon: ({ color, size }) => <Ionicons name="paw" color={color} size={size} />,
+          title: 'My Pets',
+          tabBarIcon: ({ color, size }) => <Ionicons name="paw-outline" color={color} size={size} />,
         }}
       />
 
-      {/* ── Tab 6: Profil / Setări ── */}
+      {/* ── Profil — ascuns din tab bar, accesibil prin setări ── */}
       <Tabs.Screen
         name="profil"
-        options={{
-          title: 'Profil',
-          tabBarIcon: ({ color, size }) => <Ionicons name="person-circle" color={color} size={size} />,
-        }}
+        options={{ href: null }}
       />
 
       {/* ── Ascunse din tab bar (accesibile prin router.push) ── */}
