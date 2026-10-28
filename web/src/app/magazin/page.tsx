@@ -1,87 +1,85 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { becomeSeller } from "./actions";
-import { ProductPlaceholder } from "@/components/PawPlaceholder";
-import PageBanner from "@/components/PageBanner";
 import AppShell from "@/components/AppShell";
+import MagazinClient from "./MagazinClient";
 
-function formatPrice(cents: number, currency: string) {
-  if (cents === 0) return "Preț de stabilit";
-  return `${(cents / 100).toFixed(2)} ${currency}`;
-}
+export const metadata: Metadata = {
+  title: "Magazin — PetCare",
+  description: "Produse premium pentru animale de companie.",
+};
 
 export default async function MagazinPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   const { data: profile } = user
     ? await supabase.from("profiles").select("role").eq("id", user.id).single()
     : { data: null };
 
+  // Fetch user's first pet for "For Luna" filter
+  const { data: pet } = user
+    ? await supabase
+        .from("pets")
+        .select("name, species")
+        .eq("owner_id", user.id)
+        .eq("is_active", true)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle()
+    : { data: null };
+
   const { data: products } = await supabase
     .from("products")
-    .select("id, name, price_cents, currency, photo_url, category, delivery_info, profiles(full_name)")
+    .select("id, name, price_cents, currency, photo_url, category, delivery_info, species_tags, profiles(full_name)")
+    .eq("status", "active")
     .order("created_at", { ascending: false });
+
+  const mappedProducts = (products ?? []).map((p) => ({
+    id: p.id as string,
+    name: p.name as string,
+    price_cents: p.price_cents as number,
+    currency: (p.currency ?? "RON") as string,
+    photo_url: (p.photo_url ?? null) as string | null,
+    category: (p.category ?? null) as string | null,
+    delivery_info: (p.delivery_info ?? null) as string | null,
+    species_tags: (p.species_tags ?? null) as string[] | null,
+    seller_name: ((p.profiles as unknown as { full_name: string } | null)?.full_name ?? null) as string | null,
+  }));
 
   return (
     <>
       <AppShell>
-        <main
-        className="mx-auto w-full max-w-6xl flex-1 px-4 py-4 pb-24 sm:px-6 lg:px-8 md:pb-8">
-        <PageBanner src="/images/pexels-magazin.jpg" alt="Produse pentru animale" title="Magazin" subtitle="Tot ce are nevoie animalul tău" />
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
-          {profile?.role === "shop" ? (
-            <Link
-              href="/magazin/produsele-mele"
-              className="flex min-h-11 items-center rounded-full bg-primary px-4 text-sm font-semibold text-white"
-            >
-              Produsele mele
-            </Link>
-          ) : user ? (
-            <form action={becomeSeller}>
-              <button className="flex min-h-11 items-center rounded-full border px-4 text-sm">
-                Devino vânzător
-              </button>
-            </form>
-          ) : null}
-        </div>
+        <main className="flex-1 overflow-y-auto pb-24 md:pb-6">
+          {/* Seller controls */}
+          {user && (
+            <div className="flex justify-end gap-2 px-4 pt-4">
+              {profile?.role === "shop" ? (
+                <Link
+                  href="/magazin/produsele-mele"
+                  className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Produsele mele
+                </Link>
+              ) : (
+                <form action={becomeSeller}>
+                  <button className="rounded-full border px-4 py-2 text-sm font-medium" style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}>
+                    Devino vânzător
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
 
-        {products && products.length > 0 ? (
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            {products.map((p) => (
-              <Link
-                key={p.id}
-                href={`/magazin/${p.id}`}
-                className="card-hover rounded-2xl border p-3 shadow-sm hover:border-primary"
-              >
-                {p.photo_url ? (
-                  <div className="mb-2 aspect-square w-full overflow-hidden rounded-xl">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.photo_url} alt={p.name} className="h-full w-full object-cover" />
-                  </div>
-                ) : (
-                  <ProductPlaceholder className="mb-2 aspect-square w-full rounded-xl" />
-                )}
-                <p className="truncate font-medium">{p.name}</p>
-                <p className="text-sm font-semibold text-primary">
-                  {formatPrice(p.price_cents, p.currency)}
-                </p>
-                <p className="truncate text-xs text-zinc-400">
-                  {(p.profiles as unknown as { full_name: string } | null)?.full_name ?? "PawfectPair"}
-                  {p.delivery_info ? ` · ${p.delivery_info}` : ""}
-                </p>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="mt-6 rounded-2xl border border-dashed p-8 text-center text-sm text-zinc-500">
-            Niciun produs momentan.
-          </p>
-        )}
-      </main>
+          <MagazinClient
+            products={mappedProducts}
+            petName={pet?.name ?? null}
+            petSpecies={pet?.species ?? null}
+            isLoggedIn={!!user}
+          />
+        </main>
       </AppShell>
       <BottomNav />
     </>
