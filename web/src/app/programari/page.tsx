@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { setAppointmentStatus } from "./actions";
+import AppShell from "@/components/AppShell";
 
 const statusStyles: Record<string, string> = {
   requested: "bg-amber-100 text-amber-700",
@@ -62,7 +63,9 @@ export default async function ProgramariPage() {
 
   return (
     <>
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
+      <AppShell>
+        <main
+        className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
         <h1 className="text-xl font-bold sm:text-2xl">Programările mele</h1>
 
         {myAppointments && myAppointments.length > 0 ? (
@@ -118,6 +121,7 @@ export default async function ProgramariPage() {
           </section>
         )}
       </main>
+      </AppShell>
       <BottomNav />
     </>
   );

@@ -165,8 +165,8 @@ export default function AppSidebar() {
         ))}
       </nav>
 
-      {/* SOS */}
-      <div className="mt-4 px-3 shrink-0">
+      {/* SOS + Adoption banner (bottom section) */}
+      <div className="mt-auto flex flex-col gap-3 px-3 pb-4 shrink-0">
         <Link
           href="/sos"
           className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors"
@@ -180,11 +180,10 @@ export default function AppSidebar() {
           </svg>
           SOS Emergency
         </Link>
-      </div>
 
       {/* Adoption banner */}
       <div
-        className="mt-auto mx-3 mb-4 rounded-2xl overflow-hidden shrink-0"
+        className="rounded-2xl overflow-hidden"
         style={{
           background: "var(--card-bg)",
           border: "1px solid var(--card-border)",
@@ -210,6 +209,7 @@ export default function AppSidebar() {
             Susține adopțiile →
           </Link>
         </div>
+      </div>
       </div>
     </aside>
   );

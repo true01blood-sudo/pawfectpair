@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
 import PageBanner from "@/components/PageBanner";
+import AppShell from "@/components/AppShell";
 
 export default async function ResqPage({
   searchParams,
@@ -22,7 +23,9 @@ export default async function ResqPage({
 
   return (
     <>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-4 pb-24 sm:px-6 lg:px-8 md:pb-8">
+      <AppShell>
+        <main
+        className="mx-auto w-full max-w-6xl flex-1 px-4 py-4 pb-24 sm:px-6 lg:px-8 md:pb-8">
         <PageBanner src="/images/pexels-resq.jpg" alt="Câine căutat" title="PetResQ" subtitle="Animale pierdute și găsite" />
         <div className="flex justify-end">
           <Link
@@ -69,6 +72,7 @@ export default async function ResqPage({
           </p>
         )}
       </main>
+      </AppShell>
       <BottomNav />
     </>
   );

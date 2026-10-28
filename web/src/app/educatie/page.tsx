@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
+import AppShell from "@/components/AppShell";
 
 export const metadata: Metadata = {
   title: "Sfaturi și educație",
@@ -39,7 +40,9 @@ export default async function EducatiePage({
 
   return (
     <>
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
+      <AppShell>
+        <main
+        className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
         <h1 className="text-xl font-bold sm:text-2xl">Sfaturi pentru animalul tău</h1>
         <p className="text-sm text-zinc-500">Îngrijire, dresaj, exerciții și alimentație corectă.</p>
 
@@ -84,6 +87,7 @@ export default async function EducatiePage({
           </p>
         )}
       </main>
+      </AppShell>
       <BottomNav />
     </>
   );

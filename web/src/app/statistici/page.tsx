@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
+import AppShell from "@/components/AppShell";
 
 function Sparkline({ values }: { values: number[] }) {
   if (values.length < 2) return <p className="text-xs text-zinc-400">Prea puține date pentru grafic.</p>;
@@ -57,7 +58,9 @@ export default async function StatisticiPage() {
 
   return (
     <>
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
+      <AppShell>
+        <main
+        className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
         <h1 className="text-xl font-bold sm:text-2xl">Statistici</h1>
         <p className="text-sm text-zinc-500">Rezumat real, bazat pe datele tale din PetWell și Planificator.</p>
 
@@ -118,6 +121,7 @@ export default async function StatisticiPage() {
           )}
         </section>
       </main>
+      </AppShell>
       <BottomNav />
     </>
   );

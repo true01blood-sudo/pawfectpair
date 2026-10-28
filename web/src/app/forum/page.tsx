@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import PageBanner from "@/components/PageBanner";
+import AppShell from "@/components/AppShell";
 
 const categories = ["Sănătate", "Dresaj", "Nutriție", "Adopții", "Urgențe", "Recomandări"];
 
@@ -31,7 +32,9 @@ export default async function ForumPage({
 
   return (
     <>
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-4 pb-24 sm:px-6 lg:px-8 md:pb-8">
+      <AppShell>
+        <main
+        className="mx-auto w-full max-w-3xl flex-1 px-4 py-4 pb-24 sm:px-6 lg:px-8 md:pb-8">
         <PageBanner src="/images/pexels-forum.jpg" alt="Comunitate de proprietari de animale" title="Forum" subtitle="Întreabă, discută, învață de la alți stăpâni" />
         <div className="flex justify-end">
           <Link href="/forum/nou" className="flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-white">
@@ -71,6 +74,7 @@ export default async function ForumPage({
           </p>
         )}
       </main>
+      </AppShell>
       <BottomNav />
     </>
   );

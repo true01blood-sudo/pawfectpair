@@ -7,6 +7,7 @@ import { PetPlaceholder } from "@/components/PawPlaceholder";
 import { UserIcon } from "@/components/icons";
 import ImageUpload from "@/components/ImageUpload";
 import { SPECIES_OPTIONS } from "@/lib/species";
+import AppShell from "@/components/AppShell";
 
 const settingsLinks = [
   { href: "/legal/termeni", label: "Termeni și condiții", icon: "📜" },
@@ -74,7 +75,9 @@ export default async function ProfilPage() {
 
   return (
     <>
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
+      <AppShell>
+        <main
+        className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
 
         {/* Avatar + name */}
         <div className="flex flex-col items-center text-center">
@@ -360,6 +363,7 @@ export default async function ProfilPage() {
           </a>
         </section>
       </main>
+      </AppShell>
       <BottomNav />
     </>
   );

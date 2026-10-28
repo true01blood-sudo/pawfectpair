@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
+import AppShell from "@/components/AppShell";
 
 export const metadata: Metadata = {
   title: "PetGuardian — GPS & Siguranță",
@@ -47,7 +48,9 @@ export default async function GpsPage() {
 
   return (
     <>
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-10">
+      <AppShell>
+        <main
+        className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-10">
         {/* Header */}
         <div className="mb-6 flex items-start justify-between">
           <div>
@@ -267,6 +270,7 @@ export default async function GpsPage() {
           )}
         </section>
       </main>
+      </AppShell>
       <BottomNav />
     </>
   );

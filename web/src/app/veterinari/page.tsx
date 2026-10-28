@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { StarsDisplay } from "@/components/Stars";
 import PageBanner from "@/components/PageBanner";
+import AppShell from "@/components/AppShell";
 
 export default async function VeterinariPage() {
   const supabase = await createClient();
@@ -21,7 +22,9 @@ export default async function VeterinariPage() {
 
   return (
     <>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-4 pb-24 sm:px-6 lg:px-8 md:pb-8">
+      <AppShell>
+        <main
+        className="mx-auto w-full max-w-6xl flex-1 px-4 py-4 pb-24 sm:px-6 lg:px-8 md:pb-8">
         <PageBanner src="/images/pexels-veterinar.jpg" alt="Consultație veterinară" title="Veterinari" subtitle="Servicii medicale veterinare lângă tine" />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-2">
@@ -69,6 +72,7 @@ export default async function VeterinariPage() {
           </p>
         )}
       </main>
+      </AppShell>
       <BottomNav />
     </>
   );

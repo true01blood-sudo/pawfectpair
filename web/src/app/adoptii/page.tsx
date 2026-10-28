@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
 import PageBanner from "@/components/PageBanner";
+import AppShell from "@/components/AppShell";
 
 const speciesOptions = ["Toate", "Câine", "Pisică", "Altele"];
 
@@ -28,7 +29,9 @@ export default async function AdoptiiPage({
 
   return (
     <>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-4 pb-24 sm:px-6 lg:px-8 md:pb-8">
+      <AppShell>
+        <main
+        className="mx-auto w-full max-w-6xl flex-1 px-4 py-4 pb-24 sm:px-6 lg:px-8 md:pb-8">
         <PageBanner src="/images/pexels-hero.jpg" alt="Pisici disponibile pentru adopție" title="Adopții" subtitle="Adoptă, nu cumpăra" />
         <div className="flex justify-end">
           <Link
@@ -85,6 +88,7 @@ export default async function AdoptiiPage({
           </p>
         )}
       </main>
+      </AppShell>
       <BottomNav />
     </>
   );

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { addTask, completeTask } from "./actions";
+import AppShell from "@/components/AppShell";
 
 const categoryLabels: Record<string, string> = {
   feeding: "Hrănire",
@@ -38,7 +39,9 @@ export default async function PlanificatorPage() {
 
   return (
     <>
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
+      <AppShell>
+        <main
+        className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
         <h1 className="text-xl font-bold sm:text-2xl">Planificator</h1>
 
         {!myPets || myPets.length === 0 ? (
@@ -106,6 +109,7 @@ export default async function PlanificatorPage() {
           </>
         )}
       </main>
+      </AppShell>
       <BottomNav />
     </>
   );

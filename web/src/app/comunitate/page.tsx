@@ -6,6 +6,7 @@ import { swipePet } from "./actions";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
 import { SPECIES_OPTIONS } from "@/lib/species";
 import PageBanner from "@/components/PageBanner";
+import AppShell from "@/components/AppShell";
 
 export default async function ComunitatePage({
   searchParams,
@@ -26,7 +27,9 @@ export default async function ComunitatePage({
   if (!myPets || myPets.length === 0) {
     return (
       <>
-        <main className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
+      <AppShell>
+        <main
+        className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
           <PageBanner src="/images/pexels-comunitate.jpg" alt="Câine și pisică prieteni" title="Comunitate" subtitle="PetMatch — găsește companioni pentru animalul tău" />
           <p className="mt-4 text-sm text-zinc-600">
             Adaugă mai întâi un animal în{" "}
@@ -34,8 +37,9 @@ export default async function ComunitatePage({
             pentru a începe să faci PetMatch.
           </p>
         </main>
-        <BottomNav />
-      </>
+      </AppShell>
+      <BottomNav />
+    </>
     );
   }
 
@@ -80,7 +84,9 @@ export default async function ComunitatePage({
 
   return (
     <>
-      <main className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
+      <AppShell>
+        <main
+        className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
         <PageBanner src="/images/pexels-comunitate.jpg" alt="Câine și pisică prieteni" title="PetMatch" subtitle="Descoperă companioni pentru animalul tău" />
         <div className="flex items-center justify-end">
           <Link href="/comunitate/mesaje" className="text-sm text-primary">
@@ -165,6 +171,7 @@ export default async function ComunitatePage({
           )}
         </div>
       </main>
+      </AppShell>
       <BottomNav />
     </>
   );

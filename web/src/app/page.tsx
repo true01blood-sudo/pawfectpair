@@ -6,7 +6,6 @@ import { PetPlaceholder } from "@/components/PawPlaceholder";
 import { getT, type Locale } from "@/lib/i18n";
 import AppShell from "@/components/AppShell";
 import SocialFeed from "@/components/SocialFeed";
-import HomePetWidget from "@/components/HomePetWidget";
 
 const CATEGORY_HREFS = ["/veterinari", "/adoptii", "/magazin", "/sos", "/educatie", "/comunitate", "/resq", "/sos"];
 const CATEGORY_EMOJIS = ["🩺", "🐾", "🛒", "📍", "🏋️", "💬", "🔍", "🚨"];
@@ -44,31 +43,6 @@ export default async function Home() {
     .order("created_at", { ascending: false })
     .limit(6);
 
-  let petProfile = null;
-  let nextAppointment = null;
-  if (user) {
-    const { data: pet } = await supabase
-      .from("pets")
-      .select("id, name, species, breed, birth_date, photo_url")
-      .eq("owner_id", user.id)
-      .limit(1)
-      .single();
-    petProfile = pet;
-
-    if (pet) {
-      const { data: appt } = await supabase
-        .from("appointments")
-        .select("id, scheduled_at, status, notes, vet_id")
-        .eq("pet_id", pet.id)
-        .gte("scheduled_at", new Date().toISOString())
-        .neq("status", "cancelled")
-        .order("scheduled_at", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      nextAppointment = appt;
-    }
-  }
-
   // ── AppShell layout for authenticated users ──
   if (user) {
     const userName = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? "tu";
@@ -76,17 +50,9 @@ export default async function Home() {
     return (
       <>
         <AppShell mainClassName="overflow-hidden">
-          <div className="flex flex-1 overflow-hidden min-h-0">
-            <main className="flex-1 overflow-y-auto min-h-0 pb-24 md:pb-0">
-              <SocialFeed userName={userName} avatarUrl={avatarUrl} />
-            </main>
-            <aside
-              className="w-80 shrink-0 hidden xl:flex xl:flex-col overflow-y-auto border-l"
-              style={{ borderColor: "var(--card-border)" }}
-            >
-              <HomePetWidget pet={petProfile} nextAppointment={nextAppointment} userName={userName} />
-            </aside>
-          </div>
+          <main className="flex-1 overflow-y-auto min-h-0 pb-24 md:pb-0">
+            <SocialFeed userName={userName} avatarUrl={avatarUrl} />
+          </main>
         </AppShell>
         <BottomNav />
       </>
@@ -159,54 +125,8 @@ export default async function Home() {
                 </div>
               </div>
 
-              {/* Right: Pet card sau imagine */}
+              {/* Right: Decorative pet cards for logged-out users */}
               <div className="relative flex justify-center lg:justify-end">
-                {petProfile ? (
-                  /* Pet profile card for logged-in users */
-                  <div className="w-full max-w-sm rounded-3xl border p-6 shadow-md" style={{ background: "var(--card-bg)" }}>
-                    <div className="mb-1 flex items-center justify-between">
-                      <p className="text-xs font-semibold uppercase tracking-widest text-primary">Animalul tău</p>
-                      <Link href="/animale" className="text-xs text-zinc-400 hover:text-primary">Gestionează →</Link>
-                    </div>
-                    <div className="flex items-center gap-3 py-3 border-b">
-                      {petProfile.photo_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={petProfile.photo_url} alt={petProfile.name} className="h-12 w-12 rounded-full object-cover" />
-                      ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-2xl">🐾</div>
-                      )}
-                      <div>
-                        <p className="font-bold text-dark">{petProfile.name}</p>
-                        <p className="text-sm text-zinc-400">{petProfile.breed || petProfile.species}</p>
-                      </div>
-                      <span className="ml-auto rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700">Activ</span>
-                    </div>
-                    <div className="mt-3 space-y-2">
-                      <Link href="/programari" className="flex items-center justify-between rounded-xl bg-orange-50 px-3 py-2.5 hover:bg-orange-100 transition-colors">
-                        <div className="flex items-center gap-2">
-                          <span>🩺</span>
-                          <span className="text-sm font-medium text-dark">Programează vizită</span>
-                        </div>
-                        <span className="text-zinc-400 text-sm">→</span>
-                      </Link>
-                      <Link href={`/animale`} className="flex items-center justify-between rounded-xl bg-zinc-50 px-3 py-2.5 hover:bg-zinc-100 transition-colors">
-                        <div className="flex items-center gap-2">
-                          <span>📋</span>
-                          <span className="text-sm font-medium text-dark">Fișă medicală</span>
-                        </div>
-                        <span className="text-zinc-400 text-sm">→</span>
-                      </Link>
-                      <Link href="/magazin" className="flex items-center justify-between rounded-xl bg-zinc-50 px-3 py-2.5 hover:bg-zinc-100 transition-colors">
-                        <div className="flex items-center gap-2">
-                          <span>🛒</span>
-                          <span className="text-sm font-medium text-dark">Produse recomandate</span>
-                        </div>
-                        <span className="text-zinc-400 text-sm">→</span>
-                      </Link>
-                    </div>
-                  </div>
-                ) : (
-                  /* Decorative card for logged-out users */
                   <div className="w-full max-w-sm space-y-3">
                     <div className="rounded-3xl border p-5 shadow-sm" style={{ background: "var(--card-bg)" }}>
                       <div className="flex items-center gap-3">
@@ -233,7 +153,6 @@ export default async function Home() {
                     </div>
                     <p className="text-center text-xs text-zinc-400">Creează un cont gratuit pentru profilul animalului tău</p>
                   </div>
-                )}
               </div>
             </div>
           </div>

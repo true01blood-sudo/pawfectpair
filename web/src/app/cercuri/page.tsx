@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
+import AppShell from "@/components/AppShell";
 
 export const metadata: Metadata = {
   title: "Cercuri — PetCare",
@@ -74,7 +75,9 @@ export default async function CercuriPage({
 
   return (
     <>
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-10">
+      <AppShell>
+        <main
+        className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-10">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
@@ -248,6 +251,7 @@ export default async function CercuriPage({
           </div>
         )}
       </main>
+      </AppShell>
       <BottomNav />
     </>
   );

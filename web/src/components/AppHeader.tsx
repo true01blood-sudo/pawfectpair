@@ -71,8 +71,8 @@ export default function AppHeader({ userName, avatarUrl }: Props) {
         </button>
 
         {/* Messages */}
-        <button
-          type="button"
+        <Link
+          href="/comunitate/mesaje"
           className="relative flex h-9 w-9 items-center justify-center rounded-full border transition-colors hover:border-primary/40 hover:text-primary"
           style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
         >
@@ -80,11 +80,11 @@ export default function AppHeader({ userName, avatarUrl }: Props) {
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
           <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-white">2</span>
-        </button>
+        </Link>
 
         {/* Notifications */}
-        <button
-          type="button"
+        <Link
+          href="/notificari"
           className="relative flex h-9 w-9 items-center justify-center rounded-full border transition-colors hover:border-primary/40 hover:text-primary"
           style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
         >
@@ -93,7 +93,7 @@ export default function AppHeader({ userName, avatarUrl }: Props) {
             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
           </svg>
           <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-white">3</span>
-        </button>
+        </Link>
 
         {/* Avatar + name */}
         <Link
