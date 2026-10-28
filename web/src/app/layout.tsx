@@ -224,7 +224,7 @@ export default async function RootLayout({
           <CartProvider>
             <Header isLoggedIn={!!user} />
             <div className="flex-1 flex flex-col">{children}</div>
-            <Footer isLoggedIn={!!user} />
+            <Footer />
           </CartProvider>
         </ThemeProvider>
       </body>

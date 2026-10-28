@@ -62,6 +62,19 @@ export default async function AppShell({ children, mainClassName }: Props) {
         <AppSidebar />
         <div className={`flex-1 min-h-0 flex flex-col ${mainClassName ?? "overflow-y-auto"}`}>
           {children}
+          {/* Compact app footer */}
+          <footer
+            className="mt-auto shrink-0 border-t px-6 py-3 hidden md:flex items-center justify-between text-xs"
+            style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
+          >
+            <span>© {new Date().getFullYear()} PawfectPair</span>
+            <nav className="flex gap-4">
+              <a href="/legal/termeni" className="hover:text-primary transition-colors">Termeni</a>
+              <a href="/legal/confidentialitate" className="hover:text-primary transition-colors">Confidențialitate</a>
+              <a href="/legal/gdpr" className="hover:text-primary transition-colors">GDPR</a>
+              <a href="/contact" className="hover:text-primary transition-colors">Contact</a>
+            </nav>
+          </footer>
         </div>
         <aside
           className="w-80 shrink-0 hidden xl:flex xl:flex-col overflow-y-auto border-l"
