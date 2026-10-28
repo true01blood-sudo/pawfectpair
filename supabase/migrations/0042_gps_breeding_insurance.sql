@@ -33,16 +33,20 @@ CREATE TABLE IF NOT EXISTS lost_pet_alerts (
 ALTER TABLE pet_locations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE lost_pet_alerts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Pet owners view their locations" ON pet_locations;
 CREATE POLICY "Pet owners view their locations" ON pet_locations
   FOR SELECT USING (
     EXISTS (SELECT 1 FROM pets WHERE id = pet_locations.pet_id AND owner_id = auth.uid())
   );
+DROP POLICY IF EXISTS "Pet owners insert locations" ON pet_locations;
 CREATE POLICY "Pet owners insert locations" ON pet_locations
   FOR INSERT WITH CHECK (
     EXISTS (SELECT 1 FROM pets WHERE id = pet_locations.pet_id AND owner_id = auth.uid())
   );
 
+DROP POLICY IF EXISTS "Lost pet alerts viewable by all" ON lost_pet_alerts;
 CREATE POLICY "Lost pet alerts viewable by all" ON lost_pet_alerts FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Owners manage their alerts" ON lost_pet_alerts;
 CREATE POLICY "Owners manage their alerts" ON lost_pet_alerts
   FOR ALL USING (owner_id = auth.uid());
 
@@ -69,8 +73,10 @@ CREATE TABLE IF NOT EXISTS breeding_listings (
 
 -- RLS Breeding
 ALTER TABLE breeding_listings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Breeding listings viewable by all" ON breeding_listings;
 CREATE POLICY "Breeding listings viewable by all" ON breeding_listings
   FOR SELECT USING (status = 'active');
+DROP POLICY IF EXISTS "Owners manage their listings" ON breeding_listings;
 CREATE POLICY "Owners manage their listings" ON breeding_listings
   FOR ALL USING (owner_id = auth.uid());
 

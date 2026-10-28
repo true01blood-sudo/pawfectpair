@@ -42,27 +42,35 @@ ALTER TABLE circles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE circle_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE circle_events ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Public circles are viewable by all" ON circles;
 CREATE POLICY "Public circles are viewable by all" ON circles
   FOR SELECT USING (is_public = true);
 
+DROP POLICY IF EXISTS "Authenticated users can create circles" ON circles;
 CREATE POLICY "Authenticated users can create circles" ON circles
   FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Circle admin can update their circle" ON circles;
 CREATE POLICY "Circle admin can update their circle" ON circles
   FOR UPDATE USING (created_by = auth.uid());
 
+DROP POLICY IF EXISTS "Circle members viewable by all" ON circle_members;
 CREATE POLICY "Circle members viewable by all" ON circle_members
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Users can join circles" ON circle_members;
 CREATE POLICY "Users can join circles" ON circle_members
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can leave circles" ON circle_members;
 CREATE POLICY "Users can leave circles" ON circle_members
   FOR DELETE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Circle events viewable by all" ON circle_events;
 CREATE POLICY "Circle events viewable by all" ON circle_events
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Circle admins can add events" ON circle_events;
 CREATE POLICY "Circle admins can add events" ON circle_events
   FOR INSERT WITH CHECK (
     EXISTS (
@@ -124,18 +132,25 @@ ALTER TABLE trainers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE training_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE training_bookings ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Trainers viewable by all" ON trainers;
 CREATE POLICY "Trainers viewable by all" ON trainers FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Admins can manage trainers" ON trainers;
 CREATE POLICY "Admins can manage trainers" ON trainers FOR ALL USING (
   EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
 );
 
+DROP POLICY IF EXISTS "Training plans viewable by all" ON training_plans;
 CREATE POLICY "Training plans viewable by all" ON training_plans FOR SELECT USING (is_active = true);
+DROP POLICY IF EXISTS "Trainers manage their plans" ON training_plans;
 CREATE POLICY "Trainers manage their plans" ON training_plans FOR ALL USING (
   EXISTS (SELECT 1 FROM trainers WHERE id = training_plans.trainer_id AND profile_id = auth.uid())
 );
 
+DROP POLICY IF EXISTS "Buyers view own bookings" ON training_bookings;
 CREATE POLICY "Buyers view own bookings" ON training_bookings FOR SELECT USING (buyer_id = auth.uid());
+DROP POLICY IF EXISTS "Authenticated users can book" ON training_bookings;
 CREATE POLICY "Authenticated users can book" ON training_bookings FOR INSERT WITH CHECK (auth.uid() = buyer_id);
+DROP POLICY IF EXISTS "Buyers can cancel" ON training_bookings;
 CREATE POLICY "Buyers can cancel" ON training_bookings FOR UPDATE USING (buyer_id = auth.uid());
 
 -- Seed demo circles
