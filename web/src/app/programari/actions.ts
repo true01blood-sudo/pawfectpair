@@ -20,4 +20,7 @@ export async function setAppointmentStatus(
     .eq("id", appointmentId);
 
   revalidatePath("/programari");
+  revalidatePath("/clinic");
+  revalidatePath("/clinic/cereri");
+  revalidatePath("/clinic/program");
 }

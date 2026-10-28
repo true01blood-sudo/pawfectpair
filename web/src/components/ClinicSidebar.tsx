@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 const NAV_ITEMS = [
   {
     href: "/clinic",
-    label: "Overview",
+    label: "Prezentare generală",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
@@ -16,7 +16,7 @@ const NAV_ITEMS = [
   },
   {
     href: "/clinic/program",
-    label: "Schedule",
+    label: "Program",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -26,8 +26,7 @@ const NAV_ITEMS = [
   },
   {
     href: "/clinic/cereri",
-    label: "Requests",
-    badge: 3,
+    label: "Cereri",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -36,7 +35,7 @@ const NAV_ITEMS = [
   },
   {
     href: "/clinic/clienti",
-    label: "Clients",
+    label: "Clienți",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -48,7 +47,7 @@ const NAV_ITEMS = [
   },
   {
     href: "/clinic/dovezi",
-    label: "Evidence",
+    label: "Dovezi",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -57,7 +56,7 @@ const NAV_ITEMS = [
   },
   {
     href: "/clinic/echipa",
-    label: "Team",
+    label: "Echipă",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="8" r="4"/>
@@ -70,7 +69,7 @@ const NAV_ITEMS = [
 const BOTTOM_ITEMS = [
   {
     href: "/clinic/profil",
-    label: "Clinic profile",
+    label: "Profilul clinicii",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
@@ -80,7 +79,7 @@ const BOTTOM_ITEMS = [
   },
   {
     href: "/clinic/setari",
-    label: "Settings",
+    label: "Setări",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="3"/>
@@ -90,7 +89,7 @@ const BOTTOM_ITEMS = [
   },
 ];
 
-export default function ClinicSidebar({ vetId }: { vetId: string }) {
+export default function ClinicSidebar({ vetId, pendingCount = 0 }: { vetId: string; pendingCount?: number }) {
   const pathname = usePathname();
 
   return (
@@ -114,9 +113,9 @@ export default function ClinicSidebar({ vetId }: { vetId: string }) {
             >
               <span className="shrink-0">{item.icon}</span>
               <span className="flex-1 truncate">{item.label}</span>
-              {item.badge && (
+              {item.href === "/clinic/cereri" && pendingCount > 0 && (
                 <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ background: "var(--primary)" }}>
-                  {item.badge}
+                  {pendingCount}
                 </span>
               )}
             </Link>
@@ -157,13 +156,13 @@ export default function ClinicSidebar({ vetId }: { vetId: string }) {
             <span className="text-4xl">🏥</span>
           </div>
           <div className="p-3">
-            <p className="text-xs font-semibold" style={{ color: "var(--foreground)" }}>Veterinary practice</p>
+            <p className="text-xs font-semibold" style={{ color: "var(--foreground)" }}>Cabinet veterinar</p>
             <Link
               href="/clinic/profil"
               className="mt-1 text-xs font-bold flex items-center gap-1 hover:underline"
               style={{ color: "var(--primary)" }}
             >
-              View public profile →
+              Vezi profilul public →
             </Link>
           </div>
         </div>

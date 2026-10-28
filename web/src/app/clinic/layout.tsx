@@ -24,6 +24,16 @@ export default async function ClinicLayout({ children }: { children: React.React
     .eq("user_id", user.id)
     .maybeSingle();
 
+  let pendingCount = 0;
+  if (vet) {
+    const { count } = await supabase
+      .from("vet_appointments")
+      .select("id", { count: "exact", head: true })
+      .eq("vet_id", vet.id)
+      .eq("status", "requested");
+    pendingCount = count ?? 0;
+  }
+
   // If no vet profile, show registration prompt
   if (!vet) {
     return (
@@ -58,7 +68,7 @@ export default async function ClinicLayout({ children }: { children: React.React
     <div className="h-full flex flex-col overflow-hidden">
       <AppHeader userName={userName} avatarUrl={avatarUrl} isAdmin={profile?.role === "admin"} clinicName={vet.clinic_name} />
       <div className="flex-1 flex overflow-hidden min-h-0">
-        <ClinicSidebar vetId={vet.id} />
+        <ClinicSidebar vetId={vet.id} pendingCount={pendingCount} />
         <div className="flex-1 min-h-0 overflow-y-auto">
           {children}
         </div>
