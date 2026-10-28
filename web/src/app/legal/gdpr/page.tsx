@@ -27,9 +27,13 @@ export default function GdprPage() {
 
       <div className="not-prose mt-6 grid gap-3 sm:grid-cols-2">
         {rights.map((r) => (
-          <div key={r.title} className="rounded-xl border p-4">
-            <p className="font-semibold">{r.title}</p>
-            <p className="mt-1 text-sm text-zinc-600">{r.text}</p>
+          <div
+            key={r.title}
+            className="rounded-xl border p-4"
+            style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
+          >
+            <p className="font-semibold" style={{ color: "var(--foreground)" }}>{r.title}</p>
+            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>{r.text}</p>
           </div>
         ))}
       </div>
@@ -40,7 +44,10 @@ export default function GdprPage() {
         <li>Prin email, la contact@pawfectpair.app — răspundem în cel mult 30 de zile.</li>
       </ul>
 
-      <p className="mt-8 rounded-xl border border-dashed p-4 text-xs text-zinc-500">
+      <p
+        className="mt-8 rounded-xl border border-dashed p-4 text-xs"
+        style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
+      >
         Notă: acest document este un draft funcțional pentru lansarea
         inițială și nu reprezintă consultanță juridică.
       </p>
