@@ -27,6 +27,7 @@ const TYPE_ICON: Record<string, string> = {
   social: "💬",
   system: "⚙️",
   info: "🔔",
+  emergency: "🆘",
 };
 
 const TYPE_LABEL: Record<string, string> = {
@@ -37,6 +38,7 @@ const TYPE_LABEL: Record<string, string> = {
   social: "Social",
   system: "Sistem",
   info: "Notificare",
+  emergency: "Urgență",
 };
 
 function timeAgo(dateStr: string): string {
@@ -100,15 +102,8 @@ export default function NotificariClient({ notifications: rawNotifs, unreadCount
     return true;
   });
 
-  const SAMPLE_FALLBACK: Notification[] = [
-    { id: "s1", type: "appointment", title: "Programare confirmată", body: "Vizita cu Dr. Ionescu a fost confirmată pentru mâine la 14:00", link: "/programari", is_read: false, created_at: new Date(Date.now() - 7200000).toISOString() },
-    { id: "s2", type: "vaccine", title: "Reminder vaccinare", body: "Vaccinul antirabic expiră în 12 zile. Programează-te acum.", link: "/programari", is_read: false, created_at: new Date(Date.now() - 86400000).toISOString() },
-    { id: "s3", type: "adoption", title: "Cerere adopție", body: "Cineva a trimis o cerere pentru animalul tău listat la adopție.", link: "/adoptii", is_read: true, created_at: new Date(Date.now() - 172800000).toISOString() },
-    { id: "s4", type: "event", title: "Eveniment în zona ta", body: "Plimbare câini în Parcul Cișmigiu — Sâmbătă, 10:00", link: "/comunitate", is_read: true, created_at: new Date(Date.now() - 259200000).toISOString() },
-  ];
-
-  const displayList = filtered.length > 0 || notifications.length > 0 ? filtered : SAMPLE_FALLBACK;
-  const isEmpty = filtered.length === 0 && notifications.length > 0;
+  const displayList = filtered;
+  const isEmpty = filtered.length === 0;
 
   return (
     <>
@@ -167,7 +162,11 @@ export default function NotificariClient({ notifications: rawNotifs, unreadCount
         >
           <p className="text-3xl mb-2">✓</p>
           <p className="font-semibold" style={{ color: "var(--foreground)" }}>
-            {filter === "unread" ? "Nicio notificare necitită" : "Nicio notificare în această categorie"}
+            {filter === "unread"
+              ? "Nicio notificare necitită"
+              : filter === "" && notifications.length === 0
+                ? "Nicio notificare momentan"
+                : "Nicio notificare în această categorie"}
           </p>
         </div>
       ) : (
