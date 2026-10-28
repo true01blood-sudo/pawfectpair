@@ -4,11 +4,11 @@ import BottomNav from "@/components/BottomNav";
 import { setAppointmentStatus } from "./actions";
 import AppShell from "@/components/AppShell";
 
-const statusStyles: Record<string, string> = {
-  requested: "bg-amber-100 text-amber-700",
-  confirmed: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
-  completed: "bg-zinc-100 text-zinc-600",
+const statusColors: Record<string, string> = {
+  requested: "#d97706",
+  confirmed: "#16a34a",
+  cancelled: "#ef4444",
+  completed: "#6b7280",
 };
 const statusLabels: Record<string, string> = {
   requested: "în așteptare",
@@ -18,8 +18,12 @@ const statusLabels: Record<string, string> = {
 };
 
 function StatusBadge({ status }: { status: string }) {
+  const color = statusColors[status] ?? "#6b7280";
   return (
-    <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusStyles[status] ?? "bg-zinc-100 text-zinc-600"}`}>
+    <span
+      className="inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold"
+      style={{ background: `color-mix(in srgb, ${color} 14%, transparent)`, color }}
+    >
       {statusLabels[status] ?? status}
     </span>
   );
@@ -64,63 +68,95 @@ export default async function ProgramariPage() {
   return (
     <>
       <AppShell>
-        <main
-        className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
-        <h1 className="text-xl font-bold sm:text-2xl">Programările mele</h1>
+        <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>Programările mele</h1>
+            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+              Vizite programate la cabinete veterinare pentru animalele tale.
+            </p>
+          </div>
 
-        {myAppointments && myAppointments.length > 0 ? (
-          <ul className="mt-4 flex flex-col gap-3">
-            {(myAppointments as unknown as AppointmentRow[]).map((a) => (
-              <li key={a.id} className="card-hover rounded-xl border p-3 text-sm shadow-sm">
-                <p className="font-medium">
-                  {a.pets?.name} @ {a.vets?.clinic_name}
-                </p>
-                <p className="mt-1 flex items-center gap-2 text-zinc-500">
-                  {new Date(a.starts_at).toLocaleString("ro-RO")}
-                  <StatusBadge status={a.status} />
-                </p>
-                {a.reason && <p className="text-zinc-600">{a.reason}</p>}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-4 text-sm text-zinc-500">Nu ai încă programări.</p>
-        )}
-
-        {myVet && (
-          <section className="mt-10">
-            <h2 className="mb-3 font-semibold">Cereri primite (cabinetul tău)</h2>
-            {incoming && incoming.length > 0 ? (
+          <section>
+            <h2 className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
+              Programările tale
+            </h2>
+            {myAppointments && myAppointments.length > 0 ? (
               <ul className="flex flex-col gap-3">
-                {(incoming as unknown as AppointmentRow[]).map((a) => (
-                  <li key={a.id} className="card-hover rounded-xl border p-3 text-sm shadow-sm">
-                    <p className="font-medium">
-                      {a.pets?.name} · {new Date(a.starts_at).toLocaleString("ro-RO")}
+                {(myAppointments as unknown as AppointmentRow[]).map((a) => (
+                  <li
+                    key={a.id}
+                    className="card-hover rounded-2xl border p-4 text-sm shadow-sm"
+                    style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
+                  >
+                    <p className="font-semibold" style={{ color: "var(--foreground)" }}>
+                      {a.pets?.name} @ {a.vets?.clinic_name}
                     </p>
-                    <p className="mt-1"><StatusBadge status={a.status} /></p>
-                    {a.status === "requested" && (
-                      <div className="mt-2 flex gap-2">
-                        <form action={setAppointmentStatus.bind(null, a.id, "confirmed")}>
-                          <button className="min-h-11 rounded-full bg-primary px-4 text-xs font-semibold text-white">
-                            Confirmă
-                          </button>
-                        </form>
-                        <form action={setAppointmentStatus.bind(null, a.id, "cancelled")}>
-                          <button className="min-h-11 rounded-full border px-4 text-xs">
-                            Anulează
-                          </button>
-                        </form>
-                      </div>
-                    )}
+                    <p className="mt-1 flex items-center gap-2" style={{ color: "var(--muted)" }}>
+                      {new Date(a.starts_at).toLocaleString("ro-RO")}
+                      <StatusBadge status={a.status} />
+                    </p>
+                    {a.reason && <p className="mt-1" style={{ color: "var(--muted)" }}>{a.reason}</p>}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-zinc-500">Nicio cerere primită.</p>
+              <p
+                className="rounded-2xl border border-dashed p-8 text-center text-sm"
+                style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
+              >
+                Nu ai încă programări.
+              </p>
             )}
           </section>
-        )}
-      </main>
+
+          {myVet && (
+            <section className="mt-10">
+              <h2 className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
+                Cereri primite (cabinetul tău)
+              </h2>
+              {incoming && incoming.length > 0 ? (
+                <ul className="flex flex-col gap-3">
+                  {(incoming as unknown as AppointmentRow[]).map((a) => (
+                    <li
+                      key={a.id}
+                      className="card-hover rounded-2xl border p-4 text-sm shadow-sm"
+                      style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
+                    >
+                      <p className="font-semibold" style={{ color: "var(--foreground)" }}>
+                        {a.pets?.name} · {new Date(a.starts_at).toLocaleString("ro-RO")}
+                      </p>
+                      <p className="mt-1"><StatusBadge status={a.status} /></p>
+                      {a.status === "requested" && (
+                        <div className="mt-3 flex gap-2">
+                          <form action={setAppointmentStatus.bind(null, a.id, "confirmed")}>
+                            <button className="min-h-9 rounded-full bg-primary px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90">
+                              Confirmă
+                            </button>
+                          </form>
+                          <form action={setAppointmentStatus.bind(null, a.id, "cancelled")}>
+                            <button
+                              className="min-h-9 rounded-full border px-4 text-xs font-medium transition-colors hover:border-primary/40"
+                              style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
+                            >
+                              Anulează
+                            </button>
+                          </form>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p
+                  className="rounded-2xl border border-dashed p-8 text-center text-sm"
+                  style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
+                >
+                  Nicio cerere primită.
+                </p>
+              )}
+            </section>
+          )}
+        </main>
       </AppShell>
       <BottomNav />
     </>
