@@ -135,7 +135,6 @@ export default async function ContactPage({
               </button>
             </form>
           )}
-        </main>
       </main>
       <BottomNav />
     </>
