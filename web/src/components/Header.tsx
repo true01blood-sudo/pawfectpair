@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { MenuIcon, CloseIcon } from "@/components/icons";
 import { useTheme } from "@/components/ThemeProvider";
 import { useCart } from "@/components/CartContext";
+import InstallAppButton from "@/components/InstallAppButton";
 import type { Locale } from "@/lib/i18n";
 
 function CartIcon() {
@@ -162,6 +163,8 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
           ))}
 
           <LanguageSwitcher />
+
+          <InstallAppButton />
 
           <button
             type="button"

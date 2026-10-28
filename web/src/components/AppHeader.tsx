@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "@/components/ThemeProvider";
 import { LanguageSwitcher } from "@/components/Header";
+import InstallAppButton from "@/components/InstallAppButton";
 import { signOut } from "@/app/profil/actions";
 
 type Props = {
@@ -194,6 +195,8 @@ export default function AppHeader({ userName, avatarUrl, isAdmin, isVet, clinicN
         </div>
 
         <LanguageSwitcher />
+
+        <InstallAppButton />
 
         {/* Messages */}
         <Link
