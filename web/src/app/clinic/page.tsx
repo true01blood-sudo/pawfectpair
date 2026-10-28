@@ -63,11 +63,17 @@ export default async function ClinicPage() {
     .eq("vet_id", vet.id)
     .neq("status", "cancelled");
 
+  const { count: evidenceCount } = await supabase
+    .from("clinic_documents")
+    .select("id", { count: "exact", head: true })
+    .eq("vet_id", vet.id)
+    .eq("status", "pending");
+
   const stats = [
-    { value: todayCount ?? 0, label: "Appointments today", icon: "📅", color: "#16a34a" },
-    { value: pendingCount ?? 0, label: "Pending requests", icon: "👥", color: "#d97706" },
-    { value: clientCount ?? 0, label: "Active clients", icon: "🐾", color: "#FF6B2D" },
-    { value: 0, label: "Evidence in review", icon: "📋", color: "#7c3aed" },
+    { value: todayCount ?? 0, label: "Programări azi", icon: "📅", color: "#16a34a" },
+    { value: pendingCount ?? 0, label: "Cereri în așteptare", icon: "👥", color: "#d97706" },
+    { value: clientCount ?? 0, label: "Vizite active", icon: "🐾", color: "#FF6B2D" },
+    { value: evidenceCount ?? 0, label: "Dovezi în verificare", icon: "📋", color: "#7c3aed" },
   ];
 
   type ApptRow = {
@@ -101,14 +107,14 @@ export default async function ClinicPage() {
   function fmtDateShort(iso: string) {
     const d = new Date(iso);
     const isToday = d.toDateString() === new Date().toDateString();
-    if (isToday) return `Today, ${fmtTime(iso)}`;
+    if (isToday) return `Azi, ${fmtTime(iso)}`;
     return d.toLocaleDateString("ro-RO", { day: "numeric", month: "short" }) + ` ${fmtTime(iso)}`;
   }
 
   const statusBadge: Record<string, { label: string; bg: string; color: string }> = {
-    confirmed: { label: "Checked in", bg: "#dcfce7", color: "#16a34a" },
-    requested: { label: "Pending", bg: "#fef9c3", color: "#ca8a04" },
-    completed: { label: "Done", bg: "#f3f4f6", color: "#6b7280" },
+    confirmed: { label: "Confirmată", bg: "#dcfce7", color: "#16a34a" },
+    requested: { label: "În așteptare", bg: "#fef9c3", color: "#ca8a04" },
+    completed: { label: "Finalizată", bg: "#f3f4f6", color: "#6b7280" },
   };
 
   const nextAppt = (todayAppts as unknown as ApptRow[] | null)?.[0] ?? null;
@@ -130,9 +136,9 @@ export default async function ClinicPage() {
           />
           <div className="relative z-10 p-6 pb-8">
             <h1 className="text-2xl font-bold text-white leading-tight">
-              Compassionate care<br />for happier lives
+              Îngrijire cu suflet<br />pentru animale mai fericite
             </h1>
-            <p className="mt-1 text-sm text-white/80">Preventive care, expert treatment and a personal touch.</p>
+            <p className="mt-1 text-sm text-white/80">Prevenție, tratament de specialitate și atenție personală.</p>
             <div className="mt-4 flex gap-3">
               <Link
                 href="/clinic/cereri"
@@ -145,7 +151,7 @@ export default async function ClinicPage() {
                   <line x1="8" y1="2" x2="8" y2="6"/>
                   <line x1="16" y1="2" x2="16" y2="6"/>
                 </svg>
-                New appointment
+                Programare nouă
               </Link>
               <Link
                 href="/clinic/clienti"
@@ -156,7 +162,7 @@ export default async function ClinicPage() {
                   <circle cx="9" cy="7" r="4"/>
                   <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
-                Add client
+                Adaugă client
               </Link>
             </div>
           </div>
@@ -188,13 +194,13 @@ export default async function ClinicPage() {
                   <rect x="3" y="4" width="18" height="18" rx="2"/>
                   <line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
-                <span className="font-semibold text-sm" style={{ color: "var(--foreground)" }}>Today</span>
+                <span className="font-semibold text-sm" style={{ color: "var(--foreground)" }}>Astăzi</span>
                 <span className="text-xs" style={{ color: "var(--muted)" }}>
                   {new Date().toLocaleDateString("ro-RO", { weekday: "long", day: "numeric", month: "long" })}
                 </span>
               </div>
               <Link href="/clinic/program" className="text-xs font-semibold hover:underline" style={{ color: "var(--primary)" }}>
-                View week →
+                Vezi săptămâna →
               </Link>
             </div>
 
@@ -277,13 +283,13 @@ export default async function ClinicPage() {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <span className="font-semibold text-sm" style={{ color: "var(--foreground)" }}>
-                  Pending requests
+                  Cereri în așteptare
                   <span className="ml-2 rounded-full px-2 py-0.5 text-xs font-bold text-white" style={{ background: "var(--primary)" }}>
                     {(pendingAppts as unknown as PendingRow[]).length}
                   </span>
                 </span>
                 <Link href="/clinic/cereri" className="text-xs font-semibold hover:underline" style={{ color: "var(--primary)" }}>
-                  View all →
+                  Vezi toate →
                 </Link>
               </div>
               <div
@@ -326,7 +332,7 @@ export default async function ClinicPage() {
             style={{ borderColor: "var(--card-border)" }}
           >
             <div className="flex items-center justify-between mb-3">
-              <p className="font-semibold text-sm" style={{ color: "var(--foreground)" }}>Next patient</p>
+              <p className="font-semibold text-sm" style={{ color: "var(--foreground)" }}>Următorul pacient</p>
               <span className="rounded-full px-2 py-0.5 text-xs font-bold text-white" style={{ background: "var(--primary)" }}>
                 {fmtTime(nextAppt.starts_at)}
               </span>
@@ -379,7 +385,7 @@ export default async function ClinicPage() {
               className="mt-4 w-full rounded-full py-2.5 text-center text-sm font-semibold text-white transition-opacity hover:opacity-90"
               style={{ background: "var(--primary)" }}
             >
-              View full record
+              Vezi fișa completă
             </Link>
           </aside>
         );

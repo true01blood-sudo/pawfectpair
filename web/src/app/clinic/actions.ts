@@ -31,3 +31,32 @@ export async function updateClinicProfile(formData: FormData) {
   revalidatePath("/clinic/profil");
   revalidatePath("/veterinari");
 }
+
+export async function addClinicDocument(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { data: vet } = await supabase
+    .from("vets")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!vet) throw new Error("Nu ai un cabinet înregistrat.");
+
+  const title = String(formData.get("title") ?? "").trim();
+  const file_url = String(formData.get("file_url") ?? "").trim();
+
+  if (!title || !file_url) throw new Error("Titlul și fișierul sunt obligatorii.");
+
+  const { error } = await supabase
+    .from("clinic_documents")
+    .insert({ vet_id: vet.id, title, file_url });
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/clinic/dovezi");
+  revalidatePath("/clinic");
+}
