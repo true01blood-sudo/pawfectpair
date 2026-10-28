@@ -75,7 +75,7 @@ export default async function PetHealthPage({
 
   const { data: pet } = await supabase
     .from("pets")
-    .select("id, name, species, breed, photo_url, birth_date, gender")
+    .select("id, name, species, breed, photo_url, birth_date, sex")
     .eq("id", petId)
     .eq("owner_id", user.id)
     .maybeSingle();
@@ -151,7 +151,7 @@ export default async function PetHealthPage({
                 <h1 className="text-xl font-bold" style={{ color: "var(--foreground)" }}>{pet.name}</h1>
                 <p className="text-sm mt-0.5" style={{ color: "var(--muted)" }}>
                   {pet.breed || pet.species}
-                  {pet.gender ? ` · ${pet.gender === "female" ? "Femelă" : "Mascul"}` : ""}
+                  {pet.sex === "male" || pet.sex === "female" ? ` · ${pet.sex === "female" ? "Femelă" : "Mascul"}` : ""}
                   {pet.birth_date ? ` · ${ageLabel(pet.birth_date)}` : ""}
                 </p>
               </div>

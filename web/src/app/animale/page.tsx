@@ -32,7 +32,7 @@ export default async function AnimelePage() {
 
   const { data: pets } = await supabase
     .from("pets")
-    .select("id, name, species, breed, birth_date, photo_url, gender")
+    .select("id, name, species, breed, birth_date, photo_url, sex")
     .eq("owner_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -64,54 +64,54 @@ export default async function AnimelePage() {
             {pets.map((pet) => {
               const emoji = SPECIES_EMOJI[pet.species as string] ?? "🐾";
               return (
-                <Link
+                <div
                   key={pet.id}
-                  href={`/sanatate/${pet.id}`}
                   className="group flex items-center gap-4 rounded-2xl border p-4 transition-all hover:shadow-md hover:border-primary/40"
                   style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
                 >
-                  {/* Photo or emoji */}
-                  <div
-                    className="relative h-16 w-16 shrink-0 rounded-2xl overflow-hidden flex items-center justify-center"
-                    style={{ background: "color-mix(in srgb, var(--primary) 8%, transparent)" }}
-                  >
-                    {pet.photo_url ? (
-                      <Image
-                        src={pet.photo_url}
-                        alt={pet.name}
-                        fill
-                        className="object-cover"
-                        sizes="64px"
-                      />
-                    ) : (
-                      <span className="text-3xl">{emoji}</span>
-                    )}
-                  </div>
+                  <Link href={`/sanatate/${pet.id}`} className="flex flex-1 min-w-0 items-center gap-4">
+                    {/* Photo or emoji */}
+                    <div
+                      className="relative h-16 w-16 shrink-0 rounded-2xl overflow-hidden flex items-center justify-center"
+                      style={{ background: "color-mix(in srgb, var(--primary) 8%, transparent)" }}
+                    >
+                      {pet.photo_url ? (
+                        <Image
+                          src={pet.photo_url}
+                          alt={pet.name}
+                          fill
+                          className="object-cover"
+                          sizes="64px"
+                        />
+                      ) : (
+                        <span className="text-3xl">{emoji}</span>
+                      )}
+                    </div>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-base" style={{ color: "var(--foreground)" }}>
-                      {pet.name}
-                    </p>
-                    <p className="text-sm mt-0.5" style={{ color: "var(--muted)" }}>
-                      {[pet.breed, ageString(pet.birth_date)].filter(Boolean).join(" · ")}
-                    </p>
-                    {pet.gender && (
-                      <span
-                        className="mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                        style={{
-                          background: "color-mix(in srgb, var(--primary) 10%, transparent)",
-                          color: "var(--primary)",
-                        }}
-                      >
-                        {pet.gender === "male" ? "Mascul" : "Femelă"}
-                      </span>
-                    )}
-                  </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-base" style={{ color: "var(--foreground)" }}>
+                        {pet.name}
+                      </p>
+                      <p className="text-sm mt-0.5" style={{ color: "var(--muted)" }}>
+                        {[pet.breed, ageString(pet.birth_date)].filter(Boolean).join(" · ")}
+                      </p>
+                      {(pet.sex === "male" || pet.sex === "female") && (
+                        <span
+                          className="mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                          style={{
+                            background: "color-mix(in srgb, var(--primary) 10%, transparent)",
+                            color: "var(--primary)",
+                          }}
+                        >
+                          {pet.sex === "male" ? "Mascul" : "Femelă"}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
 
                   <div className="flex flex-col gap-2 items-end shrink-0">
                     <Link
                       href={`/sanatate/${pet.id}`}
-                      onClick={(e) => e.stopPropagation()}
                       className="rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors hover:border-primary hover:text-primary"
                       style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
                     >
@@ -119,14 +119,13 @@ export default async function AnimelePage() {
                     </Link>
                     <Link
                       href={`/gps?petId=${pet.id}`}
-                      onClick={(e) => e.stopPropagation()}
                       className="rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors hover:border-primary hover:text-primary"
                       style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
                     >
                       GPS
                     </Link>
                   </div>
-                </Link>
+                </div>
               );
             })}
           </div>
