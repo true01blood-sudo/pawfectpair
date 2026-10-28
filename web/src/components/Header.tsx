@@ -26,7 +26,7 @@ const LOCALES: { code: Locale; label: string }[] = [
   { code: "it", label: "IT" },
 ];
 
-function LanguageSwitcher() {
+export function LanguageSwitcher() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState<Locale>("ro");
@@ -139,7 +139,7 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 sm:py-3 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
           <Image
-            src={theme === "dark" ? "/logo-white.png" : "/logo.png"}
+            src={theme === "dark" ? "/logo.png" : "/logo-white.png"}
             alt="Pet Care Services"
             width={280}
             height={90}

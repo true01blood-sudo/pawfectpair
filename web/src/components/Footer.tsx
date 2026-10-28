@@ -3,9 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export default function Footer() {
+const APP_ROUTES = [
+  "/", "/animale", "/ingrijire", "/cercuri", "/explorare",
+  "/sanatate", "/asigurare", "/gps", "/reproductie", "/antrenament",
+  "/programari", "/planificator", "/statistici", "/educatie",
+  "/profil", "/suport", "/forum", "/comunitate", "/sos", "/resq",
+  "/veterinari", "/magazin", "/adoptii", "/notificari", "/admin",
+  "/cont", "/contact", "/legal",
+];
+
+export default function Footer({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   const pathname = usePathname();
   if (pathname === "/login") return null;
+
+  // AppShell renders its own compact footer on these routes when logged in
+  if (isLoggedIn && APP_ROUTES.some((r) => r === pathname || pathname.startsWith(r + "/"))) {
+    return null;
+  }
 
   return (
     <footer
