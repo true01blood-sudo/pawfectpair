@@ -66,6 +66,56 @@ export default async function AppShell({ children, mainClassName }: Props) {
     }
   }
 
+  let nextEvent: {
+    id: string; title: string; city: string; location: string | null;
+    starts_at: string; max_participants: number | null;
+  } | null = null;
+  let eventParticipantCount = 0;
+  let isGoingToEvent = false;
+  let recommendedListing: {
+    id: string; title: string; city: string; price_from: number | null;
+    price_unit: string; services: string[];
+  } | null = null;
+
+  if (user) {
+    const { data: event } = await supabase
+      .from("pet_events")
+      .select("id, title, city, location, starts_at, max_participants")
+      .eq("status", "published")
+      .gte("starts_at", new Date().toISOString())
+      .order("starts_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    nextEvent = event;
+
+    if (nextEvent) {
+      const { count } = await supabase
+        .from("event_participants")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", nextEvent.id)
+        .eq("status", "going");
+      eventParticipantCount = count ?? 0;
+
+      const { data: myRsvp } = await supabase
+        .from("event_participants")
+        .select("status")
+        .eq("event_id", nextEvent.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      isGoingToEvent = myRsvp?.status === "going";
+    }
+
+    const { data: listing } = await supabase
+      .from("petday_listings")
+      .select("id, title, city, price_from, price_unit, services")
+      .eq("active", true)
+      .order("verified", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    recommendedListing = listing;
+  }
+
   let petProfile = null;
   let nextAppointment = null;
   if (user) {
@@ -121,7 +171,15 @@ export default async function AppShell({ children, mainClassName }: Props) {
           className="w-80 shrink-0 hidden xl:flex xl:flex-col overflow-y-auto border-l"
           style={{ borderColor: "var(--card-border)" }}
         >
-          <HomePetWidget pet={petProfile} nextAppointment={nextAppointment} userName={userName} />
+          <HomePetWidget
+            pet={petProfile}
+            nextAppointment={nextAppointment}
+            userName={userName}
+            nextEvent={nextEvent}
+            eventParticipantCount={eventParticipantCount}
+            isGoingToEvent={isGoingToEvent}
+            recommendedListing={recommendedListing}
+          />
         </aside>
       </div>
     </div>
