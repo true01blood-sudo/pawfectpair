@@ -9,7 +9,7 @@ const APP_ROUTES = [
   "/programari", "/planificator", "/statistici", "/educatie",
   "/profil", "/suport", "/forum", "/comunitate", "/sos", "/resq",
   "/veterinari", "/magazin", "/adoptii", "/notificari", "/admin",
-  "/cont", "/contact", "/legal",
+  "/cont", "/contact", "/legal", "/clinic",
 ];
 
 export default function Footer({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
