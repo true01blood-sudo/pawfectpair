@@ -128,6 +128,7 @@ export default async function ExplorePage({
   }
 
   return (
+    <>
     <AppShell>
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-10">
         {/* Header */}
@@ -343,7 +344,8 @@ export default async function ExplorePage({
           </Link>
         </div>
       </main>
-      <BottomNav />
     </AppShell>
+    <BottomNav />
+    </>
   );
 }

@@ -37,6 +37,7 @@ export default async function AnimelePage() {
     .order("created_at", { ascending: false });
 
   return (
+    <>
     <AppShell>
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-10">
         {/* Header */}
@@ -180,7 +181,8 @@ export default async function AnimelePage() {
           </div>
         )}
       </main>
-      <BottomNav />
     </AppShell>
+    <BottomNav />
+    </>
   );
 }

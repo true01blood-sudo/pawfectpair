@@ -16,6 +16,7 @@ export default async function ContactPage({
   const { sent } = await searchParams;
 
   return (
+    <>
     <AppShell>
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6 pb-24 md:pb-8">
           <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--foreground)" }}>Contact</h1>
@@ -137,7 +138,8 @@ export default async function ContactPage({
             </form>
           )}
       </main>
-      <BottomNav />
     </AppShell>
+    <BottomNav />
+    </>
   );
 }

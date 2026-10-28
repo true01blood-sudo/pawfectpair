@@ -36,6 +36,36 @@ export default async function AppShell({ children, mainClassName }: Props) {
     }
   }
 
+  let unreadNotifications = 0;
+  let pendingConversations = 0;
+  if (user) {
+    const { count: notifCount } = await supabase
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("is_read", false);
+    unreadNotifications = notifCount ?? 0;
+
+    const { data: myMatches } = await supabase
+      .from("matches")
+      .select("id, user_a_id, user_b_id")
+      .or(`user_a_id.eq.${user.id},user_b_id.eq.${user.id}`);
+    if (myMatches && myMatches.length > 0) {
+      const results = await Promise.all(
+        myMatches.map((m) =>
+          supabase
+            .from("messages")
+            .select("sender_id")
+            .eq("match_id", m.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle()
+        )
+      );
+      pendingConversations = results.filter((r) => r.data && r.data.sender_id !== user.id).length;
+    }
+  }
+
   let petProfile = null;
   let nextAppointment = null;
   if (user) {
@@ -68,7 +98,7 @@ export default async function AppShell({ children, mainClassName }: Props) {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <AppHeader userName={userName} avatarUrl={avatarUrl} isAdmin={isAdmin} isVet={isVet} />
+      <AppHeader userName={userName} avatarUrl={avatarUrl} isAdmin={isAdmin} isVet={isVet} unreadNotifications={unreadNotifications} pendingConversations={pendingConversations} />
       <div className="flex-1 flex overflow-hidden min-h-0">
         <AppSidebar />
         <div className={`flex-1 min-h-0 flex flex-col ${mainClassName ?? "overflow-y-auto"}`}>

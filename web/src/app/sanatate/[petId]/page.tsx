@@ -109,6 +109,7 @@ export default async function PetHealthPage({
   }
 
   return (
+    <>
     <AppShell>
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-10">
         <Breadcrumb />
@@ -397,7 +398,8 @@ export default async function PetHealthPage({
           </Link>
         </div>
       </main>
-      <BottomNav />
     </AppShell>
+    <BottomNav />
+    </>
   );
 }
