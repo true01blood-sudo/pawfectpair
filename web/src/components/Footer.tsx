@@ -3,9 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export default function Footer() {
+const APP_ROUTES = [
+  "/", "/animale", "/ingrijire", "/cercuri", "/explorare",
+  "/sanatate", "/asigurare", "/gps", "/reproductie", "/antrenament",
+  "/programari", "/planificator", "/statistici", "/educatie",
+  "/profil", "/suport", "/forum", "/comunitate", "/sos", "/resq",
+  "/veterinari", "/magazin", "/adoptii", "/notificari", "/admin", "/cont",
+];
+
+export default function Footer({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   const pathname = usePathname();
-  if (pathname === "/login" || pathname === "/") return null;
+  if (pathname === "/login") return null;
+  if (isLoggedIn && APP_ROUTES.some((r) => r === pathname || pathname.startsWith(r + "/"))) return null;
 
   return (
     <footer className="hidden border-t md:block" style={{ background: "var(--header-bg)", borderColor: "var(--card-border)" }}>
