@@ -22,7 +22,7 @@ const PROFILE_EMOJIS = ["💉", "⚖️", "📋", "📅"];
 
 const plusFeatures = [
   { emoji: "📍", text: "GPS activ + istoric trasee" },
-  { emoji: "🏥", text: "Sănătate extinsă + analize AI" },
+  { emoji: "🏥", text: "Sănătate extinsă + istoric complet" },
   { emoji: "🩺", text: "Beneficii la veterinari parteneri" },
   { emoji: "🛒", text: "Oferte exclusive PetMarket" },
   { emoji: "📋", text: "Dosare medicale nelimitate" },
