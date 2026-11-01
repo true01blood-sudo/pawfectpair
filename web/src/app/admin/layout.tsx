@@ -11,6 +11,7 @@ const navItems = [
   { href: "/admin/produse", label: "Produse", icon: "📦" },
   { href: "/admin/comenzi", label: "Comenzi", icon: "🛒" },
   { href: "/admin/dovezi", label: "Dovezi", icon: "📋" },
+  { href: "/admin/veterinari", label: "Veterinari", icon: "🏥" },
   { href: "/admin/setari", label: "Setări", icon: "⚙️" },
 ];
 

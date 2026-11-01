@@ -86,6 +86,16 @@ export async function importDemoProducts() {
   revalidatePath("/admin");
 }
 
+export async function deleteVet(vetId: string) {
+  const supabase = await requireAdmin();
+
+  const { error } = await supabase.from("vets").delete().eq("id", vetId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/veterinari");
+  revalidatePath("/veterinari");
+}
+
 export async function setDocumentStatus(documentId: string, status: "approved" | "rejected") {
   const supabase = await requireAdmin();
 
