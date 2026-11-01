@@ -301,7 +301,7 @@ export default function HomePetWidget({
       <div>
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Recomandat pentru tine</p>
-          <Link href="/explorare?tip=hotel" className="text-xs font-semibold flex items-center gap-0.5 hover:underline" style={{ color: "var(--primary)" }}>
+          <Link href="/pensiuni" className="text-xs font-semibold flex items-center gap-0.5 hover:underline" style={{ color: "var(--primary)" }}>
             Vezi toate
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
           </Link>
@@ -333,7 +333,7 @@ export default function HomePetWidget({
                     {recommendedListing.price_from ? `De la ${recommendedListing.price_from} RON${PRICE_UNIT_LABELS[recommendedListing.price_unit] ?? ""}` : "Preț la cerere"}
                   </span>
                   <Link
-                    href="/explorare?tip=hotel"
+                    href={`/pensiuni/${recommendedListing.id}`}
                     className="rounded-full px-3 py-1 text-[10px] font-bold text-white"
                     style={{ background: "var(--primary)" }}
                   >
@@ -345,7 +345,7 @@ export default function HomePetWidget({
           ) : (
             <div className="p-4 text-center">
               <p className="text-sm" style={{ color: "var(--muted)" }}>Nicio recomandare momentan.</p>
-              <Link href="/explorare?tip=hotel" className="mt-1 inline-block text-xs font-semibold hover:underline" style={{ color: "var(--primary)" }}>
+              <Link href="/pensiuni" className="mt-1 inline-block text-xs font-semibold hover:underline" style={{ color: "var(--primary)" }}>
                 Explorează pensiuni →
               </Link>
             </div>

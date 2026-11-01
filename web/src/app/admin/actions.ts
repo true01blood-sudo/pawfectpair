@@ -156,6 +156,45 @@ export async function deleteCircleEvent(eventId: string) {
   revalidatePath("/cercuri");
 }
 
+export async function toggleListingVerified(listingId: string, verified: boolean) {
+  const supabase = await requireAdmin();
+
+  const { error } = await supabase.from("petday_listings").update({ verified }).eq("id", listingId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/pensiuni");
+  revalidatePath("/pensiuni");
+}
+
+export async function toggleListingActive(listingId: string, active: boolean) {
+  const supabase = await requireAdmin();
+
+  const { error } = await supabase.from("petday_listings").update({ active }).eq("id", listingId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/pensiuni");
+  revalidatePath("/pensiuni");
+}
+
+export async function deletePetdayListing(listingId: string) {
+  const supabase = await requireAdmin();
+
+  const { error } = await supabase.from("petday_listings").delete().eq("id", listingId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/pensiuni");
+  revalidatePath("/pensiuni");
+}
+
+export async function deletePetdayReview(reviewId: string) {
+  const supabase = await requireAdmin();
+
+  const { error } = await supabase.from("petday_reviews").delete().eq("id", reviewId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/pensiuni");
+}
+
 export async function setDocumentStatus(documentId: string, status: "approved" | "rejected") {
   const supabase = await requireAdmin();
 
