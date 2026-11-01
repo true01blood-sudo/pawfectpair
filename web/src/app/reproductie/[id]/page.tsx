@@ -48,6 +48,12 @@ export default async function BreedingDetailPage({
     .eq("id", listing.owner_id)
     .single();
 
+  const { data: reviews } = await supabase
+    .from("breeding_reviews")
+    .select("user_id, rating, comment, created_at, profiles(full_name)")
+    .eq("listing_id", id)
+    .order("created_at", { ascending: false });
+
   return (
     <>
       <AppShell>
@@ -55,6 +61,8 @@ export default async function BreedingDetailPage({
           <BreedingDetailClient
             listing={listing as Record<string, unknown>}
             owner={owner as Record<string, unknown> | null}
+            reviews={(reviews ?? []) as unknown as Array<{ user_id: string; rating: number; comment: string | null; created_at: string; profiles: { full_name: string } | null }>}
+            currentUserId={user?.id ?? null}
             isLoggedIn={!!user}
           />
         </main>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import AppShell from "@/components/AppShell";
+import { StarsDisplay } from "@/components/Stars";
 
 export const metadata: Metadata = {
   title: "Reproducție & Breeding — PetCare",
@@ -37,7 +38,7 @@ export default async function ReproductiePage({
 
   let query = supabase
     .from("breeding_listings")
-    .select("id, title, description, species, breed, gender, age_years, health_tests, price_info, city, photo_url, pedigree_info, created_at")
+    .select("id, title, description, species, breed, gender, age_years, health_tests, price_info, city, photo_url, pedigree_info, is_champion, litters_count, offspring_count, offspring_photos, created_at")
     .eq("status", "active")
     .order("created_at", { ascending: false });
 
@@ -46,6 +47,14 @@ export default async function ReproductiePage({
   if (gen) query = query.eq("gender", gen);
 
   const { data: listings } = await query;
+
+  const { data: reviews } = await supabase.from("breeding_reviews").select("listing_id, rating");
+  const ratingByListing = new Map<string, number[]>();
+  reviews?.forEach((r) => {
+    const arr = ratingByListing.get(r.listing_id) ?? [];
+    arr.push(r.rating);
+    ratingByListing.set(r.listing_id, arr);
+  });
 
   function buildHref(params: { specie?: string; rasa?: string; gen?: string }) {
     const sp = new URLSearchParams();
@@ -179,6 +188,9 @@ export default async function ReproductiePage({
                 const genderColor = listing.gender ? GENDER_COLOR[listing.gender] : null;
                 const healthTests = (listing.health_tests as string[] | null) ?? [];
                 const hasPedigree = !!listing.pedigree_info;
+                const ratings = ratingByListing.get(listing.id);
+                const avgRating = ratings && ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+                const offspringPhotos = (listing.offspring_photos as string[] | null) ?? [];
 
                 return (
                   <Link
@@ -215,6 +227,14 @@ export default async function ReproductiePage({
                             style={{ background: "rgba(255,255,255,0.9)", color: "#7c3aed" }}
                           >
                             📜 Pedigree
+                          </span>
+                        )}
+                        {listing.is_champion && (
+                          <span
+                            className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                            style={{ background: "rgba(255,255,255,0.9)", color: "#d97706" }}
+                          >
+                            🏆 Show champion
                           </span>
                         )}
                       </div>
@@ -266,6 +286,36 @@ export default async function ReproductiePage({
                           )}
                         </div>
                       )}
+
+                      {/* Offspring gallery */}
+                      {offspringPhotos.length > 0 && (
+                        <div className="flex gap-1.5 mb-3">
+                          {offspringPhotos.slice(0, 4).map((url, i) => (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img key={i} src={url} alt={`Pui ${i + 1}`} className="h-10 w-10 rounded-lg object-cover" />
+                          ))}
+                          {offspringPhotos.length > 4 && (
+                            <div
+                              className="h-10 w-10 rounded-lg flex items-center justify-center text-[10px] font-bold"
+                              style={{ background: "var(--surface)", color: "var(--muted)" }}
+                            >
+                              +{offspringPhotos.length - 4}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Rating + litters/offspring stats */}
+                      {(ratings && ratings.length > 0) || listing.litters_count > 0 || listing.offspring_count > 0 ? (
+                        <div className="flex items-center justify-between text-xs mb-3" style={{ color: "var(--muted)" }}>
+                          {ratings && ratings.length > 0 ? (
+                            <StarsDisplay rating={avgRating} count={ratings.length} />
+                          ) : <span />}
+                          {(listing.litters_count > 0 || listing.offspring_count > 0) && (
+                            <span>{listing.litters_count} litere · {listing.offspring_count} pui</span>
+                          )}
+                        </div>
+                      ) : null}
 
                       <div className="flex items-center justify-between">
                         {listing.price_info ? (

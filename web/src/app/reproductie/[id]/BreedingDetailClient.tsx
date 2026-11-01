@@ -2,20 +2,33 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { StarsDisplay, StarsInput } from "@/components/Stars";
+import { submitBreedingReview } from "../actions";
 
-type Tab = "overview" | "sanatate" | "premii" | "pui" | "recenzii";
+type Tab = "overview" | "pedigree" | "sanatate" | "premii" | "pui" | "recenzii";
 
 const TAB_LABELS: Record<Tab, string> = {
   overview: "Prezentare",
+  pedigree: "Pedigree",
   sanatate: "Sănătate",
   premii: "Premii",
   pui: "Pui",
   recenzii: "Recenzii",
 };
 
+type Review = {
+  user_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  profiles: { full_name: string } | null;
+};
+
 type Props = {
   listing: Record<string, unknown>;
   owner: Record<string, unknown> | null;
+  reviews: Review[];
+  currentUserId: string | null;
   isLoggedIn: boolean;
 };
 
@@ -35,7 +48,7 @@ function GenderBadge({ gender }: { gender: string | null }) {
   );
 }
 
-export default function BreedingDetailClient({ listing, owner, isLoggedIn }: Props) {
+export default function BreedingDetailClient({ listing, owner, reviews, currentUserId, isLoggedIn }: Props) {
   const [tab, setTab] = useState<Tab>("overview");
   const [inquirySent, setInquirySent] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -50,10 +63,21 @@ export default function BreedingDetailClient({ listing, owner, isLoggedIn }: Pro
   const pedigreeInfo = listing.pedigree_info as string | null;
   const priceInfo = listing.price_info as string | null;
   const photoUrl = listing.photo_url as string | null;
+  const photos = (listing.photos as string[] | null) ?? [];
   const gender = listing.gender as string | null;
+  const isChampion = (listing.is_champion as boolean | null) ?? false;
+  const awards = (listing.awards as string[] | null) ?? [];
+  const littersCount = (listing.litters_count as number | null) ?? 0;
+  const offspringCount = (listing.offspring_count as number | null) ?? 0;
+  const offspringPhotos = (listing.offspring_photos as string[] | null) ?? [];
+  const listingId = listing.id as string;
 
   const ownerName = (owner?.full_name as string | null) ?? "Proprietar";
   const ownerVerified = (owner?.is_verified as boolean | null) ?? false;
+
+  const gallery = [photoUrl, ...photos].filter(Boolean) as string[];
+  const avgRating = reviews.length > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+  const myReview = currentUserId ? reviews.find((r) => r.user_id === currentUserId) : null;
 
   const speciesEmoji = species === "caine" ? "🐶" : species === "pisica" ? "🐱" : "🐴";
 
@@ -75,14 +99,19 @@ export default function BreedingDetailClient({ listing, owner, isLoggedIn }: Pro
 
       {/* Hero image */}
       <div
-        className="relative mx-4 rounded-2xl overflow-hidden mb-4"
+        className="relative mx-4 rounded-2xl overflow-hidden mb-2"
         style={{ aspectRatio: "4/3", background: "linear-gradient(135deg, #fff7ed 0%, #fde8d0 100%)" }}
       >
-        {photoUrl ? (
+        {gallery.length > 0 ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={photoUrl} alt={title} className="w-full h-full object-cover" />
+          <img src={gallery[0]} alt={title} className="w-full h-full object-cover" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-8xl">{speciesEmoji}</div>
+        )}
+        {gallery.length > 1 && (
+          <span className="absolute bottom-3 left-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold text-white">
+            1/{gallery.length}
+          </span>
         )}
         {/* Favorite + share */}
         <div className="absolute top-3 right-3 flex gap-2">
@@ -107,11 +136,23 @@ export default function BreedingDetailClient({ listing, owner, isLoggedIn }: Pro
         </div>
       </div>
 
+      {gallery.length > 1 && (
+        <div className="px-4 mb-4 flex gap-2 overflow-x-auto pb-1">
+          {gallery.slice(1).map((url, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img key={i} src={url} alt={`${title} ${i + 2}`} className="h-16 w-20 shrink-0 rounded-xl object-cover" />
+          ))}
+        </div>
+      )}
+
       <div className="px-4 space-y-4">
         {/* Title + badges */}
         <div>
           <div className="flex items-start justify-between gap-3 mb-2">
-            <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>{title}</h1>
+            <div>
+              <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>{title}</h1>
+              {reviews.length > 0 && <StarsDisplay rating={avgRating} count={reviews.length} />}
+            </div>
             {priceInfo && (
               <div className="text-right shrink-0">
                 <p className="text-lg font-bold" style={{ color: "var(--primary)" }}>{priceInfo}</p>
@@ -120,6 +161,11 @@ export default function BreedingDetailClient({ listing, owner, isLoggedIn }: Pro
           </div>
           <div className="flex flex-wrap gap-2 items-center">
             <GenderBadge gender={gender} />
+            {isChampion && (
+              <span className="rounded-full px-2.5 py-0.5 text-[11px] font-bold" style={{ background: "color-mix(in srgb, #d97706 15%, transparent)", color: "#d97706" }}>
+                🏆 Show champion
+              </span>
+            )}
             {breed && (
               <span className="text-sm" style={{ color: "var(--muted)" }}>{breed}</span>
             )}
@@ -225,14 +271,21 @@ export default function BreedingDetailClient({ listing, owner, isLoggedIn }: Pro
                 <p className="text-sm" style={{ color: "var(--muted)" }}>Proprietarul nu a adăugat descriere.</p>
               </div>
             )}
-            {pedigreeInfo && (
-              <div
-                className="rounded-2xl border p-4"
-                style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
-              >
-                <h3 className="font-bold text-sm mb-2" style={{ color: "var(--foreground)" }}>Informații pedigree</h3>
-                <p className="text-sm leading-relaxed" style={{ color: "var(--muted)" }}>{pedigreeInfo}</p>
-              </div>
+          </div>
+        )}
+
+        {tab === "pedigree" && (
+          <div
+            className="rounded-2xl border p-4"
+            style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
+          >
+            <h3 className="font-bold text-sm mb-2" style={{ color: "var(--foreground)" }}>📜 Informații pedigree</h3>
+            {pedigreeInfo ? (
+              <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: "var(--foreground)" }}>{pedigreeInfo}</p>
+            ) : (
+              <p className="text-sm" style={{ color: "var(--muted)" }}>
+                Proprietarul nu a adăugat informații de pedigree. Solicită certificatul oficial înainte de a continua.
+              </p>
             )}
           </div>
         )}
@@ -272,40 +325,112 @@ export default function BreedingDetailClient({ listing, owner, isLoggedIn }: Pro
 
         {tab === "premii" && (
           <div
-            className="rounded-2xl border p-8 text-center"
+            className="rounded-2xl border p-4"
             style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
           >
-            <div className="text-4xl mb-3">🏆</div>
-            <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>Niciun premiu adăugat</p>
-            <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
-              Proprietarul nu a adăugat premii sau titluri.
-            </p>
+            {isChampion && (
+              <div className="flex items-center gap-2 mb-3 rounded-xl p-3" style={{ background: "color-mix(in srgb, #d97706 10%, transparent)" }}>
+                <span className="text-2xl">🏆</span>
+                <span className="text-sm font-bold" style={{ color: "#d97706" }}>Câștigător de expoziții (show champion)</span>
+              </div>
+            )}
+            {awards.length > 0 ? (
+              <ul className="space-y-2">
+                {awards.map((award) => (
+                  <li key={award} className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm" style={{ background: "var(--surface)", color: "var(--foreground)" }}>
+                    <span>🎖️</span> {award}
+                  </li>
+                ))}
+              </ul>
+            ) : !isChampion ? (
+              <div className="text-center py-6">
+                <div className="text-4xl mb-3">🏆</div>
+                <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>Niciun premiu adăugat</p>
+                <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Proprietarul nu a adăugat premii sau titluri.</p>
+              </div>
+            ) : null}
           </div>
         )}
 
         {tab === "pui" && (
           <div
-            className="rounded-2xl border p-8 text-center"
+            className="rounded-2xl border p-4"
             style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
           >
-            <div className="text-4xl mb-3">🐾</div>
-            <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>Niciun pui listat</p>
-            <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
-              Proprietarul nu a adăugat puii din generații anterioare.
-            </p>
+            {(littersCount > 0 || offspringCount > 0) && (
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="rounded-xl p-3 text-center" style={{ background: "var(--surface)" }}>
+                  <p className="text-xl font-bold" style={{ color: "var(--primary)" }}>{littersCount}</p>
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>litere</p>
+                </div>
+                <div className="rounded-xl p-3 text-center" style={{ background: "var(--surface)" }}>
+                  <p className="text-xl font-bold" style={{ color: "var(--primary)" }}>{offspringCount}</p>
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>pui crescuți</p>
+                </div>
+              </div>
+            )}
+            {offspringPhotos.length > 0 ? (
+              <div className="grid grid-cols-3 gap-2">
+                {offspringPhotos.map((url, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={i} src={url} alt={`Pui ${i + 1}`} className="aspect-square rounded-xl object-cover" />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <div className="text-4xl mb-3">🐾</div>
+                <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>Niciun pui listat</p>
+                <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
+                  Proprietarul nu a adăugat poze cu puii din generații anterioare.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
         {tab === "recenzii" && (
-          <div
-            className="rounded-2xl border p-8 text-center"
-            style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
-          >
-            <div className="text-4xl mb-3">⭐</div>
-            <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>Fără recenzii momentan</p>
-            <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
-              Primele recenzii vor apărea după primele imperecheri confirmate.
-            </p>
+          <div className="space-y-3">
+            {reviews.length > 0 ? (
+              reviews.map((r, i) => (
+                <div key={i} className="rounded-2xl border p-3 text-sm shadow-sm" style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>
+                  <StarsDisplay rating={r.rating} />
+                  <p className="mt-1 font-medium" style={{ color: "var(--foreground)" }}>{r.profiles?.full_name ?? "Utilizator"}</p>
+                  {r.comment && <p className="mt-1" style={{ color: "var(--muted)" }}>{r.comment}</p>}
+                </div>
+              ))
+            ) : (
+              <div
+                className="rounded-2xl border p-8 text-center"
+                style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
+              >
+                <div className="text-4xl mb-3">⭐</div>
+                <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>Fără recenzii momentan</p>
+                <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
+                  Primele recenzii vor apărea după primele imperecheri confirmate.
+                </p>
+              </div>
+            )}
+
+            {isLoggedIn && !myReview && (
+              <form
+                action={submitBreedingReview.bind(null, listingId)}
+                className="flex flex-col gap-3 rounded-2xl border p-4"
+                style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
+              >
+                <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>Lasă o recenzie</p>
+                <StarsInput />
+                <textarea
+                  name="comment"
+                  placeholder="Comentariu (opțional)"
+                  rows={2}
+                  className="rounded-xl border p-3 text-sm"
+                  style={{ borderColor: "var(--card-border)", background: "var(--card-bg)", color: "var(--foreground)" }}
+                />
+                <button className="min-h-11 self-start rounded-full bg-primary px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90">
+                  Trimite recenzia
+                </button>
+              </form>
+            )}
           </div>
         )}
 
