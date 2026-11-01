@@ -6,6 +6,7 @@
  * Tab-uri: Toate cazurile | Anunțurile mele
  */
 import React, { useMemo, useState } from 'react';
+import { Stack } from 'expo-router';
 import {
   View,
   Text,
@@ -346,6 +347,7 @@ export default function PetResqScreen() {
 
   return (
     <SafeAreaView style={[s.root, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+      <Stack.Screen options={{ title: t('resq.title') }} />
       {/* Antet + sumar */}
       <View style={[s.header, { paddingHorizontal: 16, paddingTop: 12 }]}>
         <Text style={[s.title, { color: colors.text }]}>🔍 {t('resq.title')}</Text>

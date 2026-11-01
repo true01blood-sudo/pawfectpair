@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { useAppTheme } from '../../../components/theme-provider';
 import { PetForm } from '../../../components/pet';
 import { usePet, useUpdatePet } from '../../../hooks';
@@ -18,6 +18,7 @@ export default function EditPetScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: t.colors.background }} edges={['bottom']}>
+      <Stack.Screen options={{ title: pet.data?.name ? `Editează ${pet.data.name}` : 'Editează animalul' }} />
       <PetForm
         initial={pet.data ?? undefined}
         submitLabel="Salvează modificările"

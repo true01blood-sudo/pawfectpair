@@ -5,6 +5,7 @@
  * scor compozit de sănătate. TOTUL calculat pe dispozitiv.
  */
 import React, { useMemo, useState } from 'react';
+import { Stack } from 'expo-router';
 import {
   View,
   Text,
@@ -95,6 +96,7 @@ export default function PetAnalyticsScreen() {
 
   return (
     <SafeAreaView style={[s.root, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+      <Stack.Screen options={{ title: t('analytics.title') }} />
       <ScrollView contentContainerStyle={s.container} showsVerticalScrollIndicator={false}>
         <View style={s.header}>
           <Text style={[s.title, { color: colors.text }]}>📊 {t('analytics.title')}</Text>

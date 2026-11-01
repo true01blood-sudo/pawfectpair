@@ -4,6 +4,7 @@
  * de antrenament (durată, rating, note) și sumar activitate.
  */
 import React, { useMemo, useState } from 'react';
+import { Stack } from 'expo-router';
 import {
   View,
   Text,
@@ -222,6 +223,7 @@ export default function PetTrainingScreen() {
 
   return (
     <SafeAreaView style={[s.root, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+      <Stack.Screen options={{ title: t('training.title') }} />
       <ScrollView contentContainerStyle={s.container} showsVerticalScrollIndicator={false}>
         {/* Antet */}
         <View style={s.header}>

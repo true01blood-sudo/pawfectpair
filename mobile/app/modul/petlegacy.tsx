@@ -6,6 +6,7 @@
  * Tab-uri: Planuri | Memoriale
  */
 import React, { useMemo, useState } from 'react';
+import { Stack } from 'expo-router';
 import {
   View,
   Text,
@@ -323,6 +324,7 @@ export default function PetLegacyScreen() {
 
   return (
     <SafeAreaView style={[s.root, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+      <Stack.Screen options={{ title: t('legacy.title') }} />
       <View style={[s.header, { paddingHorizontal: 16, paddingTop: 12 }]}>
         <Text style={[s.title, { color: colors.text }]}>🌷 {t('legacy.title')}</Text>
         <Text style={[s.subtitle, { color: colors.textMuted }]}>{t('legacy.subtitle')}</Text>

@@ -6,6 +6,7 @@
  * Tab-uri: Explorează | Rezervările mele | Ofertele mele
  */
 import React, { useMemo, useState } from 'react';
+import { Stack } from 'expo-router';
 import {
   View,
   Text,
@@ -1001,6 +1002,7 @@ export default function PetDayScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['bottom']}>
+      <Stack.Screen options={{ title: 'Pensiuni' }} />
       {/* Tab-uri */}
       <View style={[styles.tabsRow, { backgroundColor: theme.colors.background }]}>
         {TABS.map((tb) => (

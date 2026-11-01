@@ -4,6 +4,7 @@
  * la expirare + dosar despăgubiri cu tranziții (trimisă → aprobată → plătită).
  */
 import React, { useMemo, useState } from 'react';
+import { Stack } from 'expo-router';
 import {
   View,
   Text,
@@ -279,6 +280,7 @@ export default function PetInsuranceScreen() {
 
   return (
     <SafeAreaView style={[s.root, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+      <Stack.Screen options={{ title: t('insurance.title') }} />
       <ScrollView contentContainerStyle={s.container} showsVerticalScrollIndicator={false}>
         <View style={s.header}>
           <Text style={[s.title, { color: colors.text }]}>🛡️ {t('insurance.title')}</Text>
