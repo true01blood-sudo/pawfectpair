@@ -2,38 +2,98 @@
  * Explore tab — "Explore care near you"
  * Design: pawfectpair-design/petcare-android1.png (middle panel)
  */
-import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, StyleSheet } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Image, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../components/theme-provider';
+import { StateView } from '../../components/ui';
+import { useVets } from '../../hooks/useVets';
+import { useTrainers } from '../../hooks/useEdu';
 
 const SPECIES = ['Dogs', 'Cats', 'Birds', 'Horses', 'Other'] as const;
+
 const CATEGORIES = [
-  { id: 'care',      icon: 'paw',               label: 'Care' },
-  { id: 'hotels',   icon: 'bed-outline',        label: 'Hotels' },
-  { id: 'training', icon: 'school-outline',     label: 'Training' },
-  { id: 'breeding', icon: 'heart-circle-outline', label: 'Breeding' },
-  { id: 'adoption', icon: 'home-outline',       label: 'Adoption' },
+  { id: 'care',      icon: 'medical-outline',       label: 'Care',     route: null },
+  { id: 'hotels',    icon: 'bed-outline',            label: 'Hotels',   route: '/modul/petday' },
+  { id: 'training',  icon: 'school-outline',         label: 'Training', route: null },
+  { id: 'breeding',  icon: 'heart-circle-outline',   label: 'Breeding', route: '/modul/petbreeding' },
+  { id: 'adoption',  icon: 'home-outline',           label: 'Adoption', route: '/modul/adoptii' },
 ] as const;
 
-const SAMPLE_PROVIDERS = [
-  { id: '1', name: 'Lake Vet Clinic', verified: true, rating: 4.9, reviews: 120, distance: '1.2 km', services: ['General care', 'Vaccinations', 'Diagnostics'], price: 'From 80 RON' },
-  { id: '2', name: 'City Pet Hotel',  verified: true, rating: 4.7, reviews: 85,  distance: '2.4 km', services: ['Boarding', 'Grooming', 'Daycare'],              price: 'From 50 RON' },
-  { id: '3', name: 'Alpha Training',  verified: false,rating: 4.5, reviews: 42,  distance: '3.1 km', services: ['Basic', 'Advanced', 'Puppy classes'],           price: 'From 40 RON' },
-];
+type CategoryId = (typeof CATEGORIES)[number]['id'];
+
+interface ProviderCard {
+  id: string;
+  name: string;
+  verified: boolean;
+  rating: number;
+  reviewCount: number;
+  location: string | null;
+  services: string[];
+  price: string | null;
+  photoUrl: string | null;
+  phone: string | null;
+}
 
 export default function ExploreScreen() {
   const theme = useAppTheme();
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [species, setSpecies] = useState<string>('Dogs');
-  const [category, setCategory] = useState('care');
+  const [category, setCategory] = useState<CategoryId>('care');
   const [showSpeciesPicker, setShowSpeciesPicker] = useState(false);
+
+  const vets = useVets();
+  const trainers = useTrainers();
+
+  const isLoading = category === 'care' ? vets.isLoading : category === 'training' ? trainers.isLoading : false;
+
+  const cards: ProviderCard[] = useMemo(() => {
+    if (category === 'care') {
+      return (vets.data ?? []).map((v) => ({
+        id: v.id,
+        name: v.clinic_name,
+        verified: v.is_licensed,
+        rating: v.rating,
+        reviewCount: v.reviewCount,
+        location: v.city ? `${v.city}${v.address ? ` · ${v.address}` : ''}` : null,
+        services: v.services,
+        price: v.minPriceCents != null ? `From ${Math.round(v.minPriceCents / 100)} RON` : null,
+        photoUrl: v.photo_url,
+        phone: v.phone,
+      }));
+    }
+    if (category === 'training') {
+      return (trainers.data ?? []).map((t) => ({
+        id: t.id,
+        name: t.display_name,
+        verified: t.verified,
+        rating: 0,
+        reviewCount: 0,
+        location: t.city,
+        services: t.specialties,
+        price: t.price_range,
+        photoUrl: t.photo_url,
+        phone: t.phone,
+      }));
+    }
+    return [];
+  }, [category, vets.data, trainers.data]);
+
+  const filteredCards = useMemo(() => {
+    const needle = search.trim().toLowerCase();
+    if (!needle) return cards;
+    return cards.filter((c) =>
+      `${c.name} ${c.location ?? ''} ${c.services.join(' ')}`.toLowerCase().includes(needle)
+    );
+  }, [cards, search]);
 
   const s = theme.colors;
   const sp = theme.spacing;
+  const activeCategory = CATEGORIES.find((c) => c.id === category)!;
+  const showInlineCards = category === 'care' || category === 'training';
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: s.background }} edges={['top']}>
@@ -61,12 +121,9 @@ export default function ExploreScreen() {
               style={{ flex: 1, color: s.text, fontSize: 14, marginLeft: 8 }}
             />
           </View>
-          <Pressable style={[styles.filterBtn, { backgroundColor: s.surface, borderColor: s.border }]}>
-            <Ionicons name="options-outline" size={20} color={s.text} />
-          </Pressable>
         </View>
 
-        {/* ── Species filter + Filters ── */}
+        {/* ── Species filter ── */}
         <View style={{ paddingHorizontal: sp.lg, marginTop: sp.sm, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <Pressable
             onPress={() => setShowSpeciesPicker(!showSpeciesPicker)}
@@ -78,10 +135,6 @@ export default function ExploreScreen() {
             </Text>
             <Ionicons name="chevron-down" size={12} color="#fff" />
           </Pressable>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="options-outline" size={15} color={s.textMuted} />
-            <Text style={{ color: s.text, fontSize: 13 }}>Filters</Text>
-          </View>
         </View>
 
         {/* Species picker dropdown */}
@@ -107,8 +160,11 @@ export default function ExploreScreen() {
             <Pressable
               key={cat.id}
               onPress={() => {
+                if (cat.route) {
+                  router.push(cat.route as any);
+                  return;
+                }
                 setCategory(cat.id);
-                if (cat.id === 'breeding') router.push('/modul/petbreeding');
               }}
               style={[
                 styles.catTab,
@@ -126,69 +182,95 @@ export default function ExploreScreen() {
           ))}
         </ScrollView>
 
-        {/* ── Map placeholder ── */}
+        {/* ── Map ── */}
         <Pressable onPress={() => router.push('/(tabs)/harta')} style={{ marginHorizontal: sp.lg, marginTop: sp.md }}>
           <View style={[styles.mapPlaceholder, { backgroundColor: s.surfaceAlt, borderColor: s.border }]}>
             <Ionicons name="map" size={40} color={s.primary} style={{ opacity: 0.5 }} />
             <Text style={{ color: s.textMuted, fontSize: 13, marginTop: 6 }}>Tap to open map view</Text>
-            <Pressable style={[styles.viewListBtn, { backgroundColor: s.surface, borderColor: s.border }]}>
-              <Ionicons name="list-outline" size={14} color={s.text} />
-              <Text style={{ color: s.text, fontSize: 12, marginLeft: 4 }}>View list</Text>
-            </Pressable>
           </View>
         </Pressable>
 
         {/* ── Provider cards ── */}
-        <View style={{ paddingHorizontal: sp.lg, marginTop: sp.md, gap: sp.md }}>
-          {SAMPLE_PROVIDERS.map((p) => (
-            <Pressable key={p.id}>
-              <View style={[styles.providerCard, { backgroundColor: s.surface, borderColor: s.border }]}>
-                <View style={[styles.providerImg, { backgroundColor: s.surfaceAlt }]}>
-                  <Ionicons name="medical" size={30} color={s.primary} style={{ opacity: 0.4 }} />
-                </View>
-                <Pressable style={styles.favBtn}>
-                  <Ionicons name="heart-outline" size={18} color={s.textMuted} />
-                </Pressable>
-                <View style={{ padding: 12, gap: 4 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Text style={{ color: s.text, fontSize: 16, fontFamily: theme.typography.fontFamilyBold }}>
-                      {p.name}
-                    </Text>
-                    {p.verified && (
-                      <View style={[styles.verifiedBadge, { backgroundColor: '#22C55E15' }]}>
-                        <Ionicons name="checkmark-circle" size={12} color="#22C55E" />
-                        <Text style={{ color: '#22C55E', fontSize: 11, marginLeft: 3 }}>Verified</Text>
-                      </View>
+        {showInlineCards && (
+          <View style={{ paddingHorizontal: sp.lg, marginTop: sp.md, gap: sp.md }}>
+            {isLoading ? (
+              <StateView loading />
+            ) : filteredCards.length === 0 ? (
+              <StateView
+                emoji={activeCategory.id === 'care' ? '🩺' : '🎓'}
+                title={activeCategory.id === 'care' ? 'Niciun cabinet găsit' : 'Niciun trainer găsit'}
+                description={search.trim() ? 'Încearcă un alt termen de căutare.' : 'Nu sunt încă profiluri publice în această categorie.'}
+              />
+            ) : (
+              filteredCards.map((p) => (
+                <View key={p.id} style={[styles.providerCard, { backgroundColor: s.surface, borderColor: s.border }]}>
+                  <View style={[styles.providerImg, { backgroundColor: s.surfaceAlt }]}>
+                    {p.photoUrl ? (
+                      <Image source={{ uri: p.photoUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                    ) : (
+                      <Ionicons
+                        name={activeCategory.id === 'care' ? 'medical' : 'school'}
+                        size={30}
+                        color={s.primary}
+                        style={{ opacity: 0.4 }}
+                      />
                     )}
                   </View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Ionicons name="star" size={13} color="#F59E0B" />
-                    <Text style={{ color: s.text, fontSize: 13 }}>{p.rating} ({p.reviews})</Text>
-                    <Text style={{ color: s.textMuted }}>·</Text>
-                    <Text style={{ color: s.textMuted, fontSize: 13 }}>{p.distance}</Text>
-                  </View>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-                    {p.services.map((sv) => (
-                      <View key={sv} style={[styles.serviceBadge, { backgroundColor: s.surfaceAlt }]}>
-                        <Text style={{ color: s.textMuted, fontSize: 11 }}>{sv}</Text>
-                      </View>
-                    ))}
-                  </View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
-                    <Text style={{ color: s.text, fontSize: 14, fontFamily: theme.typography.fontFamilyBold }}>
-                      {p.price}
-                    </Text>
-                    <Pressable style={[styles.viewProfileBtn, { backgroundColor: s.primary }]}>
-                      <Text style={{ color: '#fff', fontSize: 13, fontFamily: theme.typography.fontFamilySemibold }}>
-                        View profile
+                  <View style={{ padding: 12, gap: 4 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ color: s.text, fontSize: 16, fontFamily: theme.typography.fontFamilyBold }}>
+                        {p.name}
                       </Text>
-                    </Pressable>
+                      {p.verified && (
+                        <View style={[styles.verifiedBadge, { backgroundColor: '#22C55E15' }]}>
+                          <Ionicons name="checkmark-circle" size={12} color="#22C55E" />
+                          <Text style={{ color: '#22C55E', fontSize: 11, marginLeft: 3 }}>Verified</Text>
+                        </View>
+                      )}
+                    </View>
+                    {p.reviewCount > 0 ? (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <Ionicons name="star" size={13} color="#F59E0B" />
+                        <Text style={{ color: s.text, fontSize: 13 }}>{p.rating.toFixed(1)} ({p.reviewCount})</Text>
+                        {p.location && <Text style={{ color: s.textMuted }}>·</Text>}
+                        {p.location && <Text style={{ color: s.textMuted, fontSize: 13 }}>{p.location}</Text>}
+                      </View>
+                    ) : (
+                      p.location && <Text style={{ color: s.textMuted, fontSize: 13 }}>{p.location}</Text>
+                    )}
+                    {p.services.length > 0 && (
+                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                        {p.services.map((sv) => (
+                          <View key={sv} style={[styles.serviceBadge, { backgroundColor: s.surfaceAlt }]}>
+                            <Text style={{ color: s.textMuted, fontSize: 11 }}>{sv}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+                      {p.price ? (
+                        <Text style={{ color: s.text, fontSize: 14, fontFamily: theme.typography.fontFamilyBold }}>
+                          {p.price}
+                        </Text>
+                      ) : <View />}
+                      {p.phone && (
+                        <Pressable
+                          onPress={() => Linking.openURL(`tel:${p.phone}`)}
+                          style={[styles.viewProfileBtn, { backgroundColor: s.primary }]}
+                        >
+                          <Ionicons name="call-outline" size={13} color="#fff" style={{ marginRight: 5 }} />
+                          <Text style={{ color: '#fff', fontSize: 13, fontFamily: theme.typography.fontFamilySemibold }}>
+                            Call
+                          </Text>
+                        </Pressable>
+                      )}
+                    </View>
                   </View>
                 </View>
-              </View>
-            </Pressable>
-          ))}
-        </View>
+              ))
+            )}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -203,14 +285,6 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     borderWidth: 1,
-  },
-  filterBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   speciesPill: {
     flexDirection: 'row',
@@ -244,17 +318,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'relative',
   },
-  viewListBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    position: 'absolute',
-    bottom: 12,
-    right: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
   providerCard: {
     borderRadius: 16,
     borderWidth: 1,
@@ -264,17 +327,7 @@ const styles = StyleSheet.create({
     height: 160,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  favBtn: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    overflow: 'hidden',
   },
   verifiedBadge: {
     flexDirection: 'row',
@@ -289,6 +342,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   viewProfileBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,

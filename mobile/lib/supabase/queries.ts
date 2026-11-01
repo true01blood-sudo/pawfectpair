@@ -2558,6 +2558,8 @@ export const queries = {
   deleteMemorial,
   // PetBreeding
   fetchBreedingListings,
+  // Explore — Vets
+  fetchVets,
 };
 
 // ============================================================
@@ -2608,5 +2610,58 @@ export async function fetchBreedingListings(filters: { species?: string } = {}):
     const ratings = reviews ?? [];
     const rating = ratings.length > 0 ? ratings.reduce((s, r) => s + r.rating, 0) / ratings.length : 0;
     return { ...rest, rating, reviewCount: ratings.length };
+  });
+}
+
+// ============================================================
+// EXPLORE — Vets (cabinete veterinare, pentru categoria "Care")
+// ============================================================
+
+export interface VetCardRow {
+  id: string;
+  clinic_name: string;
+  city: string | null;
+  address: string | null;
+  phone: string | null;
+  bio: string | null;
+  photo_url: string | null;
+  is_licensed: boolean;
+  services: string[];
+  minPriceCents: number | null;
+  rating: number;
+  reviewCount: number;
+}
+
+type RawVetRow = Omit<VetCardRow, 'services' | 'minPriceCents' | 'rating' | 'reviewCount'> & {
+  vet_reviews: { rating: number }[] | null;
+  vet_services: { name: string; price_cents: number }[] | null;
+};
+
+export async function fetchVets(filters: { city?: string } = {}, limit = 50): Promise<VetCardRow[]> {
+  let q = supabase
+    .from('vets')
+    .select(
+      'id, clinic_name, city, address, phone, bio, photo_url, is_licensed, vet_reviews(rating), vet_services(name, price_cents)'
+    )
+    .order('created_at', { ascending: false })
+    .limit(Math.max(1, Math.min(200, limit)));
+  if (filters.city && filters.city.trim()) {
+    q = q.ilike('city', `%${sanitizeText(filters.city, 60)}%`);
+  }
+
+  const { data, error } = await q;
+  if (error) throw error;
+
+  return ((data ?? []) as unknown as RawVetRow[]).map((row) => {
+    const { vet_reviews, vet_services, ...rest } = row;
+    const ratings = vet_reviews ?? [];
+    const services = vet_services ?? [];
+    return {
+      ...rest,
+      services: services.slice(0, 3).map((sv) => sv.name),
+      minPriceCents: services.length > 0 ? Math.min(...services.map((sv) => sv.price_cents)) : null,
+      rating: ratings.length > 0 ? ratings.reduce((s, r) => s + r.rating, 0) / ratings.length : 0,
+      reviewCount: ratings.length,
+    };
   });
 }
