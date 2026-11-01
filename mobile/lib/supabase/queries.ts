@@ -518,6 +518,14 @@ export async function markMessageRead(messageId: string): Promise<void> {
 // STORAGE
 // ============================================================
 
+const EXT_TO_MIME: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  heic: 'image/heic',
+};
+
 export async function uploadPetPhoto(
   fileUri: string,
   userId: string,
@@ -535,10 +543,15 @@ export async function uploadPetPhoto(
   }
   const fileResp = await fetch(fileUri);
   const blob = await fileResp.blob();
+  // blob.type e aproape mereu gol pe React Native pentru URI-uri locale
+  // (file://) — bucket-ul "public-media" are acum o listă albă de
+  // content-type-uri (fix de securitate), așa că trimitem explicit tipul
+  // dedus din extensie, nu cel (nesigur) raportat de blob.
+  const contentType = EXT_TO_MIME[ext.toLowerCase()] ?? 'image/jpeg';
 
   const { error } = await supabase.storage
     .from('public-media')
-    .upload(path, blob, { cacheControl: '3600', contentType: blob.type, upsert: false });
+    .upload(path, blob, { cacheControl: '3600', contentType, upsert: false });
   if (error) throw error;
 
   const { data } = supabase.storage.from('public-media').getPublicUrl(path);
