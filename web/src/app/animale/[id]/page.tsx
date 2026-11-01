@@ -35,8 +35,18 @@ export default async function PetHealthPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: pet } = await supabase.from("pets").select("*").eq("id", id).single();
-  if (!pet || pet.owner_id !== user.id) notFound();
+  const { data: petBase } = await supabase
+    .from("pets")
+    .select("id, owner_id, name, species, breed, birth_date, sex, weight_kg, photo_url, created_at, updated_at")
+    .eq("id", id)
+    .single();
+  if (!petBase || petBase.owner_id !== user.id) notFound();
+
+  const { data: privateFields } = await supabase.rpc("get_my_pets_private_fields") as {
+    data: { pet_id: string; notes: string | null }[] | null;
+  };
+  const myPrivateFields = privateFields?.find((p) => p.pet_id === id);
+  const pet = { ...petBase, notes: myPrivateFields?.notes ?? null };
 
   const { data: records } = await supabase
     .from("medical_records")

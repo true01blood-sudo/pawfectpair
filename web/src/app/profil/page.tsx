@@ -27,9 +27,11 @@ export default async function ProfilPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, phone, avatar_url, role")
+    .select("full_name, avatar_url, role")
     .eq("id", user.id)
     .single();
+
+  const { data: myPhone } = await supabase.rpc("get_my_phone");
 
   // is_verified added by migration 0039 — query separately to avoid crashing if not yet applied
   const { data: profileExtra } = await supabase
@@ -304,7 +306,7 @@ export default async function ProfilPage() {
             </div>
             <div>
               <label className="text-xs" style={{ color: "var(--muted)" }}>Telefon</label>
-              <input name="phone" type="tel" defaultValue={profile?.phone ?? ""} placeholder="07xx xxx xxx"
+              <input name="phone" type="tel" defaultValue={myPhone ?? ""} placeholder="07xx xxx xxx"
                 className="mt-1 min-h-11 w-full rounded-xl border px-3 text-sm"
                 style={{ borderColor: "var(--card-border)", background: "var(--card-bg)", color: "var(--foreground)" }} />
             </div>

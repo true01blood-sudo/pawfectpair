@@ -12,10 +12,20 @@ export default async function SosPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: myPets } = await supabase
+  const { data: myPetsBase } = await supabase
     .from("pets")
-    .select("id, name, emergency_contact_name, emergency_contact_phone")
+    .select("id, name")
     .eq("owner_id", user.id);
+
+  const { data: privateFields } = await supabase.rpc("get_my_pets_private_fields") as {
+    data: { pet_id: string; emergency_contact_name: string | null; emergency_contact_phone: string | null }[] | null;
+  };
+  const privateByPet = new Map((privateFields ?? []).map((p) => [p.pet_id, p]));
+  const myPets = (myPetsBase ?? []).map((p) => ({
+    ...p,
+    emergency_contact_name: privateByPet.get(p.id)?.emergency_contact_name ?? null,
+    emergency_contact_phone: privateByPet.get(p.id)?.emergency_contact_phone ?? null,
+  }));
 
   const { data: vets } = await supabase
     .from("vets")
