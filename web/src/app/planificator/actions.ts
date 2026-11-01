@@ -32,6 +32,7 @@ export async function addTask(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/planificator");
+  revalidatePath("/animale");
 }
 
 export async function completeTask(taskId: string) {
@@ -70,4 +71,6 @@ export async function completeTask(taskId: string) {
   }
 
   revalidatePath("/planificator");
+  revalidatePath("/animale");
+  revalidatePath("/ingrijire");
 }
