@@ -2,20 +2,22 @@
  * Home — "Your pet people" social feed
  * Design: pawfectpair-design/petcare-android1.png
  */
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, Pressable, RefreshControl,
-  Image as RNImage, StyleSheet, FlatList,
+  Image as RNImage, StyleSheet, FlatList, BackHandler, ToastAndroid, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useAppTheme } from '../../components/theme-provider';
 import { Card } from '../../components/ui';
-import { useMyPets } from '../../hooks';
+import { useMyPets, useUpcomingRecords, useEduArticles } from '../../hooks';
 import { useProfile } from '../../hooks/useProfile';
+import { useEvents, useSetEventRsvp } from '../../hooks/useEvents';
 import { useAuthStore } from '../../store/auth.store';
+import { MEDICAL_TYPE_LABELS } from '@pawfectpair/shared';
 
 const FEED_TABS = ['Following', 'For you', 'Local'] as const;
 type FeedTab = typeof FEED_TABS[number];
@@ -28,13 +30,48 @@ export default function HomeScreen() {
   const session = useAuthStore((s) => s.session);
   const [activeTab, setActiveTab] = useState<FeedTab>('For you');
   const [refreshing, setRefreshing] = useState(false);
+  const lastBackPress = useRef(0);
+
+  // Acasă e ecranul rădăcină al tab-urilor — fără asta, back pe Android
+  // iese direct din aplicație la prima apăsare. Pattern standard: a doua
+  // apăsare în 2s chiar iese.
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS !== 'android') return;
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        const now = Date.now();
+        if (now - lastBackPress.current < 2000) {
+          return false; // lasă comportamentul implicit (ieșire)
+        }
+        lastBackPress.current = now;
+        ToastAndroid.show('Mai apasă o dată pentru a ieși', ToastAndroid.SHORT);
+        return true; // blochează ieșirea la prima apăsare
+      });
+      return () => sub.remove();
+    }, [])
+  );
 
   const firstName = profile.data?.full_name?.split(' ')[0] ?? 'there';
   const activePet = pets.data?.[0];
 
+  const upcoming = useUpcomingRecords();
+  const nextReminder = upcoming.data?.[0] ?? null;
+
+  const events = useEvents({});
+  const nextEvent = useMemo(() => {
+    const now = Date.now();
+    return (events.data ?? [])
+      .filter((e) => new Date(e.starts_at).getTime() >= now)
+      .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())[0] ?? null;
+  }, [events.data]);
+  const setRsvp = useSetEventRsvp();
+
+  const articles = useEduArticles();
+  const latestArticle = articles.data?.[0] ?? null;
+
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([pets.refetch(), profile.refetch()]);
+    await Promise.all([pets.refetch(), profile.refetch(), upcoming.refetch(), events.refetch(), articles.refetch()]);
     setRefreshing(false);
   };
 
@@ -52,12 +89,21 @@ export default function HomeScreen() {
       >
         {/* ── Header ── */}
         <View style={[styles.header, { paddingHorizontal: sp.lg, paddingTop: sp.sm }]}>
-          <Pressable style={[styles.locationPill, { backgroundColor: s.surface, borderColor: s.border }]}>
+          <Pressable
+            onPress={() => router.push('/(tabs)/harta')}
+            style={[styles.locationPill, { backgroundColor: s.surface, borderColor: s.border }]}
+          >
             <Ionicons name="location-outline" size={14} color={s.primary} />
             <Text style={{ color: s.text, fontSize: 13, fontFamily: theme.typography.fontFamilySemibold, marginHorizontal: 4 }}>
               My location
             </Text>
             <Ionicons name="chevron-down" size={12} color={s.textMuted} />
+          </Pressable>
+          <Pressable
+            onPress={() => router.push('/modul/petsos')}
+            style={[styles.iconBtn, { backgroundColor: '#EF4444', borderColor: '#EF4444' }]}
+          >
+            <Ionicons name="alert-circle" size={22} color="#fff" />
           </Pressable>
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <Pressable
@@ -118,16 +164,16 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* ── Upcoming reminder (if pet has appointments) ── */}
-        {activePet && (
+        {/* ── Upcoming reminder (real medical due-date, if any) ── */}
+        {activePet && nextReminder && (
           <Pressable
-            onPress={() => router.push('/(tabs)/ingrijire')}
+            onPress={() => router.push(`/animale/${nextReminder.pet_id}`)}
             style={{ paddingHorizontal: sp.lg, marginTop: sp.md }}
           >
             <View style={[styles.reminderCard, { backgroundColor: s.surface, borderColor: s.border }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
-                {activePet.photo_url ? (
-                  <Image source={{ uri: activePet.photo_url }} style={{ width: 40, height: 40, borderRadius: 20 }} contentFit="cover" />
+                {nextReminder.pet?.photo_url ? (
+                  <Image source={{ uri: nextReminder.pet.photo_url }} style={{ width: 40, height: 40, borderRadius: 20 }} contentFit="cover" />
                 ) : (
                   <View style={[styles.petAvatarFallback, { backgroundColor: s.background, width: 40, height: 40 }]}>
                     <Ionicons name="paw" size={18} color={s.primary} />
@@ -135,16 +181,20 @@ export default function HomeScreen() {
                 )}
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: s.text, fontSize: 14, fontFamily: theme.typography.fontFamilySemibold }}>
-                    {activePet.name}
+                    {nextReminder.pet?.name ?? activePet.name}
                   </Text>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
                     <Ionicons name="calendar-outline" size={12} color={s.textMuted} />
-                    <Text style={{ color: s.textMuted, fontSize: 12 }}>Annual check-up</Text>
+                    <Text style={{ color: s.textMuted, fontSize: 12 }}>{nextReminder.title} · {MEDICAL_TYPE_LABELS[nextReminder.type]}</Text>
                   </View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                    <Ionicons name="location-outline" size={12} color={s.textMuted} />
-                    <Text style={{ color: s.textMuted, fontSize: 12 }}>Tomorrow, 10:30</Text>
-                  </View>
+                  {nextReminder.next_due_date && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                      <Ionicons name="time-outline" size={12} color={s.textMuted} />
+                      <Text style={{ color: s.textMuted, fontSize: 12 }}>
+                        {new Date(nextReminder.next_due_date).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' })}
+                      </Text>
+                    </View>
+                  )}
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={18} color={s.textMuted} />
@@ -180,69 +230,80 @@ export default function HomeScreen() {
 
         {/* ── Feed content ── */}
         <View style={{ paddingHorizontal: sp.lg, marginTop: sp.md, gap: sp.md }}>
-          {/* Community event card */}
-          <Pressable onPress={() => router.push('/(tabs)/cercuri')}>
-            <View style={[styles.feedCard, { backgroundColor: s.surface, borderColor: s.border }]}>
-              <View style={{ height: 180, borderRadius: 12, overflow: 'hidden', backgroundColor: s.surfaceAlt }}>
-                <View style={{ position: 'absolute', bottom: 10, left: 12, zIndex: 1 }}>
-                  <View style={{ backgroundColor: s.primary, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 }}>
-                    <Text style={{ color: '#fff', fontSize: 11, fontFamily: theme.typography.fontFamilySemibold }}>
-                      Community event
-                    </Text>
+          {/* Community event card (real next published event) */}
+          {nextEvent && (
+            <Pressable onPress={() => router.push('/(tabs)/cercuri')}>
+              <View style={[styles.feedCard, { backgroundColor: s.surface, borderColor: s.border }]}>
+                <View style={{ height: 180, borderRadius: 12, overflow: 'hidden', backgroundColor: s.surfaceAlt }}>
+                  <View style={{ position: 'absolute', bottom: 10, left: 12, zIndex: 1 }}>
+                    <View style={{ backgroundColor: s.primary, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 }}>
+                      <Text style={{ color: '#fff', fontSize: 11, fontFamily: theme.typography.fontFamilySemibold }}>
+                        Community event
+                      </Text>
+                    </View>
                   </View>
+                  {nextEvent.photo_url ? (
+                    <Image source={{ uri: nextEvent.photo_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+                  ) : (
+                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                      <Ionicons name="people" size={48} color={s.primary} style={{ opacity: 0.3 }} />
+                    </View>
+                  )}
                 </View>
-                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                  <Ionicons name="people" size={48} color={s.primary} style={{ opacity: 0.3 }} />
+                <View style={{ padding: 12, gap: 6 }}>
+                  <Text style={{ color: s.text, fontSize: 16, fontFamily: theme.typography.fontFamilyBold }} numberOfLines={1}>
+                    {nextEvent.title}
+                  </Text>
+                  <View style={{ flexDirection: 'row', gap: 16 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Ionicons name="calendar-outline" size={13} color={s.textMuted} />
+                      <Text style={{ color: s.textMuted, fontSize: 12 }}>
+                        {new Date(nextEvent.starts_at).toLocaleDateString('ro-RO', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Ionicons name="location-outline" size={13} color={s.textMuted} />
+                      <Text style={{ color: s.textMuted, fontSize: 12 }} numberOfLines={1}>{nextEvent.location ?? nextEvent.city}</Text>
+                    </View>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+                    <Text style={{ color: s.textMuted, fontSize: 12 }}>{nextEvent.participant_count ?? 0} going</Text>
+                    <Pressable
+                      style={[styles.joinBtn, { backgroundColor: s.primary }]}
+                      onPress={() => setRsvp.mutate({ event_id: nextEvent.id, status: 'going' })}
+                      disabled={setRsvp.isPending}
+                    >
+                      <Text style={{ color: '#fff', fontSize: 13, fontFamily: theme.typography.fontFamilySemibold }}>
+                        Join
+                      </Text>
+                    </Pressable>
+                  </View>
                 </View>
               </View>
-              <View style={{ padding: 12, gap: 6 }}>
-                <Text style={{ color: s.text, fontSize: 16, fontFamily: theme.typography.fontFamilyBold }}>
-                  Weekend pack walk
-                </Text>
-                <View style={{ flexDirection: 'row', gap: 16 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <Ionicons name="calendar-outline" size={13} color={s.textMuted} />
-                    <Text style={{ color: s.textMuted, fontSize: 12 }}>Sat · 10:00</Text>
-                  </View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <Ionicons name="location-outline" size={13} color={s.textMuted} />
-                    <Text style={{ color: s.textMuted, fontSize: 12 }}>Local park</Text>
-                  </View>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
-                  <Text style={{ color: s.textMuted, fontSize: 12 }}>8 going</Text>
-                  <Pressable
-                    style={[styles.joinBtn, { backgroundColor: s.primary }]}
-                    onPress={() => router.push('/(tabs)/cercuri')}
-                  >
-                    <Text style={{ color: '#fff', fontSize: 13, fontFamily: theme.typography.fontFamilySemibold }}>
-                      Join
-                    </Text>
-                  </Pressable>
-                </View>
-              </View>
-            </View>
-          </Pressable>
+            </Pressable>
+          )}
 
-          {/* Vet tips card */}
-          <Pressable onPress={() => router.push('/(tabs)/ingrijire')}>
-            <View style={[styles.tipsCard, { backgroundColor: s.surface, borderColor: s.border }]}>
-              <View style={[styles.tipsBadge, { backgroundColor: `${s.primary}18` }]}>
-                <Text style={{ color: s.primary, fontSize: 11, fontFamily: theme.typography.fontFamilySemibold }}>
-                  Vet tips
-                </Text>
+          {/* Latest article card (real edu_articles content) */}
+          {latestArticle && (
+            <Pressable onPress={() => router.push('/modul/petedu')}>
+              <View style={[styles.tipsCard, { backgroundColor: s.surface, borderColor: s.border }]}>
+                <View style={[styles.tipsBadge, { backgroundColor: `${s.primary}18` }]}>
+                  <Text style={{ color: s.primary, fontSize: 11, fontFamily: theme.typography.fontFamilySemibold }}>
+                    Vet tips
+                  </Text>
+                </View>
+                <View style={{ flex: 1, gap: 4, marginLeft: 12 }}>
+                  <Text style={{ color: s.text, fontSize: 14, fontFamily: theme.typography.fontFamilySemibold }} numberOfLines={1}>
+                    {latestArticle.title}
+                  </Text>
+                  <Text style={{ color: s.textMuted, fontSize: 12 }} numberOfLines={2}>
+                    {latestArticle.body}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={s.textMuted} />
               </View>
-              <View style={{ flex: 1, gap: 4, marginLeft: 12 }}>
-                <Text style={{ color: s.text, fontSize: 14, fontFamily: theme.typography.fontFamilySemibold }}>
-                  Spring health check
-                </Text>
-                <Text style={{ color: s.textMuted, fontSize: 12 }}>
-                  5 simple things to keep your pet in top shape
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={s.textMuted} />
-            </View>
-          </Pressable>
+            </Pressable>
+          )}
 
           {/* Quick actions row */}
           <View style={{ flexDirection: 'row', gap: 12, marginTop: sp.sm }}>

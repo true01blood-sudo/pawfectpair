@@ -2,43 +2,75 @@
  * Care tab — "My pets / Care hub"
  * Design: pawfectpair-design/petcare-android2.png (right panel) + 6.png
  */
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useAppTheme } from '../../components/theme-provider';
-import { useMyPets } from '../../hooks';
-import { useProfile } from '../../hooks/useProfile';
-
-const CARE_ITEMS = [
-  { id: 'health',    icon: 'document-text-outline',  label: 'Health records',  value: '5 items',     route: '/modul/petwell' },
-  { id: 'meds',      icon: 'medical-outline',         label: 'Medication',      value: '2 active',    route: '/modul/petwell' },
-  { id: 'nutrition', icon: 'nutrition-outline',       label: 'Nutrition',       value: 'Custom plan', route: '/modul/petwell' },
-  { id: 'insurance', icon: 'shield-checkmark-outline',label: 'Insurance',       value: 'Active',      route: '/modul/petinsurance' },
-  { id: 'devices',   icon: 'hardware-chip-outline',   label: 'Devices',         value: '1 connected', route: '/modul/petsos' },
-] as const;
+import { useMyPets, useMedicalRecords } from '../../hooks';
+import { usePlannerTasks, useTogglePlannerTask } from '../../hooks/usePlanner';
+import { useInsurancePolicies } from '../../hooks/useInsurance';
+import { useLatestPing } from '../../hooks/useGuardian';
 
 export default function CareScreen() {
   const theme = useAppTheme();
   const router = useRouter();
   const pets = useMyPets();
-  const profile = useProfile();
   const [selectedPetIdx, setSelectedPetIdx] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
   const s = theme.colors;
   const sp = theme.spacing;
 
+  const petList = pets.data ?? [];
+  const activePet = petList[selectedPetIdx] ?? null;
+  const activePetId = activePet?.id;
+
+  const medicalRecords = useMedicalRecords(activePetId ?? '');
+  const plannerTasks = usePlannerTasks(activePetId, true);
+  const insurancePolicies = useInsurancePolicies({ petId: activePetId });
+  const latestPing = useLatestPing(activePetId);
+  const toggleTask = useTogglePlannerTask();
+
   const onRefresh = async () => {
     setRefreshing(true);
-    await pets.refetch();
+    await Promise.all([pets.refetch(), medicalRecords.refetch(), plannerTasks.refetch()]);
     setRefreshing(false);
   };
 
-  const petList = pets.data ?? [];
-  const activePet = petList[selectedPetIdx] ?? null;
+  const todayTasks = useMemo(() => {
+    const all = plannerTasks.data ?? [];
+    const now = new Date();
+    const start = new Date(now); start.setHours(0, 0, 0, 0);
+    const end = new Date(start); end.setDate(end.getDate() + 1);
+    return all.filter((t) => {
+      const d = new Date(t.due_at);
+      return d >= start && d < end;
+    });
+  }, [plannerTasks.data]);
+  const doneCount = todayTasks.filter((t) => t.done).length;
+
+  const nextAppointmentTask = useMemo(() => {
+    const all = plannerTasks.data ?? [];
+    const now = Date.now();
+    return all
+      .filter((t) => !t.done && new Date(t.due_at).getTime() >= now)
+      .sort((a, b) => new Date(a.due_at).getTime() - new Date(b.due_at).getTime())[0] ?? null;
+  }, [plannerTasks.data]);
+
+  const activeMedicationCount = (plannerTasks.data ?? []).filter((t) => t.category === 'medication' && !t.done).length;
+  const hasFeedingPlan = (plannerTasks.data ?? []).some((t) => t.category === 'feeding');
+  const activePolicy = (insurancePolicies.data ?? []).find((p) => p.status === 'active');
+
+  const careItems = [
+    { id: 'health', icon: 'document-text-outline', label: 'Health records', value: `${medicalRecords.data?.length ?? 0} items`, route: activePetId ? `/animale/${activePetId}` : '/modul/petwell' },
+    { id: 'meds', icon: 'medical-outline', label: 'Medication', value: `${activeMedicationCount} active`, route: '/modul/petplanner' },
+    { id: 'nutrition', icon: 'nutrition-outline', label: 'Nutrition', value: hasFeedingPlan ? 'Custom plan' : 'No plan', route: '/modul/petplanner' },
+    { id: 'insurance', icon: 'shield-checkmark-outline', label: 'Insurance', value: activePolicy ? 'Active' : 'No policy', route: '/modul/petinsurance' },
+    { id: 'gps', icon: 'location-outline', label: 'GPS', value: latestPing.data ? 'Tracking active' : 'Not set up', route: '/(tabs)/harta' },
+  ] as const;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: s.background }} edges={['top']}>
@@ -87,6 +119,18 @@ export default function CareScreen() {
           </ScrollView>
         )}
 
+        {petList.length === 0 && (
+          <View style={{ marginTop: sp.xl, marginHorizontal: sp.lg, alignItems: 'center', gap: sp.sm }}>
+            <Ionicons name="paw-outline" size={40} color={s.textMuted} />
+            <Text style={{ color: s.textMuted, fontSize: 14, textAlign: 'center' }}>
+              Adaugă primul tău animal pentru a-i gestiona sănătatea și îngrijirea.
+            </Text>
+            <Pressable onPress={() => router.push('/animale/nou')} style={{ backgroundColor: s.primary, borderRadius: 999, paddingHorizontal: 20, paddingVertical: 10, marginTop: 4 }}>
+              <Text style={{ color: '#fff', fontFamily: theme.typography.fontFamilySemibold }}>Adaugă animal</Text>
+            </Pressable>
+          </View>
+        )}
+
         {/* ── Hero image ── */}
         {activePet && (
           <View style={{ marginTop: sp.md, marginHorizontal: sp.lg, borderRadius: 16, overflow: 'hidden', height: 190, backgroundColor: s.surfaceAlt }}>
@@ -118,77 +162,107 @@ export default function CareScreen() {
           </View>
         )}
 
-        {/* ── Next appointment ── */}
-        <Pressable onPress={() => router.push('/modul/petplanner')} style={{ marginHorizontal: sp.lg, marginTop: sp.md }}>
-          <View style={[styles.apptCard, { backgroundColor: s.surface, borderColor: s.border }]}>
-            <View style={[styles.apptIcon, { backgroundColor: `${s.primary}15` }]}>
-              <Ionicons name="calendar-outline" size={20} color={s.primary} />
+        {/* ── Next reminder ── */}
+        {activePet && (
+          <Pressable onPress={() => router.push('/modul/petplanner')} style={{ marginHorizontal: sp.lg, marginTop: sp.md }}>
+            <View style={[styles.apptCard, { backgroundColor: s.surface, borderColor: s.border }]}>
+              <View style={[styles.apptIcon, { backgroundColor: `${s.primary}15` }]}>
+                <Ionicons name="calendar-outline" size={20} color={s.primary} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={{ color: s.textMuted, fontSize: 12 }}>Next reminder</Text>
+                {nextAppointmentTask ? (
+                  <>
+                    <Text style={{ color: s.text, fontSize: 15, fontFamily: theme.typography.fontFamilySemibold }}>
+                      {nextAppointmentTask.title}
+                    </Text>
+                    <Text style={{ color: s.textMuted, fontSize: 12 }}>
+                      {new Date(nextAppointmentTask.due_at).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </Text>
+                  </>
+                ) : (
+                  <Text style={{ color: s.text, fontSize: 15, fontFamily: theme.typography.fontFamilySemibold }}>
+                    Nicio sarcină planificată
+                  </Text>
+                )}
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={s.textMuted} />
             </View>
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={{ color: s.textMuted, fontSize: 12 }}>Next appointment</Text>
-              <Text style={{ color: s.text, fontSize: 15, fontFamily: theme.typography.fontFamilySemibold }}>
-                General consultation
-              </Text>
-              <Text style={{ color: s.textMuted, fontSize: 12 }}>Book at local vet clinic</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={s.textMuted} />
-          </View>
-        </Pressable>
+          </Pressable>
+        )}
 
         {/* ── Today's tasks ── */}
-        <View style={{ paddingHorizontal: sp.lg, marginTop: sp.lg }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: sp.sm }}>
-            <Text style={{ color: s.text, fontSize: 16, fontFamily: theme.typography.fontFamilyBold }}>
-              Today's tasks
-            </Text>
-            <Text style={{ color: s.textMuted, fontSize: 12 }}>0 of 3 done</Text>
+        {activePet && (
+          <View style={{ paddingHorizontal: sp.lg, marginTop: sp.lg }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: sp.sm }}>
+              <Text style={{ color: s.text, fontSize: 16, fontFamily: theme.typography.fontFamilyBold }}>
+                Today's tasks
+              </Text>
+              {todayTasks.length > 0 && (
+                <Text style={{ color: s.textMuted, fontSize: 12 }}>{doneCount} of {todayTasks.length} done</Text>
+              )}
+            </View>
+            {todayTasks.length > 0 ? (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
+                {todayTasks.map((task) => (
+                  <Pressable
+                    key={task.id}
+                    onPress={() => toggleTask.mutate({ task, done: !task.done })}
+                    style={[styles.taskChip, { backgroundColor: s.surface, borderColor: s.border }]}
+                  >
+                    <Ionicons name={CATEGORY_ICON[task.category] ?? 'checkbox-outline'} size={16} color={task.done ? '#22C55E' : s.textMuted} />
+                    <View style={{ marginTop: 4 }}>
+                      <Text style={{ color: s.text, fontSize: 12, fontFamily: theme.typography.fontFamilySemibold }} numberOfLines={1}>
+                        {task.title}
+                      </Text>
+                      <Text style={{ color: task.done ? '#22C55E' : s.textMuted, fontSize: 11 }}>
+                        {task.done ? 'Done' : `Due ${new Date(task.due_at).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' })}`}
+                      </Text>
+                    </View>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            ) : (
+              <Text style={{ color: s.textMuted, fontSize: 13 }}>Nicio sarcină programată azi.</Text>
+            )}
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
-            {[
-              { icon: 'walk-outline',    label: 'Morning walk',    time: '08:00', done: false },
-              { icon: 'medical-outline', label: 'Give medication', time: '12:00', done: false },
-              { icon: 'walk-outline',    label: 'Evening walk',    time: '18:00', done: false },
-            ].map((task, i) => (
-              <View key={i} style={[styles.taskChip, { backgroundColor: s.surface, borderColor: s.border }]}>
-                <Ionicons name={task.icon as any} size={16} color={task.done ? '#22C55E' : s.textMuted} />
-                <View style={{ marginTop: 4 }}>
-                  <Text style={{ color: s.text, fontSize: 12, fontFamily: theme.typography.fontFamilySemibold }}>
-                    {task.label}
-                  </Text>
-                  <Text style={{ color: s.textMuted, fontSize: 11 }}>
-                    {task.done ? 'Done' : `Due ${task.time}`}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+        )}
 
         {/* ── Care modules list ── */}
-        <View style={{ marginHorizontal: sp.lg, marginTop: sp.lg, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: s.border }}>
-          {CARE_ITEMS.map((item, i) => (
-            <Pressable
-              key={item.id}
-              onPress={() => router.push(item.route as any)}
-              style={[
-                styles.careRow,
-                { backgroundColor: s.surface },
-                i < CARE_ITEMS.length - 1 && { borderBottomWidth: 1, borderBottomColor: s.border },
-              ]}
-            >
-              <Ionicons name={item.icon as any} size={20} color={s.text} />
-              <Text style={{ color: s.text, fontSize: 15, flex: 1, marginLeft: 12 }}>
-                {item.label}
-              </Text>
-              <Text style={{ color: s.textMuted, fontSize: 13 }}>{item.value}</Text>
-              <Ionicons name="chevron-forward" size={16} color={s.textMuted} style={{ marginLeft: 6 }} />
-            </Pressable>
-          ))}
-        </View>
+        {activePet && (
+          <View style={{ marginHorizontal: sp.lg, marginTop: sp.lg, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: s.border }}>
+            {careItems.map((item, i) => (
+              <Pressable
+                key={item.id}
+                onPress={() => router.push(item.route as any)}
+                style={[
+                  styles.careRow,
+                  { backgroundColor: s.surface },
+                  i < careItems.length - 1 && { borderBottomWidth: 1, borderBottomColor: s.border },
+                ]}
+              >
+                <Ionicons name={item.icon as any} size={20} color={s.text} />
+                <Text style={{ color: s.text, fontSize: 15, flex: 1, marginLeft: 12 }}>
+                  {item.label}
+                </Text>
+                <Text style={{ color: s.textMuted, fontSize: 13 }}>{item.value}</Text>
+                <Ionicons name="chevron-forward" size={16} color={s.textMuted} style={{ marginLeft: 6 }} />
+              </Pressable>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const CATEGORY_ICON: Record<string, any> = {
+  feeding: 'nutrition-outline',
+  walk: 'walk-outline',
+  grooming: 'cut-outline',
+  medication: 'medical-outline',
+  other: 'checkbox-outline',
+};
 
 function getAge(birthDate: string): string {
   const diff = Date.now() - new Date(birthDate).getTime();
