@@ -96,6 +96,46 @@ export async function deleteVet(vetId: string) {
   revalidatePath("/veterinari");
 }
 
+export async function toggleTrainerVerified(trainerId: string, verified: boolean) {
+  const supabase = await requireAdmin();
+
+  const { error } = await supabase.from("trainers").update({ is_verified: verified }).eq("id", trainerId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/antrenament");
+  revalidatePath("/antrenament");
+}
+
+export async function deleteTrainer(trainerId: string) {
+  const supabase = await requireAdmin();
+
+  const { error } = await supabase.from("trainers").delete().eq("id", trainerId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/antrenament");
+  revalidatePath("/antrenament");
+}
+
+export async function updateTrainingPlanActive(planId: string, isActive: boolean) {
+  const supabase = await requireAdmin();
+
+  const { error } = await supabase.from("training_plans").update({ is_active: isActive }).eq("id", planId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/antrenament");
+  revalidatePath("/antrenament");
+}
+
+export async function deleteTrainingPlan(planId: string) {
+  const supabase = await requireAdmin();
+
+  const { error } = await supabase.from("training_plans").delete().eq("id", planId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/antrenament");
+  revalidatePath("/antrenament");
+}
+
 export async function setDocumentStatus(documentId: string, status: "approved" | "rejected") {
   const supabase = await requireAdmin();
 
