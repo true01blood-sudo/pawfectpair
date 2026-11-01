@@ -231,7 +231,7 @@ export default function PetDetailScreen() {
                       {lastWeight.weight_kg} kg
                     </Text>
                     <Text style={{ color: t.colors.textMuted, fontSize: t.typography.fontSizeXs }}>
-                      {formatDateRO(lastWeight.measured_at)}
+                      {formatDateRO(lastWeight.logged_at)}
                     </Text>
                   </View>
                 </Card>
@@ -288,8 +288,8 @@ export default function PetDetailScreen() {
       <AddWeightModal
         visible={showAddWeight}
         onClose={() => setShowAddWeight(false)}
-        onSubmit={async (weight_kg, measured_at, notes) => {
-          await addWeight.mutateAsync({ pet_id: id, weight_kg, measured_at, notes });
+        onSubmit={async (weight_kg, logged_at, notes) => {
+          await addWeight.mutateAsync({ pet_id: id, weight_kg, logged_at, notes });
           setShowAddWeight(false);
         }}
       />
@@ -301,10 +301,10 @@ function AddMedicalModal({ visible, onClose, petId, onSubmit }: {
   visible: boolean;
   onClose: () => void;
   petId: string;
-  onSubmit: (input: { type: MedicalType; title: string; record_date: string; due_date: string | null; notes: string | null }) => Promise<void>;
+  onSubmit: (input: { type: MedicalType; title: string; record_date: string; next_due_date: string | null; notes: string | null }) => Promise<void>;
 }) {
   const t = useAppTheme();
-  const [type, setType] = useState<MedicalType>('vaccinare');
+  const [type, setType] = useState<MedicalType>('vaccination');
   const [title, setTitle] = useState('');
   const [recordDate, setRecordDate] = useState(toDateInput());
   const [dueDate, setDueDate] = useState('');
@@ -315,7 +315,7 @@ function AddMedicalModal({ visible, onClose, petId, onSubmit }: {
     if (!title.trim()) { Alert.alert('Lipsă', 'Titlul este obligatoriu'); return; }
     setBusy(true);
     try {
-      await onSubmit({ type, title: title.trim(), record_date: recordDate, due_date: dueDate || null, notes: notes.trim() || null });
+      await onSubmit({ type, title: title.trim(), record_date: recordDate, next_due_date: dueDate || null, notes: notes.trim() || null });
       setTitle(''); setNotes(''); setDueDate(''); setRecordDate(toDateInput());
     } catch (e: any) {
       Alert.alert('Eroare', e?.message ?? 'Încearcă din nou');
@@ -356,7 +356,7 @@ function AddMedicalModal({ visible, onClose, petId, onSubmit }: {
 function AddWeightModal({ visible, onClose, onSubmit }: {
   visible: boolean;
   onClose: () => void;
-  onSubmit: (weight_kg: number, measured_at: string, notes: string | null) => Promise<void>;
+  onSubmit: (weight_kg: number, logged_at: string, notes: string | null) => Promise<void>;
 }) {
   const t = useAppTheme();
   const [weight, setWeight] = useState('');

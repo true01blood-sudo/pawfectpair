@@ -312,10 +312,10 @@ export async function fetchUpcomingRecords(
     .from('medical_records')
     .select('*, pet:pets!inner(*)')
     .eq('pet.owner_id', userId)
-    .not('due_date', 'is', null)
-    .gte('due_date', today)
-    .lte('due_date', limitStr)
-    .order('due_date', { ascending: true });
+    .not('next_due_date', 'is', null)
+    .gte('next_due_date', today)
+    .lte('next_due_date', limitStr)
+    .order('next_due_date', { ascending: true });
   if (error) throw error;
   return (data ?? []) as Array<MedicalRecord & { pet: Pet }>;
 }
@@ -352,7 +352,7 @@ export async function fetchWeightLogs(petId: string): Promise<WeightLog[]> {
     .from('weight_logs')
     .select('*')
     .eq('pet_id', petId)
-    .order('measured_at', { ascending: true });
+    .order('logged_at', { ascending: true });
   if (error) throw error;
   return (data ?? []) as WeightLog[];
 }

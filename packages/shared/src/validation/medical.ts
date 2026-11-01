@@ -14,7 +14,7 @@ export const MedicalRecordSchema = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Format dată invalid (YYYY-MM-DD)')
     .refine((v) => !isNaN(new Date(v).getTime()), 'Dată invalidă'),
-  due_date: z
+  next_due_date: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Format scadență invalid (YYYY-MM-DD)')
     .optional()
@@ -24,13 +24,13 @@ export const MedicalRecordSchema = z.object({
 // validare încrucișată pe câmpuri (zod: superRefine la nivel de obiect —
 // refine() pe câmp nu are acces la ctx.parent!)
 .superRefine((val, ctx) => {
-  if (val.due_date) {
-    const due = new Date(val.due_date).getTime();
+  if (val.next_due_date) {
+    const due = new Date(val.next_due_date).getTime();
     const event = new Date(val.record_date).getTime();
     if (Number.isFinite(due) && Number.isFinite(event) && due < event) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ['due_date'],
+        path: ['next_due_date'],
         message: 'Scadența trebuie să fie după data evenimentului',
       });
     }
@@ -43,7 +43,7 @@ export const WeightLogSchema = z.object({
     .number({ invalid_type_error: 'Greutatea trebuie să fie un număr' })
     .positive('Greutatea trebuie să fie pozitivă')
     .max(500, 'Greutatea pare prea mare (max 500 kg)'),
-  measured_at: z
+  logged_at: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Format dată invalid (YYYY-MM-DD)')
     .refine((v) => {

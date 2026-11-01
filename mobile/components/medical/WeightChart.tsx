@@ -28,7 +28,7 @@ export function WeightChart({ logs }: WeightChartProps) {
 
   const geometry = useMemo(() => {
     const sorted = [...logs].sort(
-      (a, b) => new Date(a.measured_at).getTime() - new Date(b.measured_at).getTime()
+      (a, b) => new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime()
     );
     if (sorted.length < 2) return null;
 
@@ -121,7 +121,7 @@ export function WeightChart({ logs }: WeightChartProps) {
 
         {/* etichete X — prima și ultima cântărire */}
         <SvgText x={points[0].x} y={CHART_HEIGHT - 8} fontSize={10} fill={t.colors.textMuted} textAnchor="middle">
-          {formatDateShortRO(points[0].log.measured_at)}
+          {formatDateShortRO(points[0].log.logged_at)}
         </SvgText>
         <SvgText
           x={points[points.length - 1].x}
@@ -130,7 +130,7 @@ export function WeightChart({ logs }: WeightChartProps) {
           fill={t.colors.textMuted}
           textAnchor="middle"
         >
-          {formatDateShortRO(points[points.length - 1].log.measured_at)}
+          {formatDateShortRO(points[points.length - 1].log.logged_at)}
         </SvgText>
       </Svg>
     </Card>

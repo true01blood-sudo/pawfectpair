@@ -92,7 +92,7 @@ export default function PetWellScreen() {
   const lastWeight = useMemo(() => {
     if (!weightLogs || weightLogs.length === 0) return null;
     const sorted = [...weightLogs].sort(
-      (a, b) => new Date(b.measured_at).getTime() - new Date(a.measured_at).getTime()
+      (a, b) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime()
     );
     return sorted[0];
   }, [weightLogs]);
@@ -219,7 +219,7 @@ export default function PetWellScreen() {
               {t('petwell.upcomingSection')}
             </Text>
             {petUpcoming.map((r) => {
-              const d = daysUntil(r.due_date ?? r.record_date);
+              const d = daysUntil(r.next_due_date ?? r.record_date);
               const soon = d <= 7;
               return (
                 <Card key={r.id}>
@@ -230,7 +230,7 @@ export default function PetWellScreen() {
                         {r.title}
                       </Text>
                       <Text style={{ color: theme.colors.textMuted, fontSize: 12 }}>
-                        {r.type} · {r.due_date ?? r.record_date}
+                        {r.type} · {r.next_due_date ?? r.record_date}
                       </Text>
                     </View>
                     <Text style={{ color: soon ? theme.colors.danger : theme.colors.textMuted, fontSize: 12, fontWeight: '700' }}>

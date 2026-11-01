@@ -70,7 +70,7 @@ export const WEIGHT_MIN_POINTS = 3;
 export function weightTrend(logs: WeightLog[]): WeightTrend {
   const sorted = [...logs]
     .filter((l) => typeof l.weight_kg === 'number' && l.weight_kg > 0)
-    .sort((a, b) => new Date(a.measured_at).getTime() - new Date(b.measured_at).getTime());
+    .sort((a, b) => new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime());
   const firstKg = sorted.length > 0 ? sorted[0].weight_kg : null;
   const lastKg = sorted.length > 0 ? sorted[sorted.length - 1].weight_kg : null;
   if (sorted.length < WEIGHT_MIN_POINTS) {
@@ -83,9 +83,9 @@ export function weightTrend(logs: WeightLog[]): WeightTrend {
       lastKg,
     };
   }
-  const t0 = new Date(sorted[0].measured_at).getTime();
+  const t0 = new Date(sorted[0].logged_at).getTime();
   const points = sorted.map((l) => ({
-    x: (new Date(l.measured_at).getTime() - t0) / DAY_MS,
+    x: (new Date(l.logged_at).getTime() - t0) / DAY_MS,
     y: l.weight_kg,
   }));
   const reg = linearRegression(points);
@@ -194,7 +194,7 @@ export function trainingStats(sessions: TrainingSession[], now: Date = new Date(
 export interface MedicalStats {
   /** înregistrări în ultimele 90 zile */
   last90: number;
-  /** înregistrări viitoare (due_date peste azi) */
+  /** înregistrări viitoare (next_due_date peste azi) */
   upcoming: number;
   /** zile de la ultima înregistrare (null dacă nimic) */
   daysSinceLast: number | null;
@@ -207,7 +207,7 @@ export function medicalStats(records: MedicalRecord[], now: Date = new Date()): 
   const dated = records.filter((r) => r.record_date);
   const last90 = dated.filter((r) => new Date(`${r.record_date}T00:00:00Z`).getTime() >= from).length;
   const upcoming = dated.filter(
-    (r) => r.due_date && new Date(`${r.due_date}T00:00:00Z`).getTime() > now.getTime()
+    (r) => r.next_due_date && new Date(`${r.next_due_date}T00:00:00Z`).getTime() > now.getTime()
   ).length;
   const last = dated.reduce<string | null>((acc, r) => {
     if (!acc || r.record_date > acc) return r.record_date;

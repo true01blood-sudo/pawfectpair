@@ -48,13 +48,12 @@ function trendEmoji(direction: WeightTrend['direction']): string {
 
 /** Mapare MedicalType → cheie i18n sigură (fără diacritice în cheie). */
 const MEDICAL_TYPE_KEY: Record<string, string> = {
-  vaccinare: 'vaccinare',
-  tratament: 'tratament',
-  'intervenție': 'interventie',
-  alergie: 'alergie',
-  control: 'control',
-  deparazitare: 'deparazitare',
-  altul: 'altul',
+  vaccination: 'vaccinare',
+  treatment: 'tratament',
+  surgery: 'interventie',
+  checkup: 'control',
+  allergy: 'alergie',
+  other: 'altul',
 };
 
 function fmtKg(n: number | null): string {

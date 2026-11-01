@@ -53,7 +53,7 @@ export default function GreutateScreen() {
                 {item.weight_kg} kg
               </Text>
               <Text style={{ color: t.colors.textMuted, fontSize: t.typography.fontSizeSm }}>
-                {formatDateRO(item.measured_at)}
+                {formatDateRO(item.logged_at)}
               </Text>
               {item.notes && (
                 <Text style={{ color: t.colors.textMuted, fontSize: t.typography.fontSizeXs, marginTop: 4 }} numberOfLines={2}>
@@ -71,7 +71,7 @@ export default function GreutateScreen() {
         visible={showAdd}
         onClose={() => setShowAdd(false)}
         onSubmit={async (w, d, n) => {
-          await add.mutateAsync({ pet_id: id, weight_kg: w, measured_at: d, notes: n });
+          await add.mutateAsync({ pet_id: id, weight_kg: w, logged_at: d, notes: n });
           setShowAdd(false);
         }}
       />

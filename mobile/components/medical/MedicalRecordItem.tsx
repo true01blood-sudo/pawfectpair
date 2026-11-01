@@ -12,7 +12,7 @@ interface MedicalRecordItemProps {
 
 export function MedicalRecordItem({ record, onDelete }: MedicalRecordItemProps) {
   const t = useAppTheme();
-  const days = record.due_date ? daysUntil(record.due_date) : null;
+  const days = record.next_due_date ? daysUntil(record.next_due_date) : null;
   const upcoming = days !== null && days >= 0 && days <= 30;
   const overdue = days !== null && days < 0;
 
@@ -29,7 +29,7 @@ export function MedicalRecordItem({ record, onDelete }: MedicalRecordItemProps) 
           <Text style={{ color: t.colors.textMuted, fontSize: t.typography.fontSizeSm }}>
             {MEDICAL_TYPE_LABELS[record.type]} · {formatDateRO(record.record_date)}
           </Text>
-          {record.due_date && (
+          {record.next_due_date && (
             <View style={[styles.chip, {
               backgroundColor: overdue ? t.colors.danger : upcoming ? t.colors.accent : t.colors.surfaceAlt,
               alignSelf: 'flex-start', marginTop: t.spacing.xs,
@@ -41,7 +41,7 @@ export function MedicalRecordItem({ record, onDelete }: MedicalRecordItemProps) 
                 {overdue ? `Scadență expirată (${Math.abs(days!)} zile)` :
                  days === 0 ? 'Scadență astăzi' :
                  days! < 30 ? `Scadență în ${days} zile` :
-                 `Scadență: ${formatDateRO(record.due_date)}`}
+                 `Scadență: ${formatDateRO(record.next_due_date)}`}
               </Text>
             </View>
           )}

@@ -18,10 +18,10 @@ describe('Shared package integration', () => {
   it('schema medical — scadență înainte de eveniment este respinsă', () => {
     const r = MedicalRecordSchema.safeParse({
       pet_id: '12345678-1234-1234-1234-123456789012',
-      type: 'vaccinare',
+      type: 'vaccination',
       title: 'Rabie',
       record_date: '2026-10-26',
-      due_date: '2020-01-01', // înainte de eveniment → invalid
+      next_due_date: '2020-01-01', // înainte de eveniment → invalid
     });
     expect(r.success).toBe(false);
   });
