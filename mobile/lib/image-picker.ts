@@ -36,9 +36,9 @@ async function validate(uri: string): Promise<PickedImage> {
 }
 
 export async function pickFromGallery(): Promise<PickedImage | null> {
-  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (status !== 'granted') throw new PhotoValidationError('Permisiune galerie refuzată');
-
+  // Fără cerere explicită de permisiune: launchImageLibraryAsync deschide
+  // System Photo Picker-ul Android (și PHPickerViewController pe iOS), care
+  // nu necesită acces la galerie — utilizatorul alege direct o poză.
   const result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ImagePicker.MediaTypeOptions.Images,
     allowsEditing: true,

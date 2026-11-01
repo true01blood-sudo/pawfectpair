@@ -37,7 +37,7 @@
     },
     "android": {
       "package": "app.pawfectpair.mobile",
-      "versionCode": 14,
+      "versionCode": 15,
       "targetSdkVersion": 36,
       "compileSdkVersion": 36,
       "config": {
@@ -51,7 +51,6 @@
       },
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.READ_MEDIA_IMAGES",
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.INTERNET",
         "android.permission.RECORD_AUDIO"
@@ -68,7 +67,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Pet Care Services accesează galeria pentru a selecta o poză a animalului tău."
+          "photosPermission": false,
+          "cameraPermission": "Pet Care Services folosește camera pentru a fotografia animalul tău de companie."
         }
       ],
       [
