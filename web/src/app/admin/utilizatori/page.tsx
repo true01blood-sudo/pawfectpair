@@ -4,7 +4,7 @@ import Breadcrumb from "@/components/Breadcrumb";
 import { changeRole, banUser, verifyUser, removeUserContent } from "./actions";
 
 const roleLabels: Record<string, string> = {
-  user: "Utilizator", vet: "Veterinar", shop: "Magazin", shelter: "Centru/Asociație", admin: "Admin",
+  user: "Utilizator", vet: "Veterinar", shop: "Magazin", shelter: "Centru/Asociație", pensiune: "Pensiune", admin: "Admin",
 };
 
 export default async function AdminUtilizatoriPage() {
@@ -86,6 +86,7 @@ export default async function AdminUtilizatoriPage() {
                       <option value="vet">Veterinar</option>
                       <option value="shop">Magazin</option>
                       <option value="shelter">Centru/Asociație</option>
+                      <option value="pensiune">Pensiune</option>
                       <option value="admin">Admin</option>
                     </select>
                     <button className="min-h-9 rounded-full border px-3 text-xs"

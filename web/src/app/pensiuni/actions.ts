@@ -42,6 +42,15 @@ export async function registerPensiune(formData: FormData) {
   if (!city) throw new Error("Orașul e obligatoriu.");
   if (services.length === 0) throw new Error("Alege cel puțin un serviciu oferit.");
 
+  // Trebuie promovat la rolul "pensiune" ÎNAINTE de insert: politica RLS de
+  // INSERT pe petday_listings cere deja rolul 'pensiune'/'admin' — dacă am
+  // insera întâi, orice user cu rolul implicit 'user' ar lua mereu eroare
+  // de permisiune (RLS verifică rolul curent, nu cel de după acest request).
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  if (profile?.role !== "admin" && profile?.role !== "pensiune") {
+    await supabase.from("profiles").update({ role: "pensiune" }).eq("id", user.id);
+  }
+
   const { error } = await supabase.from("petday_listings").insert({
     user_id: user.id,
     provider_type: "center",
@@ -62,11 +71,6 @@ export async function registerPensiune(formData: FormData) {
     photos,
   });
   if (error) throw new Error(error.message);
-
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role === "user") {
-    await supabase.from("profiles").update({ role: "pensiune" }).eq("id", user.id);
-  }
 
   revalidatePath("/pensiuni");
   redirect("/pensiuni");
