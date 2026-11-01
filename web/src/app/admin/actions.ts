@@ -136,6 +136,26 @@ export async function deleteTrainingPlan(planId: string) {
   revalidatePath("/antrenament");
 }
 
+export async function deleteCircle(circleId: string) {
+  const supabase = await requireAdmin();
+
+  const { error } = await supabase.from("circles").delete().eq("id", circleId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/cercuri");
+  revalidatePath("/cercuri");
+}
+
+export async function deleteCircleEvent(eventId: string) {
+  const supabase = await requireAdmin();
+
+  const { error } = await supabase.from("circle_events").delete().eq("id", eventId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/cercuri");
+  revalidatePath("/cercuri");
+}
+
 export async function setDocumentStatus(documentId: string, status: "approved" | "rejected") {
   const supabase = await requireAdmin();
 
