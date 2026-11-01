@@ -2556,4 +2556,57 @@ export const queries = {
   createMemorial,
   updateMemorial,
   deleteMemorial,
+  // PetBreeding
+  fetchBreedingListings,
 };
+
+// ============================================================
+// PETBREEDING
+// ============================================================
+
+export interface BreedingListingRow {
+  id: string;
+  title: string;
+  species: string;
+  breed: string | null;
+  gender: 'mascul' | 'femela' | null;
+  age_years: number | null;
+  health_tests: string[] | null;
+  price_info: string | null;
+  city: string | null;
+  photo_url: string | null;
+  photos: string[] | null;
+  is_champion: boolean | null;
+  awards: string[] | null;
+  litters_count: number | null;
+  offspring_count: number | null;
+  offspring_photos: string[] | null;
+  rating: number;
+  reviewCount: number;
+}
+
+type RawBreedingRow = Omit<BreedingListingRow, 'rating' | 'reviewCount'> & {
+  reviews: { rating: number }[] | null;
+};
+
+export async function fetchBreedingListings(filters: { species?: string } = {}): Promise<BreedingListingRow[]> {
+  let q = supabase
+    .from('breeding_listings')
+    .select(
+      'id, title, species, breed, gender, age_years, health_tests, price_info, city, photo_url, photos, is_champion, awards, litters_count, offspring_count, offspring_photos, reviews:breeding_reviews(rating)'
+    )
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(100);
+  if (filters.species) q = q.eq('species', filters.species);
+
+  const { data, error } = await q;
+  if (error) throw error;
+
+  return ((data ?? []) as unknown as RawBreedingRow[]).map((row) => {
+    const { reviews, ...rest } = row;
+    const ratings = reviews ?? [];
+    const rating = ratings.length > 0 ? ratings.reduce((s, r) => s + r.rating, 0) / ratings.length : 0;
+    return { ...rest, rating, reviewCount: ratings.length };
+  });
+}

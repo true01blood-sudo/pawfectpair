@@ -106,7 +106,10 @@ export default function ExploreScreen() {
           {CATEGORIES.map((cat) => (
             <Pressable
               key={cat.id}
-              onPress={() => setCategory(cat.id)}
+              onPress={() => {
+                setCategory(cat.id);
+                if (cat.id === 'breeding') router.push('/modul/petbreeding');
+              }}
               style={[
                 styles.catTab,
                 {

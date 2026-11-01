@@ -3,7 +3,7 @@
  * Design: swipe cards (ca în mockup "Find a breeding partner") cu back/X/heart,
  * filtru specie/rasă/locație, profil detaliat stud cu pedigree + health tests.
  */
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable, Image,
   Animated, PanResponder, Dimensions,
@@ -13,96 +13,22 @@ import { useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../components/theme-provider';
+import { useBreedingListings } from '../../hooks/useBreeding';
+import { StateView } from '../../components/ui';
+import type { BreedingListingRow } from '../../lib/supabase/queries';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = 0.3 * SCREEN_WIDTH;
 
-type BreedingCard = {
-  id: string;
-  name: string;
-  breed: string;
-  age: string;
-  sex: 'M' | 'F';
-  location: string;
-  distance: string;
-  price: string;
-  currency: string;
-  rating: number;
-  reviews: number;
-  litters: number;
-  offspring: number;
-  emoji: string;
-  badges: string[];
-  healthTests: string[];
-  isDemo?: boolean;
-};
-
-const DEMO_CARDS: BreedingCard[] = [
-  {
-    id: '1',
-    name: 'Atlas',
-    breed: 'Labrador Retriever',
-    age: '4 ani',
-    sex: 'M',
-    location: 'Lugano',
-    distance: '12 km',
-    price: '900',
-    currency: 'CHF',
-    rating: 4.9,
-    reviews: 28,
-    litters: 12,
-    offspring: 56,
-    emoji: '🐶',
-    badges: ['Show champion', 'Campeón'],
-    healthTests: ['HD-A', 'ED-0', 'Clear (prcd-PRA)'],
-    isDemo: true,
-  },
-  {
-    id: '2',
-    name: 'Luna',
-    breed: 'Golden Retriever',
-    age: '3 ani',
-    sex: 'F',
-    location: 'Zürich',
-    distance: '35 km',
-    price: '800',
-    currency: 'CHF',
-    rating: 4.8,
-    reviews: 18,
-    litters: 6,
-    offspring: 32,
-    emoji: '🐕',
-    badges: ['FCI registered', 'Health tested'],
-    healthTests: ['HD-B', 'OFA Clear', 'DNA tested'],
-    isDemo: true,
-  },
-  {
-    id: '3',
-    name: 'Orion',
-    breed: 'Warmblood (Zangersheide)',
-    age: '8 ani',
-    sex: 'M',
-    location: 'Lugano',
-    distance: '5 km',
-    price: '1,500',
-    currency: 'EUR',
-    rating: 4.9,
-    reviews: 41,
-    litters: 0,
-    offspring: 0,
-    emoji: '🐴',
-    badges: ['ZANG registered', 'Approved for breeding', 'WFFS-free'],
-    healthTests: ['CA-free', 'WFFS neg', 'Sportpferd'],
-    isDemo: true,
-  },
-];
+const SPECIES_EMOJI: Record<string, string> = { caine: '🐶', pisica: '🐱', altele: '🐾' };
+const GENDER_LABEL: Record<string, string> = { mascul: 'Mascul', femela: 'Femelă' };
 
 type FilterChip = { key: string; label: string };
 const SPECIES_FILTERS: FilterChip[] = [
   { key: 'all', label: 'Toate' },
-  { key: 'dogs', label: 'Câini' },
-  { key: 'cats', label: 'Pisici' },
-  { key: 'horses', label: 'Cai' },
+  { key: 'caine', label: 'Câini' },
+  { key: 'pisica', label: 'Pisici' },
+  { key: 'altele', label: 'Altele' },
 ];
 
 export default function PetBreedingScreen() {
@@ -114,10 +40,13 @@ export default function PetBreedingScreen() {
   const [likedIds, setLikedIds] = useState<string[]>([]);
   const [lastAction, setLastAction] = useState<'like' | 'pass' | null>(null);
 
+  const listings = useBreedingListings(speciesFilter === 'all' ? {} : { species: speciesFilter });
+  const cards = useMemo<BreedingListingRow[]>(() => listings.data ?? [], [listings.data]);
+
   const position = useRef(new Animated.ValueXY()).current;
 
-  const card = DEMO_CARDS[currentIdx];
-  const isFinished = currentIdx >= DEMO_CARDS.length;
+  const card = cards[currentIdx];
+  const isFinished = !listings.isLoading && currentIdx >= cards.length;
 
   const rotate = position.x.interpolate({
     inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
@@ -189,7 +118,7 @@ export default function PetBreedingScreen() {
         {SPECIES_FILTERS.map((f) => (
           <Pressable
             key={f.key}
-            onPress={() => setSpeciesFilter(f.key)}
+            onPress={() => { setSpeciesFilter(f.key); setCurrentIdx(0); }}
             style={[styles.chip, {
               backgroundColor: speciesFilter === f.key ? theme.colors.primary : theme.colors.surface,
               borderColor: speciesFilter === f.key ? theme.colors.primary : theme.colors.border,
@@ -208,7 +137,9 @@ export default function PetBreedingScreen() {
 
       {/* Swipe area */}
       <View style={styles.swipeArea}>
-        {isFinished ? (
+        {listings.isLoading ? (
+          <Text style={{ color: theme.colors.textMuted }}>{t('app.loading', 'Se încarcă...')}</Text>
+        ) : isFinished ? (
           <View style={styles.finishedState}>
             <Text style={{ fontSize: 48 }}>🌸</Text>
             <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '700', marginTop: 12, textAlign: 'center' }}>
@@ -229,9 +160,13 @@ export default function PetBreedingScreen() {
         ) : (
           <>
             {/* Card următor (fundal) */}
-            {currentIdx + 1 < DEMO_CARDS.length && (
+            {currentIdx + 1 < cards.length && (
               <View style={[styles.card, styles.cardBehind, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                <Text style={{ fontSize: 80, textAlign: 'center', paddingTop: 40 }}>{DEMO_CARDS[currentIdx + 1].emoji}</Text>
+                {cards[currentIdx + 1].photo_url ? (
+                  <Image source={{ uri: cards[currentIdx + 1].photo_url! }} style={{ width: '100%', height: 260 }} resizeMode="cover" />
+                ) : (
+                  <Text style={{ fontSize: 80, textAlign: 'center', paddingTop: 40 }}>{SPECIES_EMOJI[cards[currentIdx + 1].species] ?? '🐾'}</Text>
+                )}
               </View>
             )}
 
@@ -253,56 +188,86 @@ export default function PetBreedingScreen() {
                 <Text style={{ color: '#EF4444', fontSize: 22, fontWeight: '800', borderWidth: 3, borderColor: '#EF4444', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4 }}>PASS</Text>
               </Animated.View>
 
-              {/* Foto placeholder */}
+              {/* Foto */}
               <View style={[styles.cardPhoto, { backgroundColor: theme.colors.accent }]}>
-                <Text style={{ fontSize: 96 }}>{card.emoji}</Text>
-                {card.isDemo && (
-                  <View style={[styles.demoBadge, { backgroundColor: theme.colors.primary }]}>
-                    <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>Demo</Text>
+                {card.photo_url ? (
+                  <Image source={{ uri: card.photo_url }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+                ) : (
+                  <Text style={{ fontSize: 96 }}>{SPECIES_EMOJI[card.species] ?? '🐾'}</Text>
+                )}
+                {card.photos && card.photos.length > 0 && (
+                  <View style={[styles.photoCount]}>
+                    <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>1/{card.photos.length + 1}</Text>
                   </View>
                 )}
-                <View style={[styles.priceTag, { backgroundColor: '#fff' }]}>
-                  <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '700' }}>
-                    {card.currency} {card.price}
-                  </Text>
-                  <Text style={{ color: theme.colors.textMuted, fontSize: 10 }}> / serviciu</Text>
-                </View>
+                {card.is_champion && (
+                  <View style={[styles.demoBadge, { backgroundColor: '#F59E0B' }]}>
+                    <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>🏆 Show champion</Text>
+                  </View>
+                )}
+                {card.price_info && (
+                  <View style={[styles.priceTag, { backgroundColor: '#fff' }]}>
+                    <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '700' }} numberOfLines={1}>
+                      {card.price_info}
+                    </Text>
+                  </View>
+                )}
               </View>
 
               {/* Info card */}
               <View style={{ padding: 16 }}>
                 <View style={styles.cardTitleRow}>
-                  <Text style={{ color: theme.colors.text, fontSize: 20, fontFamily: theme.typography.fontFamilyBold }}>
-                    {card.name}
+                  <Text style={{ color: theme.colors.text, fontSize: 20, fontFamily: theme.typography.fontFamilyBold }} numberOfLines={1}>
+                    {card.title}
                   </Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <Ionicons name="star" size={14} color="#FBBF24" />
-                    <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '600' }}>{card.rating}</Text>
-                    <Text style={{ color: theme.colors.textMuted, fontSize: 12 }}>({card.reviews})</Text>
-                  </View>
+                  {card.reviewCount > 0 && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Ionicons name="star" size={14} color="#FBBF24" />
+                      <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '600' }}>{card.rating.toFixed(1)}</Text>
+                      <Text style={{ color: theme.colors.textMuted, fontSize: 12 }}>({card.reviewCount})</Text>
+                    </View>
+                  )}
                 </View>
                 <Text style={{ color: theme.colors.textMuted, fontSize: 13, marginTop: 2 }}>
-                  {card.breed} · {card.age} · {card.sex === 'M' ? 'Mascul' : 'Femelă'}
+                  {[card.breed, card.age_years ? `${card.age_years} ani` : null, card.gender ? GENDER_LABEL[card.gender] : null].filter(Boolean).join(' · ')}
                 </Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                  <Ionicons name="location-outline" size={13} color={theme.colors.textMuted} />
-                  <Text style={{ color: theme.colors.textMuted, fontSize: 12 }}>{card.location} · {card.distance}</Text>
-                </View>
+                {card.city && (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                    <Ionicons name="location-outline" size={13} color={theme.colors.textMuted} />
+                    <Text style={{ color: theme.colors.textMuted, fontSize: 12 }}>{card.city}</Text>
+                  </View>
+                )}
 
                 {/* Health tests */}
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
-                  {card.healthTests.map((ht) => (
-                    <View key={ht} style={[styles.healthChip, { backgroundColor: '#F0FDF4', borderColor: '#86EFAC' }]}>
-                      <Ionicons name="shield-checkmark" size={11} color="#16A34A" />
-                      <Text style={{ color: '#16A34A', fontSize: 11, fontWeight: '600' }}>{ht}</Text>
-                    </View>
-                  ))}
-                </View>
+                {card.health_tests && card.health_tests.length > 0 && (
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+                    {card.health_tests.map((ht) => (
+                      <View key={ht} style={[styles.healthChip, { backgroundColor: '#F0FDF4', borderColor: '#86EFAC' }]}>
+                        <Ionicons name="shield-checkmark" size={11} color="#16A34A" />
+                        <Text style={{ color: '#16A34A', fontSize: 11, fontWeight: '600' }}>{ht}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {/* Galerie pui */}
+                {card.offspring_photos && card.offspring_photos.length > 0 && (
+                  <View style={{ flexDirection: 'row', gap: 6, marginTop: 10 }}>
+                    {card.offspring_photos.slice(0, 4).map((url, i) => (
+                      <Image key={i} source={{ uri: url }} style={styles.offspringThumb} resizeMode="cover" />
+                    ))}
+                    {card.offspring_photos.length > 4 && (
+                      <View style={[styles.offspringThumb, styles.offspringMore, { backgroundColor: theme.colors.surfaceAlt }]}>
+                        <Text style={{ color: theme.colors.textMuted, fontSize: 11, fontWeight: '700' }}>+{card.offspring_photos.length - 4}</Text>
+                      </View>
+                    )}
+                  </View>
+                )}
 
                 {/* Stats */}
-                {card.litters > 0 && (
+                {((card.litters_count ?? 0) > 0 || (card.offspring_count ?? 0) > 0) && (
                   <Text style={{ color: theme.colors.textMuted, fontSize: 12, marginTop: 8 }}>
-                    ⭐ {card.rating} ({card.reviews} servicii) · {card.litters} pui · {card.offspring} descendenți
+                    {card.litters_count ?? 0} litere · {card.offspring_count ?? 0} descendenți
                   </Text>
                 )}
               </View>
@@ -384,7 +349,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'baseline',
     paddingHorizontal: 10, paddingVertical: 5,
     borderRadius: 8,
+    maxWidth: 160,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2,
+  },
+  photoCount: {
+    position: 'absolute', bottom: 12, left: 12,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6,
+  },
+  offspringThumb: {
+    width: 48, height: 48, borderRadius: 10,
+  },
+  offspringMore: {
+    alignItems: 'center', justifyContent: 'center',
   },
   cardTitleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   healthChip: {
