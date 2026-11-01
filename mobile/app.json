@@ -37,7 +37,7 @@
     },
     "android": {
       "package": "app.pawfectpair.mobile",
-      "versionCode": 16,
+      "versionCode": 18,
       "targetSdkVersion": 36,
       "compileSdkVersion": 36,
       "config": {
@@ -77,7 +77,9 @@
           "android": {
             "targetSdkVersion": 36,
             "compileSdkVersion": 36,
-            "buildToolsVersion": "36.0.0"
+            "buildToolsVersion": "36.0.0",
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
           }
         }
       ],
