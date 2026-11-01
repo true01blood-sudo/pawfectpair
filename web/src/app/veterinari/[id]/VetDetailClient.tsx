@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { StarsDisplay, StarsInput } from "@/components/Stars";
-import { bookAppointment, submitReview } from "../actions";
+import { submitReview } from "../actions";
 
 type Tab = "about" | "services" | "reviews";
 
@@ -29,7 +29,6 @@ type Props = {
 
 export default function VetDetailClient({ vet, services, reviews, myPets, isOwner, isLoggedIn, currentUserId }: Props) {
   const [tab, setTab] = useState<Tab>("about");
-  const [presetReason, setPresetReason] = useState<string | null>(null);
 
   const id = vet.id as string;
   const clinicName = vet.clinic_name as string;
@@ -149,13 +148,12 @@ export default function VetDetailClient({ vet, services, reviews, myPets, isOwne
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="text-sm font-bold" style={{ color: "var(--primary)" }}>{(srv.price_cents / 100).toFixed(0)} {srv.currency}</span>
                   {isLoggedIn && (
-                    <button
-                      type="button"
-                      onClick={() => { setPresetReason(srv.name); setTab("about"); document.getElementById("booking")?.scrollIntoView({ behavior: "smooth" }); }}
+                    <Link
+                      href={`/veterinari/${id}/rezerva?serviciu=${srv.id}`}
                       className="rounded-full bg-primary px-4 py-2 text-xs font-bold text-white"
                     >
                       Alege o oră
-                    </button>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -204,19 +202,12 @@ export default function VetDetailClient({ vet, services, reviews, myPets, isOwne
             <a href="/profil" className="text-primary hover:underline">profilul tău</a>.
           </p>
         ) : (
-          <form action={bookAppointment.bind(null, id)} className="flex flex-col gap-3">
-            <select name="pet_id" required className="min-h-11 rounded-xl border px-4 text-sm" style={{ borderColor: "var(--card-border)", background: "var(--card-bg)", color: "var(--foreground)" }}>
-              <option value="">Alege animalul</option>
-              {myPets.map((pet) => (
-                <option key={pet.id} value={pet.id}>{pet.name}</option>
-              ))}
-            </select>
-            <input name="starts_at" type="datetime-local" required className="min-h-11 rounded-xl border px-4 text-sm" style={{ borderColor: "var(--card-border)", background: "var(--card-bg)", color: "var(--foreground)" }} />
-            <input name="reason" defaultValue={presetReason ?? ""} placeholder="Motivul vizitei (opțional)" className="min-h-11 rounded-xl border px-4 text-sm" style={{ borderColor: "var(--card-border)", background: "var(--card-bg)", color: "var(--foreground)" }} />
-            <button className="min-h-11 self-start rounded-full bg-primary px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90">
-              Trimite cererea de programare
-            </button>
-          </form>
+          <Link
+            href={`/veterinari/${id}/rezerva`}
+            className="inline-flex min-h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            Alege animalul și ora →
+          </Link>
         )}
       </section>
     </div>

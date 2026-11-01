@@ -124,20 +124,26 @@ export async function bookAppointment(vetId: string, formData: FormData) {
   const pet_id = String(formData.get("pet_id") ?? "");
   const starts_at = String(formData.get("starts_at") ?? "");
   const reason = String(formData.get("reason") ?? "").trim() || null;
+  const service_id = String(formData.get("service_id") ?? "").trim() || null;
 
   if (!pet_id || !starts_at) throw new Error("Animalul și data sunt obligatorii.");
 
-  const { error } = await supabase.from("vet_appointments").insert({
-    vet_id: vetId,
-    pet_id,
-    owner_id: user.id,
-    starts_at: new Date(starts_at).toISOString(),
-    reason,
-  });
+  const { data, error } = await supabase
+    .from("vet_appointments")
+    .insert({
+      vet_id: vetId,
+      pet_id,
+      owner_id: user.id,
+      starts_at: new Date(starts_at).toISOString(),
+      reason,
+      service_id,
+    })
+    .select("id")
+    .single();
   if (error) throw new Error(error.message);
 
   revalidatePath("/programari");
-  redirect("/programari");
+  redirect(`/programari/${data.id}/confirmat`);
 }
 
 export async function submitReview(vetId: string, formData: FormData) {
