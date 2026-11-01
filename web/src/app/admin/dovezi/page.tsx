@@ -50,7 +50,7 @@ export default async function AdminDoveziPage() {
         Dovezi cabinete (admin)
       </h1>
       <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-        {pending.length} dovad{pending.length === 1 ? "ă" : "ă"} în așteptare de verificare.
+        {pending.length} dovad{pending.length === 1 ? "ă" : "ăi"} în așteptare de verificare.
       </p>
 
       <section className="mt-6">
