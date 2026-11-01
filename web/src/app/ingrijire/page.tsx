@@ -55,15 +55,36 @@ const CARE_MODULES = [
   },
 ];
 
-const UPCOMING_CARE = [
-  { emoji: "✂️", title: "Tuns — Luna", date: "În 3 zile", type: "grooming" },
-  { emoji: "🦷", title: "Periaj dinți — Thor", date: "Ieri (restant)", type: "dental" },
-];
+const CATEGORY_EMOJI: Record<string, string> = {
+  feeding: "🍽️",
+  walk: "🐕",
+  grooming: "✂️",
+  medication: "💊",
+  other: "📋",
+};
+
+function formatDueDate(dueAt: string): { label: string; overdue: boolean } {
+  const due = new Date(dueAt);
+  const now = new Date();
+  const diffDays = Math.round((due.setHours(0, 0, 0, 0) - now.setHours(0, 0, 0, 0)) / 86400000);
+  if (diffDays < 0) return { label: diffDays === -1 ? "Ieri (restant)" : `Acum ${Math.abs(diffDays)} zile (restant)`, overdue: true };
+  if (diffDays === 0) return { label: "Astăzi", overdue: false };
+  if (diffDays === 1) return { label: "Mâine", overdue: false };
+  return { label: `În ${diffDays} zile`, overdue: false };
+}
 
 export default async function IngrijirePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const { data: upcomingTasks } = await supabase
+    .from("planner_tasks")
+    .select("id, title, category, due_at, pets(name)")
+    .eq("owner_id", user.id)
+    .eq("done", false)
+    .order("due_at", { ascending: true })
+    .limit(4);
 
   return (
     <>
@@ -87,29 +108,37 @@ export default async function IngrijirePage() {
           <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "var(--muted)" }}>
             Programate
           </p>
-          <div className="flex flex-col gap-2">
-            {UPCOMING_CARE.map((item) => (
-              <div key={item.title} className="flex items-center gap-3">
-                <span className="text-xl">{item.emoji}</span>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-                    {item.title}
-                  </p>
-                </div>
-                <span
-                  className="text-xs rounded-full px-2.5 py-1 font-medium"
-                  style={{
-                    background: item.date.includes("restant")
-                      ? "color-mix(in srgb, #ef4444 12%, transparent)"
-                      : "color-mix(in srgb, var(--primary) 10%, transparent)",
-                    color: item.date.includes("restant") ? "#ef4444" : "var(--primary)",
-                  }}
-                >
-                  {item.date}
-                </span>
-              </div>
-            ))}
-          </div>
+          {upcomingTasks && upcomingTasks.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              {upcomingTasks.map((task) => {
+                const pet = task.pets as unknown as { name: string } | null;
+                const { label, overdue } = formatDueDate(task.due_at);
+                return (
+                  <div key={task.id} className="flex items-center gap-3">
+                    <span className="text-xl">{CATEGORY_EMOJI[task.category] ?? "📋"}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate" style={{ color: "var(--foreground)" }}>
+                        {task.title}{pet ? ` — ${pet.name}` : ""}
+                      </p>
+                    </div>
+                    <span
+                      className="text-xs rounded-full px-2.5 py-1 font-medium shrink-0"
+                      style={{
+                        background: overdue ? "color-mix(in srgb, #ef4444 12%, transparent)" : "color-mix(in srgb, var(--primary) 10%, transparent)",
+                        color: overdue ? "#ef4444" : "var(--primary)",
+                      }}
+                    >
+                      {label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm" style={{ color: "var(--muted)" }}>
+              Nicio sarcină programată. Adaugă una din planificator.
+            </p>
+          )}
           <Link
             href="/planificator"
             className="mt-3 block text-center text-xs font-medium"
