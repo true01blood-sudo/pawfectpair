@@ -15,5 +15,5 @@ export default async function ClinicProfilPage() {
     .maybeSingle();
 
   if (!vet) redirect("/veterinari/adauga");
-  redirect(`/veterinari/${vet.id}`);
+  redirect(`/veterinari/${vet.id}/editeaza`);
 }
