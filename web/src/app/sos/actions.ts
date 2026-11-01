@@ -37,16 +37,22 @@ export async function logSosEvent(formData: FormData) {
 
     if (vets && vets.length > 0) {
       const petLabel = pet?.name ? `${pet.name}${pet.species ? ` (${pet.species})` : ""}` : "un animal";
-      const rows = vets
-        .filter((v) => v.user_id)
-        .map((v) => ({
-          user_id: v.user_id as string,
-          type: "emergency",
-          title: `🆘 Urgență: ${petLabel}`,
-          body: `${TYPE_LABELS[type] ?? type}${notes ? ` — ${notes}` : ""}`,
-          link: "/sos",
-        }));
-      if (rows.length > 0) await supabase.from("notifications").insert(rows);
+      const title = `🆘 Urgență: ${petLabel}`;
+      const body = `${TYPE_LABELS[type] ?? type}${notes ? ` — ${notes}` : ""}`;
+
+      await Promise.all(
+        vets
+          .filter((v) => v.user_id)
+          .map((v) =>
+            supabase.rpc("create_notification", {
+              p_user_id: v.user_id as string,
+              p_type: "emergency",
+              p_title: title,
+              p_body: body,
+              p_link: "/sos",
+            })
+          )
+      );
     }
   }
 }
