@@ -570,8 +570,9 @@ function ListingFormModal({
       if (!user) throw new Error('auth');
       const url = await uploadPetPhoto(picked.uri, user.id, picked.ext);
       set('photo_url', url);
-    } catch {
-      RNAlert.alert(t('petday.photo_err_title'), t('petday.photo_err_msg'));
+    } catch (e) {
+      const detail = e instanceof Error ? e.message : String(e);
+      RNAlert.alert(t('petday.photo_err_title'), `${t('petday.photo_err_msg')} (${detail})`);
     } finally {
       setUploading(false);
     }

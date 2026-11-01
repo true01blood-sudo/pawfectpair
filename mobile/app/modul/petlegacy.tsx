@@ -278,8 +278,9 @@ export default function PetLegacyScreen() {
     try {
       const url = await uploadPetPhoto(res.uri, user.id, res.ext);
       setMForm((f) => ({ ...f, photo_url: url }));
-    } catch {
-      setMErr(t('legacy.err_photo'));
+    } catch (e) {
+      const detail = e instanceof Error ? e.message : String(e);
+      setMErr(`${t('legacy.err_photo')} (${detail})`);
     } finally {
       setPicking(false);
     }

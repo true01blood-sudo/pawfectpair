@@ -6,6 +6,8 @@
  * RLS garantează la nivel de DB că utilizatorul accesează doar propriile date.
  */
 import { supabase } from './client';
+import * as FileSystem from 'expo-file-system';
+import { decode as decodeBase64 } from 'base64-arraybuffer';
 import type {
   Profile,
   Pet,
@@ -541,17 +543,17 @@ export async function uploadPetPhoto(
   if (!validateStoragePath(path, userId)) {
     throw new Error('Path de stocare invalid');
   }
-  const fileResp = await fetch(fileUri);
-  const blob = await fileResp.blob();
-  // blob.type e aproape mereu gol pe React Native pentru URI-uri locale
-  // (file://) — bucket-ul "public-media" are acum o listă albă de
-  // content-type-uri (fix de securitate), așa că trimitem explicit tipul
-  // dedus din extensie, nu cel (nesigur) raportat de blob.
+  // fetch(fileUri).blob() e un punct cunoscut de instabilitate pe RN/Android
+  // (blob.type gol sau conversie eșuată pentru content:// provenite din
+  // cropper). Citim fișierul direct ca base64 prin expo-file-system și-l
+  // decodăm în ArrayBuffer — metoda recomandată de Supabase pentru RN.
+  const base64 = await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.Base64 });
+  const arrayBuffer = decodeBase64(base64);
   const contentType = EXT_TO_MIME[ext.toLowerCase()] ?? 'image/jpeg';
 
   const { error } = await supabase.storage
     .from('public-media')
-    .upload(path, blob, { cacheControl: '3600', contentType, upsert: false });
+    .upload(path, arrayBuffer, { cacheControl: '3600', contentType, upsert: false });
   if (error) throw error;
 
   const { data } = supabase.storage.from('public-media').getPublicUrl(path);

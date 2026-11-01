@@ -79,7 +79,8 @@ export function PetForm({ initial, onSubmit, submitLabel = 'Salvează' }: PetFor
       const publicUrl = await uploadPetPhoto(picked.uri, user.id, picked.ext);
       set('photo_url', publicUrl);
     } catch (e) {
-      const msg = e instanceof PhotoValidationError ? e.message : 'Eroare la încărcarea pozei';
+      const detail = e instanceof Error ? e.message : String(e);
+      const msg = e instanceof PhotoValidationError ? e.message : `Eroare la încărcarea pozei: ${detail}`;
       Alert.alert('Imagine', msg);
     } finally {
       setUploading(false);

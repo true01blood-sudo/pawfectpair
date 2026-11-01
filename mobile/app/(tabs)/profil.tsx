@@ -52,7 +52,8 @@ export default function ProfilScreen() {
       const url = await uploadPetPhoto(picked.uri, user.id, picked.ext);
       await updateProfile.mutateAsync({ avatar_url: url });
     } catch (e) {
-      const msg = e instanceof PhotoValidationError ? e.message : 'Eroare la încărcare';
+      const detail = e instanceof Error ? e.message : String(e);
+      const msg = e instanceof PhotoValidationError ? e.message : `Eroare la încărcare: ${detail}`;
       Alert.alert('Imagine', msg);
     } finally {
       setUploading(false);

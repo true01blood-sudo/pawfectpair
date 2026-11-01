@@ -187,8 +187,9 @@ export default function PetResqScreen() {
     try {
       const url = await uploadPetPhoto(res.uri, user.id, res.ext);
       setForm((f) => ({ ...f, photo_url: url }));
-    } catch {
-      setFormErr(t('resq.err_photo'));
+    } catch (e) {
+      const detail = e instanceof Error ? e.message : String(e);
+      setFormErr(`${t('resq.err_photo')} (${detail})`);
     } finally {
       setPicking(false);
     }
