@@ -1,13 +1,17 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Breadcrumb from "@/components/Breadcrumb";
-import { updateListingStatus, deleteListing, deleteForumPost, updateResqStatus, deleteResqCase } from "./actions";
+import {
+  updateListingStatus, deleteListing, deleteForumPost, updateResqStatus, deleteResqCase,
+  updateBreedingStatus, deleteBreedingListing,
+} from "./actions";
 
 const statusLabels: Record<string, { label: string; color: string }> = {
   available: { label: "Disponibil", color: "#10b981" },
+  pending: { label: "În așteptare", color: "#d97706" },
   adopted: { label: "Adoptat", color: "#3b82f6" },
-  removed: { label: "Eliminat", color: "#ef4444" },
-  open: { label: "Deschis", color: "#ef4444" },
+  active: { label: "Activ", color: "#10b981" },
+  reserved: { label: "Rezervat", color: "#d97706" },
   closed: { label: "Închis", color: "#6b7280" },
   resolved: { label: "Rezolvat", color: "#10b981" },
 };
@@ -23,19 +27,24 @@ export default async function AdminContinutPage() {
     { data: listings },
     { data: forumPosts },
     { data: resqCases },
+    { data: breedingListings },
   ] = await Promise.all([
     supabase.from("adoption_listings")
       .select("id, name, species, breed, city, status, created_at, photo_url, profiles(full_name)")
       .order("created_at", { ascending: false })
       .limit(50),
     supabase.from("forum_posts")
-      .select("id, content, created_at, profiles(full_name)")
+      .select("id, title, body, created_at, profiles(full_name)")
       .order("created_at", { ascending: false })
       .limit(30),
     supabase.from("resq_cases")
       .select("id, species, description, status, created_at, profiles(full_name)")
       .order("created_at", { ascending: false })
       .limit(30),
+    supabase.from("breeding_listings")
+      .select("id, title, species, breed, city, status, created_at, photo_url")
+      .order("created_at", { ascending: false })
+      .limit(50),
   ]);
 
   return (
@@ -74,10 +83,6 @@ export default async function AdminContinutPage() {
                       <button className="min-h-8 rounded-full border px-3 text-xs hover:border-green-400 hover:text-green-600"
                         style={{ borderColor: "var(--card-border)" }}>Activează</button>
                     </form>
-                    <form action={updateListingStatus.bind(null, l.id, "removed")}>
-                      <button className="min-h-8 rounded-full border px-3 text-xs hover:border-red-400 hover:text-red-500"
-                        style={{ borderColor: "var(--card-border)" }}>Elimină</button>
-                    </form>
                     <form action={deleteListing.bind(null, l.id)}>
                       <button className="text-xs text-red-500 hover:underline">Șterge</button>
                     </form>
@@ -115,10 +120,6 @@ export default async function AdminContinutPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <form action={updateResqStatus.bind(null, c.id, "closed")}>
-                      <button className="min-h-8 rounded-full border px-3 text-xs hover:border-blue-400 hover:text-blue-600"
-                        style={{ borderColor: "var(--card-border)" }}>Închide</button>
-                    </form>
                     <form action={updateResqStatus.bind(null, c.id, "resolved")}>
                       <button className="min-h-8 rounded-full border px-3 text-xs hover:border-green-400 hover:text-green-600"
                         style={{ borderColor: "var(--card-border)" }}>Rezolvat</button>
@@ -152,7 +153,8 @@ export default async function AdminContinutPage() {
                     <p className="text-xs font-medium" style={{ color: "var(--muted)" }}>
                       {author?.full_name ?? "?"} · {new Date(fp.created_at).toLocaleDateString("ro-RO")}
                     </p>
-                    <p className="mt-0.5 line-clamp-2 text-sm">{fp.content}</p>
+                    <p className="mt-0.5 text-sm font-medium" style={{ color: "var(--foreground)" }}>{fp.title}</p>
+                    <p className="line-clamp-2 text-sm" style={{ color: "var(--muted)" }}>{fp.body}</p>
                   </div>
                   <form action={deleteForumPost.bind(null, fp.id)}>
                     <button className="shrink-0 text-xs text-red-500 hover:underline">Șterge</button>
@@ -162,7 +164,54 @@ export default async function AdminContinutPage() {
             })}
           </ul>
         ) : (
-          <p className="text-sm" style={{ color: "var(--muted)" }}>Nicio postare în forum.</p>
+          <p className="mb-8 text-sm" style={{ color: "var(--muted)" }}>Nicio postare în forum.</p>
+        )}
+      </section>
+
+      {/* Breeding listings */}
+      <section className="mt-8">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-semibold" style={{ color: "var(--foreground)" }}>Anunțuri reproducție ({breedingListings?.length ?? 0})</h2>
+        </div>
+        {breedingListings && breedingListings.length > 0 ? (
+          <ul className="flex flex-col gap-2">
+            {breedingListings.map((b) => {
+              const s = statusLabels[b.status] ?? { label: b.status, color: "#6b7280" };
+              return (
+                <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3 text-sm shadow-sm"
+                  style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>
+                  <div className="flex items-center gap-3 min-w-0">
+                    {b.photo_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={b.photo_url} alt={b.title} className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+                    )}
+                    <div className="min-w-0">
+                      <p className="font-medium truncate" style={{ color: "var(--foreground)" }}>{b.title} — {b.species} {b.breed ? `(${b.breed})` : ""}</p>
+                      <p className="text-xs" style={{ color: "var(--muted)" }}>
+                        {b.city} · {new Date(b.created_at).toLocaleDateString("ro-RO")}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-semibold" style={{ color: s.color }}>{s.label}</span>
+                    <form action={updateBreedingStatus.bind(null, b.id, "active")}>
+                      <button className="min-h-8 rounded-full border px-3 text-xs hover:border-green-400 hover:text-green-600"
+                        style={{ borderColor: "var(--card-border)" }}>Activează</button>
+                    </form>
+                    <form action={updateBreedingStatus.bind(null, b.id, "closed")}>
+                      <button className="min-h-8 rounded-full border px-3 text-xs hover:border-red-400 hover:text-red-500"
+                        style={{ borderColor: "var(--card-border)" }}>Închide</button>
+                    </form>
+                    <form action={deleteBreedingListing.bind(null, b.id)}>
+                      <button className="text-xs text-red-500 hover:underline">Șterge</button>
+                    </form>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="text-sm" style={{ color: "var(--muted)" }}>Niciun anunț de reproducție.</p>
         )}
       </section>
     </main>
