@@ -48,7 +48,7 @@ export default function HartaScreen() {
     : { latitude: 44.4268, longitude: 26.1025, latitudeDelta: 0.08, longitudeDelta: 0.08 };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['bottom']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top']}>
       <Stack.Screen options={{ title: t('map.title') }} />
 
       {/* Header + view toggle */}
