@@ -15,6 +15,7 @@ const navItems = [
   { href: "/admin/antrenament", label: "Antrenament", icon: "🎓" },
   { href: "/admin/cercuri", label: "Cercuri", icon: "🧑‍🤝‍🧑" },
   { href: "/admin/pensiuni", label: "Pensiuni", icon: "🏠" },
+  { href: "/admin/evenimente", label: "Evenimente", icon: "📅" },
   { href: "/admin/setari", label: "Setări", icon: "⚙️" },
 ];
 

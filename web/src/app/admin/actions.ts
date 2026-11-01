@@ -195,6 +195,26 @@ export async function deletePetdayReview(reviewId: string) {
   revalidatePath("/admin/pensiuni");
 }
 
+export async function cancelPetEvent(eventId: string) {
+  const supabase = await requireAdmin();
+
+  const { error } = await supabase.from("pet_events").update({ status: "cancelled" }).eq("id", eventId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/evenimente");
+  revalidatePath("/");
+}
+
+export async function deletePetEvent(eventId: string) {
+  const supabase = await requireAdmin();
+
+  const { error } = await supabase.from("pet_events").delete().eq("id", eventId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/evenimente");
+  revalidatePath("/");
+}
+
 export async function setDocumentStatus(documentId: string, status: "approved" | "rejected") {
   const supabase = await requireAdmin();
 
