@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -173,20 +174,16 @@ export default function NotificariClient({ notifications: rawNotifs, unreadCount
         <div className="space-y-2">
           {displayList.map((n) => {
             const read = isRead(n);
-            return (
-              <button
-                key={n.id}
-                className="w-full text-left flex items-start gap-3 rounded-2xl border p-4 transition-all hover:shadow-sm"
-                style={{
-                  background: read
-                    ? "var(--card-bg)"
-                    : "color-mix(in srgb, var(--primary) 5%, var(--card-bg))",
-                  borderColor: read
-                    ? "var(--card-border)"
-                    : "color-mix(in srgb, var(--primary) 25%, transparent)",
-                }}
-                onClick={() => markRead(n.id)}
-              >
+            const cardStyle = {
+              background: read
+                ? "var(--card-bg)"
+                : "color-mix(in srgb, var(--primary) 5%, var(--card-bg))",
+              borderColor: read
+                ? "var(--card-border)"
+                : "color-mix(in srgb, var(--primary) 25%, transparent)",
+            };
+            const content = (
+              <>
                 <div
                   className="h-10 w-10 rounded-full flex items-center justify-center text-xl shrink-0"
                   style={{
@@ -216,14 +213,9 @@ export default function NotificariClient({ notifications: rawNotifs, unreadCount
                   </div>
                   <p className="text-sm mt-0.5" style={{ color: "var(--muted)" }}>{n.body}</p>
                   {n.link && (
-                    <a
-                      href={n.link}
-                      className="text-xs mt-1 block font-medium"
-                      style={{ color: "var(--primary)" }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                    <span className="text-xs mt-1 block font-medium" style={{ color: "var(--primary)" }}>
                       Deschide →
-                    </a>
+                    </span>
                   )}
                 </div>
                 {!read && (
@@ -232,7 +224,18 @@ export default function NotificariClient({ notifications: rawNotifs, unreadCount
                     style={{ background: "var(--primary)" }}
                   />
                 )}
-              </button>
+              </>
+            );
+            const cardClass = "w-full text-left flex items-start gap-3 rounded-2xl border p-4 transition-all hover:shadow-sm cursor-pointer";
+
+            return n.link ? (
+              <Link key={n.id} href={n.link} className={cardClass} style={cardStyle} onClick={() => markRead(n.id)}>
+                {content}
+              </Link>
+            ) : (
+              <div key={n.id} className={cardClass} style={cardStyle} onClick={() => markRead(n.id)}>
+                {content}
+              </div>
             );
           })}
         </div>
