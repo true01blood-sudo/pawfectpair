@@ -239,6 +239,10 @@ export default function HomePetWidget({
       <div>
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Evenimente apropiate</p>
+          <Link href="/evenimente" className="text-xs font-semibold flex items-center gap-0.5 hover:underline" style={{ color: "var(--primary)" }}>
+            Vezi toate
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </Link>
         </div>
         <div
           className="rounded-2xl border overflow-hidden"
@@ -252,9 +256,9 @@ export default function HomePetWidget({
               >
                 Eveniment comunitar
               </span>
-              <p className="font-bold text-sm leading-snug" style={{ color: "var(--foreground)" }}>
+              <Link href={`/evenimente/${nextEvent.id}`} className="font-bold text-sm leading-snug hover:underline" style={{ color: "var(--foreground)" }}>
                 {nextEvent.title}
-              </p>
+              </Link>
               <div className="mt-2 space-y-1">
                 <div className="flex items-center gap-1.5 text-xs" style={{ color: "var(--muted)" }}>
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -289,8 +293,8 @@ export default function HomePetWidget({
           ) : (
             <div className="p-4 text-center">
               <p className="text-sm" style={{ color: "var(--muted)" }}>Niciun eveniment apropiat momentan.</p>
-              <Link href="/cercuri" className="mt-1 inline-block text-xs font-semibold hover:underline" style={{ color: "var(--primary)" }}>
-                Vezi comunitatea →
+              <Link href="/evenimente/creeaza" className="mt-1 inline-block text-xs font-semibold hover:underline" style={{ color: "var(--primary)" }}>
+                Creează un eveniment →
               </Link>
             </div>
           )}

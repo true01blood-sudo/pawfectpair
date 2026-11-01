@@ -64,7 +64,7 @@ export default async function AdminEvenimentePage() {
                       {TYPE_LABELS[e.event_type] ?? e.event_type} · {e.city} · {new Date(e.starts_at).toLocaleDateString("ro-RO", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </p>
                     <p className="text-xs" style={{ color: "var(--muted)" }}>
-                      {organizer?.full_name ?? "?"} · {going}{e.max_participants ? `/${e.max_participants}` : ""} participanți
+                      {organizer?.full_name ?? "?"} · {going}{e.max_participants ? `/${e.max_participants}` : ""} participan{going === 1 ? "t" : "ți"}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">

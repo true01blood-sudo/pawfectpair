@@ -202,6 +202,8 @@ export async function cancelPetEvent(eventId: string) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/evenimente");
+  revalidatePath("/evenimente");
+  revalidatePath(`/evenimente/${eventId}`);
   revalidatePath("/");
 }
 
@@ -212,6 +214,7 @@ export async function deletePetEvent(eventId: string) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/evenimente");
+  revalidatePath("/evenimente");
   revalidatePath("/");
 }
 
