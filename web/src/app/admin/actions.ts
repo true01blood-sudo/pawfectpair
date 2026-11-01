@@ -86,6 +86,20 @@ export async function importDemoProducts() {
   revalidatePath("/admin");
 }
 
+export async function setDocumentStatus(documentId: string, status: "approved" | "rejected") {
+  const supabase = await requireAdmin();
+
+  const { error } = await supabase
+    .from("clinic_documents")
+    .update({ status })
+    .eq("id", documentId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/dovezi");
+  revalidatePath("/clinic");
+  revalidatePath("/clinic/dovezi");
+}
+
 export async function addArticle(formData: FormData) {
   const supabase = await requireAdmin();
   const {
