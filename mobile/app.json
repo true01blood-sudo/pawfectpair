@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "pawfectpair",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "jsEngine": "hermes",
     "splash": {
       "image": "./assets/images/splash.png",
@@ -37,7 +37,7 @@
     },
     "android": {
       "package": "app.pawfectpair.mobile",
-      "versionCode": 21,
+      "versionCode": 22,
       "targetSdkVersion": 36,
       "compileSdkVersion": 36,
       "config": {
