@@ -37,7 +37,7 @@
     },
     "android": {
       "package": "app.pawfectpair.mobile",
-      "versionCode": 18,
+      "versionCode": 21,
       "targetSdkVersion": 36,
       "compileSdkVersion": 36,
       "config": {
@@ -79,7 +79,8 @@
             "compileSdkVersion": 36,
             "buildToolsVersion": "36.0.0",
             "enableProguardInReleaseBuilds": true,
-            "enableShrinkResourcesInReleaseBuilds": true
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "extraProguardRules": "-keep class com.google.android.gms.maps.** { *; }\n-keep interface com.google.android.gms.maps.** { *; }\n-keep class com.google.android.gms.internal.maps.** { *; }\n-keep class com.google.android.gms.common.** { *; }\n-keep class com.rnmaps.maps.** { *; }"
           }
         }
       ],
