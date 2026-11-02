@@ -103,14 +103,14 @@ export default function DosarScreen() {
         {pet && (
           <View style={[styles.petCard, { marginHorizontal: 20, marginTop: 16, backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
             <View style={[styles.petAvatar, { backgroundColor: theme.colors.accent }]}>
-              <Text style={{ fontSize: 28 }}>{pet.species === 'cat' ? '🐱' : pet.species === 'horse' ? '🐴' : '🐶'}</Text>
+              <Text style={{ fontSize: 28 }}>{pet.species === 'Pisică' ? '🐱' : pet.species === 'Iepure' ? '🐰' : '🐶'}</Text>
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ color: theme.colors.text, fontSize: 16, fontFamily: theme.typography.fontFamilyBold }}>
                 {pet.name}
               </Text>
               <Text style={{ color: theme.colors.textMuted, fontSize: 12, marginTop: 2 }}>
-                {pet.breed || pet.species} · {pet.gender === 'female' ? 'Femelă' : 'Mascul'}
+                {pet.breed || pet.species} · {pet.sex === 'female' ? 'Femelă' : pet.sex === 'male' ? 'Mascul' : 'Sex necunoscut'}
               </Text>
             </View>
             <Pressable

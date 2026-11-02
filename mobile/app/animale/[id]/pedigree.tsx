@@ -14,6 +14,11 @@ import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../../components/theme-provider';
 import { usePet } from '../../../hooks';
 
+function getPetAge(birthDate: string): string {
+  const years = Math.floor((Date.now() - new Date(birthDate).getTime()) / (1000 * 60 * 60 * 24 * 365));
+  return years < 1 ? '< 1 an' : `${years} ${years === 1 ? 'an' : 'ani'}`;
+}
+
 type PedigreeNode = {
   id: string;
   name: string;
@@ -82,7 +87,7 @@ export default function PedigreeScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Cover foto + info animal */}
         <View style={[styles.coverArea, { backgroundColor: theme.colors.accent }]}>
-          <Text style={{ fontSize: 80 }}>{pet ? (pet.species === 'cat' ? '🐱' : '🐕') : '🐕'}</Text>
+          <Text style={{ fontSize: 80 }}>{pet ? (pet.species === 'Pisică' ? '🐱' : '🐕') : '🐕'}</Text>
         </View>
 
         <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
@@ -99,7 +104,9 @@ export default function PedigreeScreen() {
             </View>
           </View>
           <Text style={{ color: theme.colors.textMuted, fontSize: 14, marginTop: 4 }}>
-            {pet?.breed ?? 'Golden Retriever'} · {t('pedigree.years', '3 ani')} · {pet?.gender === 'female' ? '♀ Femelă' : '♂ Mascul'}
+            {pet?.breed ?? pet?.species ?? ''}
+            {pet?.birth_date ? ` · ${getPetAge(pet.birth_date)}` : ''}
+            {pet?.sex === 'female' ? ' · ♀ Femelă' : pet?.sex === 'male' ? ' · ♂ Mascul' : ''}
           </Text>
         </View>
 
@@ -254,7 +261,7 @@ function PedigreeNodeCard({ node, theme, label, isSubject = false, small = false
       {node.emoji && !small && (
         <Text style={{ fontSize: 20, marginBottom: 4 }}>{node.emoji}</Text>
       )}
-      <Text style={{ color: theme.colors.text, fontSize: small ? 11 : 13, fontWeight: '700', numberOfLines: 2 }}>
+      <Text numberOfLines={2} style={{ color: theme.colors.text, fontSize: small ? 11 : 13, fontWeight: '700' }}>
         {node.name}
       </Text>
       {node.regName && (

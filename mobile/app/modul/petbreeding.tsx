@@ -6,7 +6,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable, Image,
-  Animated, PanResponder, Dimensions,
+  Animated, PanResponder, Dimensions, Linking, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, Stack } from 'expo-router';
@@ -289,7 +289,7 @@ export default function PetBreedingScreen() {
             <Ionicons name="heart" size={28} color={theme.colors.primary} />
           </Pressable>
           <Pressable
-            onPress={() => {}}
+            onPress={() => card.contact_phone ? Linking.openURL(`tel:${card.contact_phone}`) : Alert.alert('Fără contact', 'Acest anunț nu are un număr de telefon adăugat.')}
             style={[styles.actionBtn, styles.actionBtnSm, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
           >
             <Ionicons name="person" size={20} color={theme.colors.textMuted} />
@@ -300,9 +300,12 @@ export default function PetBreedingScreen() {
       {/* CTA View profile */}
       {!isFinished && (
         <View style={{ paddingHorizontal: 20, paddingBottom: 16 }}>
-          <Pressable style={[styles.primaryBtn, { backgroundColor: theme.colors.primary }]}>
+          <Pressable
+            onPress={() => card.contact_phone ? Linking.openURL(`tel:${card.contact_phone}`) : Alert.alert('Fără contact', 'Acest anunț nu are un număr de telefon adăugat.')}
+            style={[styles.primaryBtn, { backgroundColor: theme.colors.primary }]}
+          >
             <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
-              {t('breeding.viewProfile', 'Vezi profilul complet')}
+              {card.contact_phone ? t('breeding.callBreeder', '📞 Sună crescătorul') : t('breeding.viewProfile', 'Vezi profilul complet')}
             </Text>
           </Pressable>
         </View>

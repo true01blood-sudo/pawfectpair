@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import AppShell from "@/components/AppShell";
+import { joinCircle, leaveCircle } from "./actions";
 
 export const metadata: Metadata = {
   title: "Cercuri — PetCare",
@@ -187,8 +188,7 @@ export default async function CercuriPage({
                         👥 {circle.member_count} membri
                       </span>
                       {user ? (
-                        <form action={isJoined ? `/cercuri/actiuni/paraseste` : `/cercuri/actiuni/alatura`} method="post">
-                          <input type="hidden" name="circleId" value={circle.id} />
+                        <form action={(isJoined ? leaveCircle : joinCircle).bind(null, circle.id)}>
                           <button
                             type="submit"
                             className="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"

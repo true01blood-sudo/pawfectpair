@@ -2597,6 +2597,7 @@ export interface BreedingListingRow {
   health_tests: string[] | null;
   price_info: string | null;
   city: string | null;
+  contact_phone: string | null;
   photo_url: string | null;
   photos: string[] | null;
   is_champion: boolean | null;
@@ -2616,7 +2617,7 @@ export async function fetchBreedingListings(filters: { species?: string } = {}):
   let q = supabase
     .from('breeding_listings')
     .select(
-      'id, title, species, breed, gender, age_years, health_tests, price_info, city, photo_url, photos, is_champion, awards, litters_count, offspring_count, offspring_photos, reviews:breeding_reviews(rating)'
+      'id, title, species, breed, gender, age_years, health_tests, price_info, city, contact_phone, photo_url, photos, is_champion, awards, litters_count, offspring_count, offspring_photos, reviews:breeding_reviews(rating)'
     )
     .eq('status', 'active')
     .order('created_at', { ascending: false })

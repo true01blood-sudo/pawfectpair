@@ -51,7 +51,7 @@ function GenderBadge({ gender }: { gender: string | null }) {
 export default function BreedingDetailClient({ listing, owner, reviews, currentUserId, isLoggedIn }: Props) {
   const [tab, setTab] = useState<Tab>("overview");
   const [inquirySent, setInquirySent] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [shared, setShared] = useState(false);
 
   const healthTests = (listing.health_tests as string[] | null) ?? [];
   const title = listing.title as string;
@@ -117,21 +117,40 @@ export default function BreedingDetailClient({ listing, owner, reviews, currentU
         <div className="absolute top-3 right-3 flex gap-2">
           <button
             type="button"
-            onClick={() => setSaved((p) => !p)}
+            onClick={() => alert("Salvarea anunțurilor favorite vine într-o versiune viitoare.")}
             className="h-9 w-9 rounded-full bg-white/90 flex items-center justify-center shadow transition-colors hover:bg-white"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill={saved ? "#ef4444" : "none"} stroke={saved ? "#ef4444" : "#374151"} strokeWidth="2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
             </svg>
           </button>
           <button
             type="button"
+            onClick={async () => {
+              const url = typeof window !== "undefined" ? window.location.href : "";
+              if (typeof navigator !== "undefined" && navigator.share) {
+                try { await navigator.share({ title, url }); } catch {}
+              } else if (typeof navigator !== "undefined" && navigator.clipboard) {
+                try {
+                  await navigator.clipboard.writeText(url);
+                  setShared(true);
+                  setTimeout(() => setShared(false), 1500);
+                } catch {}
+              }
+            }}
             className="h-9 w-9 rounded-full bg-white/90 flex items-center justify-center shadow transition-colors hover:bg-white"
+            title={shared ? "Link copiat" : "Distribuie"}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2">
-              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-            </svg>
+            {shared ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+            )}
           </button>
         </div>
       </div>
