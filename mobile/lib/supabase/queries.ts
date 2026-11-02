@@ -2568,6 +2568,9 @@ export const queries = {
   bookVetAppointment,
   // Trainer detail
   fetchTrainerDetail,
+  // Trainer bookings
+  requestTrainerBooking,
+  fetchMyTrainerBookings,
 };
 
 // ============================================================
@@ -2781,4 +2784,50 @@ export async function fetchTrainerDetail(id: string): Promise<Trainer | null> {
     .maybeSingle();
   if (error) throw error;
   return data as Trainer | null;
+}
+
+// ============================================================
+// Trainer bookings (trainer_bookings) — cerere de sesiune
+// ============================================================
+
+export type TrainerBookingStatus = 'requested' | 'confirmed' | 'declined' | 'cancelled' | 'completed';
+
+export interface TrainerBookingRow {
+  id: string;
+  trainer_id: string;
+  pet_id: string;
+  owner_id: string;
+  requested_at: string;
+  notes: string | null;
+  status: TrainerBookingStatus;
+  created_at: string;
+}
+
+export interface RequestTrainerBookingInput {
+  trainer_id: string;
+  pet_id: string;
+  owner_id: string;
+  requested_at: string;
+  notes: string | null;
+}
+
+export async function requestTrainerBooking(input: RequestTrainerBookingInput): Promise<{ id: string }> {
+  const { data, error } = await supabase
+    .from('trainer_bookings')
+    .insert(input)
+    .select('id')
+    .single();
+  if (error) throw error;
+  return data as { id: string };
+}
+
+/** Rezervările mele (ca proprietar de animal) — folosit pe ecranul de confirmare / viitor "Programările mele". */
+export async function fetchMyTrainerBookings(ownerId: string): Promise<TrainerBookingRow[]> {
+  const { data, error } = await supabase
+    .from('trainer_bookings')
+    .select('id, trainer_id, pet_id, owner_id, requested_at, notes, status, created_at')
+    .eq('owner_id', ownerId)
+    .order('requested_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as TrainerBookingRow[];
 }

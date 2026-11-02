@@ -1,28 +1,31 @@
 /**
  * Ecran detaliu trainer — profil real (edu_trainers), cu acțiuni reale
- * de contact (apel, share). Nu există încă o tabelă de rezervări pentru
- * traineri în acest model de date (spre deosebire de vets, care au
- * vet_appointments) — vezi nota din README pentru detalii.
+ * de contact (apel, share) și cerere de sesiune reală (trainer_bookings).
  */
 import React from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet, Linking, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { TRAINER_SPECIALTY_EMOJI } from '@pawfectpair/shared';
 import { useAppTheme } from '../../../components/theme-provider';
 import { StateView, Button } from '../../../components/ui';
 import { useTrainerDetail } from '../../../hooks/useVetDetail';
+import { useMyPets } from '../../../hooks';
+import { useAuthStore } from '../../../store/auth.store';
 
 export default function TrainerDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useAppTheme();
+  const router = useRouter();
   const s = theme.colors;
   const sp = theme.spacing;
 
   const trainerQ = useTrainerDetail(id);
   const trainer = trainerQ.data;
+  const user = useAuthStore((st) => st.user);
+  const myPets = useMyPets();
 
   if (trainerQ.isLoading) {
     return (
@@ -89,10 +92,26 @@ export default function TrainerDetailScreen() {
           </Text>
         </View>
 
-        <View style={{ flexDirection: 'row', gap: 10, marginTop: sp.lg }}>
+        <View style={[styles.sectionCard, { backgroundColor: s.surface, borderColor: s.border, marginTop: sp.md }]}>
+          <Text style={{ color: s.text, fontSize: 15, fontFamily: theme.typography.fontFamilyBold, marginBottom: 8 }}>
+            Cere o sesiune
+          </Text>
+          {!user ? (
+            <Text style={{ color: s.textMuted, fontSize: 13 }}>Autentifică-te pentru a cere o sesiune.</Text>
+          ) : (myPets.data?.length ?? 0) === 0 ? (
+            <Text style={{ color: s.textMuted, fontSize: 13 }}>
+              Nu ai încă niciun animal adăugat. Adaugă unul din Animalele mele.
+            </Text>
+          ) : (
+            <Button title="Alege animalul și ora →" onPress={() => router.push(`/antrenori/${id}/rezerva` as any)} />
+          )}
+        </View>
+
+        <View style={{ flexDirection: 'row', gap: 10, marginTop: sp.md }}>
           {trainer.phone && (
             <Button
               title="📞 Sună"
+              variant="outline"
               onPress={() => Linking.openURL(`tel:${trainer.phone}`)}
               style={{ flex: 1 }}
             />

@@ -3,7 +3,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queries } from '../lib/supabase/queries';
-import type { BookVetAppointmentInput } from '../lib/supabase/queries';
+import type { BookVetAppointmentInput, RequestTrainerBookingInput } from '../lib/supabase/queries';
 import { useAuthStore } from '../store/auth.store';
 
 export const VET_DETAIL_KEY = (id: string) => ['vet', id] as const;
@@ -62,5 +62,31 @@ export function useTrainerDetail(id: string | undefined) {
     queryKey: TRAINER_DETAIL_KEY(id ?? ''),
     queryFn: () => queries.fetchTrainerDetail(id!),
     enabled: !!id,
+  });
+}
+
+export const MY_TRAINER_BOOKINGS_KEY = (uid: string) => ['trainer-bookings', 'mine', uid] as const;
+
+export function useMyTrainerBookings() {
+  const user = useAuthStore((s) => s.user);
+  const uid = user?.id ?? '';
+  return useQuery({
+    queryKey: MY_TRAINER_BOOKINGS_KEY(uid),
+    queryFn: () => queries.fetchMyTrainerBookings(uid),
+    enabled: !!uid,
+  });
+}
+
+export function useRequestTrainerBooking() {
+  const qc = useQueryClient();
+  const user = useAuthStore((s) => s.user);
+  return useMutation({
+    mutationFn: (input: Omit<RequestTrainerBookingInput, 'owner_id'>) => {
+      if (!user) throw new Error('Nu ești autentificat');
+      return queries.requestTrainerBooking({ ...input, owner_id: user.id });
+    },
+    onSuccess: () => {
+      if (user) qc.invalidateQueries({ queryKey: MY_TRAINER_BOOKINGS_KEY(user.id) });
+    },
   });
 }
