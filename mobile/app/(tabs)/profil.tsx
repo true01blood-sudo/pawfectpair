@@ -161,6 +161,23 @@ export default function ProfilScreen() {
           </View>
         </Card>
 
+        {/* Programările mele */}
+        <Card>
+          <Pressable onPress={() => router.push('/programari')}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View>
+                <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeLg, fontFamily: theme.typography.fontFamilyBold }}>
+                  📅 Programările mele
+                </Text>
+                <Text style={{ color: theme.colors.textMuted, fontSize: theme.typography.fontSizeSm, marginTop: 2 }}>
+                  Vizite la veterinari și sesiuni cu traineri
+                </Text>
+              </View>
+              <Text style={{ color: theme.colors.primary, fontSize: 22 }}>›</Text>
+            </View>
+          </Pressable>
+        </Card>
+
         {/* Limbă & regiune */}
         <Card>
           <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeLg, fontFamily: theme.typography.fontFamilyBold, marginBottom: theme.spacing.md }}>

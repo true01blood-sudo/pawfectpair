@@ -90,3 +90,41 @@ export function useRequestTrainerBooking() {
     },
   });
 }
+
+export function useCancelTrainerBooking() {
+  const qc = useQueryClient();
+  const user = useAuthStore((s) => s.user);
+  return useMutation({
+    mutationFn: (id: string) => queries.cancelTrainerBooking(id),
+    onSuccess: () => {
+      if (user) qc.invalidateQueries({ queryKey: MY_TRAINER_BOOKINGS_KEY(user.id) });
+    },
+  });
+}
+
+// ============================================================
+// Programările mele — vet_appointments + trainer_bookings
+// ============================================================
+
+export const MY_VET_APPOINTMENTS_KEY = (uid: string) => ['vet-appointments', 'mine', uid] as const;
+
+export function useMyVetAppointments() {
+  const user = useAuthStore((s) => s.user);
+  const uid = user?.id ?? '';
+  return useQuery({
+    queryKey: MY_VET_APPOINTMENTS_KEY(uid),
+    queryFn: () => queries.fetchMyVetAppointments(uid),
+    enabled: !!uid,
+  });
+}
+
+export function useCancelVetAppointment() {
+  const qc = useQueryClient();
+  const user = useAuthStore((s) => s.user);
+  return useMutation({
+    mutationFn: (id: string) => queries.cancelVetAppointment(id),
+    onSuccess: () => {
+      if (user) qc.invalidateQueries({ queryKey: MY_VET_APPOINTMENTS_KEY(user.id) });
+    },
+  });
+}

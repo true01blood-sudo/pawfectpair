@@ -2571,6 +2571,10 @@ export const queries = {
   // Trainer bookings
   requestTrainerBooking,
   fetchMyTrainerBookings,
+  cancelTrainerBooking,
+  // My appointments (vets + trainers)
+  fetchMyVetAppointments,
+  cancelVetAppointment,
 };
 
 // ============================================================
@@ -2772,6 +2776,41 @@ export async function bookVetAppointment(input: BookVetAppointmentInput): Promis
   return data as { id: string };
 }
 
+export type VetAppointmentStatus = 'requested' | 'confirmed' | 'cancelled' | 'completed';
+
+export interface MyVetAppointmentRow {
+  id: string;
+  vet_id: string;
+  pet_id: string;
+  starts_at: string;
+  reason: string | null;
+  status: VetAppointmentStatus;
+  created_at: string;
+  vets: { clinic_name: string; photo_url: string | null } | null;
+  pets: { name: string; photo_url: string | null } | null;
+}
+
+/** Programările mele la veterinari, cu numele cabinetului și al animalului. */
+export async function fetchMyVetAppointments(ownerId: string): Promise<MyVetAppointmentRow[]> {
+  const { data, error } = await supabase
+    .from('vet_appointments')
+    .select('id, vet_id, pet_id, starts_at, reason, status, created_at, vets(clinic_name, photo_url), pets(name, photo_url)')
+    .eq('owner_id', ownerId)
+    .order('starts_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as MyVetAppointmentRow[];
+}
+
+export async function cancelVetAppointment(id: string): Promise<void> {
+  const { error } = await supabase.from('vet_appointments').update({ status: 'cancelled' }).eq('id', id);
+  if (error) throw error;
+}
+
+export async function cancelTrainerBooking(id: string): Promise<void> {
+  const { error } = await supabase.from('trainer_bookings').update({ status: 'cancelled' }).eq('id', id);
+  if (error) throw error;
+}
+
 // ============================================================
 // Trainer detail (edu_trainers) — ecran de detaliu
 // ============================================================
@@ -2801,6 +2840,8 @@ export interface TrainerBookingRow {
   notes: string | null;
   status: TrainerBookingStatus;
   created_at: string;
+  edu_trainers: { display_name: string; photo_url: string | null } | null;
+  pets: { name: string; photo_url: string | null } | null;
 }
 
 export interface RequestTrainerBookingInput {
@@ -2821,13 +2862,13 @@ export async function requestTrainerBooking(input: RequestTrainerBookingInput): 
   return data as { id: string };
 }
 
-/** Rezervările mele (ca proprietar de animal) — folosit pe ecranul de confirmare / viitor "Programările mele". */
+/** Rezervările mele (ca proprietar de animal), cu numele trainerului și al animalului. */
 export async function fetchMyTrainerBookings(ownerId: string): Promise<TrainerBookingRow[]> {
   const { data, error } = await supabase
     .from('trainer_bookings')
-    .select('id, trainer_id, pet_id, owner_id, requested_at, notes, status, created_at')
+    .select('id, trainer_id, pet_id, owner_id, requested_at, notes, status, created_at, edu_trainers(display_name, photo_url), pets(name, photo_url)')
     .eq('owner_id', ownerId)
     .order('requested_at', { ascending: false });
   if (error) throw error;
-  return (data ?? []) as TrainerBookingRow[];
+  return (data ?? []) as unknown as TrainerBookingRow[];
 }
