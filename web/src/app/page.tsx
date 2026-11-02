@@ -65,7 +65,7 @@ export default async function Home() {
     const { data: reactions } = postIds.length
       ? await supabase
           .from("social_post_reactions")
-          .select("post_id, reaction")
+          .select("post_id, reaction, user_id")
           .in("post_id", postIds)
       : { data: [] };
 
@@ -79,11 +79,13 @@ export default async function Home() {
 
     // Aggregate counts
     const reactionMap: Record<string, Record<string, number>> = {};
+    const myReactionMap: Record<string, boolean> = {};
     for (const r of reactions ?? []) {
       const pid = r.post_id as string;
       const rtype = r.reaction as string;
       if (!reactionMap[pid]) reactionMap[pid] = {};
       reactionMap[pid][rtype] = (reactionMap[pid][rtype] ?? 0) + 1;
+      if (r.user_id === user.id && rtype === "heart") myReactionMap[pid] = true;
     }
     const commentMap: Record<string, number> = {};
     for (const c of commentRows ?? []) {
@@ -112,6 +114,7 @@ export default async function Home() {
         createdAt: (p.created_at ?? "") as string,
         reactionCounts: { heart: rc.heart ?? 0, thumbup: rc.thumbup ?? 0, smile: rc.smile ?? 0 },
         commentCount: commentMap[p.id as string] ?? 0,
+        myReaction: myReactionMap[p.id as string] ?? false,
       };
     });
 

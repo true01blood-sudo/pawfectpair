@@ -1,6 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toggleReaction, createPost } from "@/app/social-actions";
 
 type Tab = "following" | "foryou" | "local";
 
@@ -21,6 +23,7 @@ export type SocialPost = {
   createdAt: string;
   reactionCounts: { heart: number; thumbup: number; smile: number };
   commentCount: number;
+  myReaction: boolean;
 };
 
 type Props = {
@@ -46,9 +49,27 @@ function roleBadge(role: string): { label: string; color: string } | null {
 }
 
 function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: string }) {
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(post.myReaction);
   const [likeCount, setLikeCount] = useState(post.reactionCounts.heart);
   const [saved, setSaved] = useState(false);
+  const [likePending, setLikePending] = useState(false);
+  const [shared, setShared] = useState(false);
+
+  async function handleLike() {
+    if (likePending) return;
+    const wasLiked = liked;
+    setLiked(!wasLiked);
+    setLikeCount((n) => (wasLiked ? n - 1 : n + 1));
+    setLikePending(true);
+    try {
+      await toggleReaction(post.id, "heart");
+    } catch {
+      setLiked(wasLiked);
+      setLikeCount((n) => (wasLiked ? n + 1 : n - 1));
+    } finally {
+      setLikePending(false);
+    }
+  }
 
   const badge = roleBadge(post.authorRole);
   const timeLabel = post.createdAt ? timeAgo(post.createdAt) : "";
@@ -115,7 +136,7 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
               </div>
             </div>
           </div>
-          <button type="button" className="p-1 rounded-full hover:bg-primary/10 transition-colors" style={{ color: "var(--muted)" }}>
+          <button type="button" disabled title="În curând" className="p-1 rounded-full opacity-40 cursor-not-allowed" style={{ color: "var(--muted)" }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <circle cx="12" cy="5" r="1.5"/>
               <circle cx="12" cy="12" r="1.5"/>
@@ -198,12 +219,7 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
         <div className="flex items-center gap-2 pt-2 border-t" style={{ borderColor: "var(--card-border)" }}>
           <button
             type="button"
-            onClick={() => {
-              setLiked((p) => {
-                setLikeCount((n) => p ? n - 1 : n + 1);
-                return !p;
-              });
-            }}
+            onClick={handleLike}
             className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-medium transition-colors hover:bg-primary/8 hover:text-primary"
             style={{ color: liked ? "var(--primary)" : "var(--muted)" }}
           >
@@ -214,7 +230,9 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
           </button>
           <button
             type="button"
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-medium transition-colors hover:bg-primary/8 hover:text-primary"
+            disabled
+            title="În curând"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-medium opacity-40 cursor-not-allowed"
             style={{ color: "var(--muted)" }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -224,6 +242,18 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
           </button>
           <button
             type="button"
+            onClick={async () => {
+              const url = `${window.location.origin}/?post=${post.id}`;
+              if (navigator.share) {
+                try { await navigator.share({ title: post.title || post.authorName, text: post.body, url }); } catch {}
+              } else {
+                try {
+                  await navigator.clipboard.writeText(url);
+                  setShared(true);
+                  setTimeout(() => setShared(false), 1500);
+                } catch {}
+              }
+            }}
             className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-medium transition-colors hover:bg-primary/8 hover:text-primary"
             style={{ color: "var(--muted)" }}
           >
@@ -232,7 +262,7 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
               <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
               <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
             </svg>
-            Share
+            {shared ? "Link copiat" : "Share"}
           </button>
         </div>
 
@@ -254,8 +284,8 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
               </svg>
               {saved ? "Salvat" : "Salvează lecția"}
             </button>
-            <button
-              type="button"
+            <a
+              href="/veterinari"
               className="flex flex-1 items-center justify-center gap-2 rounded-full py-2.5 text-sm font-medium transition-colors hover:border-primary/40 hover:text-primary"
               style={{ border: "1.5px solid var(--card-border)", color: "var(--foreground)" }}
             >
@@ -264,7 +294,7 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
                 <circle cx="12" cy="7" r="4"/>
               </svg>
               Vezi profesionistul
-            </button>
+            </a>
           </div>
         )}
       </div>
@@ -291,6 +321,7 @@ const SAMPLE_POSTS: SocialPost[] = [
     createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
     reactionCounts: { heart: 248, thumbup: 0, smile: 0 },
     commentCount: 42,
+    myReaction: false,
   },
   {
     id: "sample-2",
@@ -309,15 +340,35 @@ const SAMPLE_POSTS: SocialPost[] = [
     createdAt: new Date(Date.now() - 5 * 3600000).toISOString(),
     reactionCounts: { heart: 0, thumbup: 91, smile: 12 },
     commentCount: 14,
+    myReaction: false,
   },
 ];
 
 export default function SocialFeed({ userName, avatarUrl, initialPosts }: Props) {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("following");
   const [composerText, setComposerText] = useState("");
+  const [posting, setPosting] = useState(false);
+  const [postError, setPostError] = useState<string | null>(null);
 
   const initials = userName ? userName.charAt(0).toUpperCase() : "U";
   const posts = (initialPosts && initialPosts.length > 0) ? initialPosts : SAMPLE_POSTS;
+
+  async function handlePublish() {
+    const text = composerText.trim();
+    if (!text || posting) return;
+    setPosting(true);
+    setPostError(null);
+    try {
+      await createPost(text);
+      setComposerText("");
+      router.refresh();
+    } catch (e) {
+      setPostError(e instanceof Error ? e.message : "Nu am putut publica postarea.");
+    } finally {
+      setPosting(false);
+    }
+  }
 
   return (
     <div className="max-w-2xl mx-auto px-3 py-4 space-y-3">
@@ -354,7 +405,9 @@ export default function SocialFeed({ userName, avatarUrl, initialPosts }: Props)
         })}
         <button
           type="button"
-          className="ml-auto flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium border transition-colors hover:border-primary/40"
+          disabled
+          title="În curând"
+          className="ml-auto flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium border opacity-40 cursor-not-allowed"
           style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -385,6 +438,9 @@ export default function SocialFeed({ userName, avatarUrl, initialPosts }: Props)
             type="text"
             value={composerText}
             onChange={(e) => setComposerText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handlePublish();
+            }}
             placeholder="Împărtășește un moment, pune o întrebare sau dă un sfat..."
             className="flex-1 rounded-full border px-4 py-2 text-sm outline-none transition-colors focus:border-primary"
             style={{
@@ -393,7 +449,19 @@ export default function SocialFeed({ userName, avatarUrl, initialPosts }: Props)
               color: "var(--foreground)",
             }}
           />
+          <button
+            type="button"
+            onClick={handlePublish}
+            disabled={!composerText.trim() || posting}
+            className="shrink-0 rounded-full px-4 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ background: "var(--primary)" }}
+          >
+            {posting ? "..." : "Postează"}
+          </button>
         </div>
+        {postError && (
+          <p className="mt-2 text-xs" style={{ color: "#ef4444" }}>{postError}</p>
+        )}
         <div className="flex items-center gap-1 border-t pt-3" style={{ borderColor: "var(--card-border)" }}>
           {[
             {
@@ -441,7 +509,9 @@ export default function SocialFeed({ userName, avatarUrl, initialPosts }: Props)
             <button
               key={a.label}
               type="button"
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-medium transition-colors hover:bg-primary/8 hover:text-primary"
+              disabled
+              title="În curând"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-medium opacity-40 cursor-not-allowed"
               style={{ color: "var(--muted)" }}
             >
               {a.icon}
