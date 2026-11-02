@@ -61,10 +61,8 @@ function speciesEmoji(s: string) {
 
 export default function AdoptiiDetailClient({ listing, isLoggedIn, isOwner, myApplication }: Props) {
   const [activePhoto, setActivePhoto] = useState(0);
-  const [showHotel, setShowHotel] = useState(false);
   const [applyMsg, setApplyMsg] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const [hotelDate, setHotelDate] = useState("");
 
   const photos: string[] = [];
   if (listing.photo_url) photos.push(listing.photo_url);
@@ -425,84 +423,6 @@ export default function AdoptiiDetailClient({ listing, isLoggedIn, isOwner, myAp
           ) : null}
         </div>
       )}
-
-      {/* Pet hotel booking card */}
-      <div
-        className="rounded-2xl border overflow-hidden mb-4"
-        style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
-      >
-        <div
-          className="p-4"
-          style={{ background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)" }}
-        >
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-xs font-bold mb-0.5" style={{ color: "#1e40af" }}>🏨 Pet Hotel</p>
-              <p className="text-base font-bold" style={{ color: "#1e3a8a" }}>Lake Paws Hotel</p>
-              <p className="text-xs mt-0.5" style={{ color: "#3b82f6" }}>
-                📍 {listing.city ?? "Aproape de tine"} · 4.9 ⭐ · 127 recenzii
-              </p>
-            </div>
-            <button
-              onClick={() => setShowHotel(!showHotel)}
-              className="rounded-full px-3 py-1.5 text-xs font-bold text-white"
-              style={{ background: "#3b82f6" }}
-            >
-              {showHotel ? "Închide" : "Rezervă"}
-            </button>
-          </div>
-          <div className="flex gap-3 mt-3">
-            {["Standard · 80 RON/noapte", "Deluxe · 140 RON/noapte", "Suite · 200 RON/noapte"].map((room) => (
-              <div
-                key={room}
-                className="flex-1 rounded-xl p-2 text-center"
-                style={{ background: "rgba(255,255,255,0.7)" }}
-              >
-                <p className="text-[10px] font-semibold" style={{ color: "#1e40af" }}>
-                  {room.split(" · ")[0]}
-                </p>
-                <p className="text-[10px]" style={{ color: "#3b82f6" }}>
-                  {room.split(" · ")[1]}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {showHotel && (
-          <div className="p-4 border-t" style={{ borderColor: "var(--card-border)" }}>
-            <p className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>
-              Rezervă o cameră
-            </p>
-            <div className="flex gap-2 mb-3">
-              <div className="flex-1">
-                <label className="text-xs font-medium mb-1 block" style={{ color: "var(--muted)" }}>Check-in</label>
-                <input
-                  type="date"
-                  value={hotelDate}
-                  onChange={(e) => setHotelDate(e.target.value)}
-                  className="w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-primary"
-                  style={{ background: "var(--surface)", borderColor: "var(--card-border)", color: "var(--foreground)" }}
-                />
-              </div>
-              <div className="flex-1">
-                <label className="text-xs font-medium mb-1 block" style={{ color: "var(--muted)" }}>Check-out</label>
-                <input
-                  type="date"
-                  className="w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-primary"
-                  style={{ background: "var(--surface)", borderColor: "var(--card-border)", color: "var(--foreground)" }}
-                />
-              </div>
-            </div>
-            <button
-              className="w-full rounded-full py-2.5 text-sm font-semibold text-white"
-              style={{ background: "#3b82f6" }}
-            >
-              Confirmă rezervarea
-            </button>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ProductPlaceholder } from "@/components/PawPlaceholder";
+import { useCart } from "@/components/CartContext";
 
 type Product = {
   id: string;
@@ -14,6 +15,7 @@ type Product = {
   delivery_info: string | null;
   seller_name: string | null;
   species_tags: string[] | null;
+  stock: number;
 };
 
 type Props = {
@@ -40,22 +42,27 @@ function formatPrice(cents: number, currency: string) {
 export default function MagazinClient({ products, petName, petSpecies, isLoggedIn }: Props) {
   const [activeCategory, setActiveCategory] = useState("");
   const [forLuna, setForLuna] = useState(false);
-  const [cart, setCart] = useState<Record<string, number>>({});
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
+  const cart = useCart();
 
-  function handleAdd(productId: string) {
-    setCart((c) => ({ ...c, [productId]: (c[productId] ?? 0) + 1 }));
-    setAddedIds((s) => new Set([...s, productId]));
+  function handleAdd(product: Product) {
+    cart.add({
+      id: product.id,
+      name: product.name,
+      price_cents: product.price_cents,
+      currency: product.currency,
+      photo_url: product.photo_url,
+      stock: product.stock,
+    }, 1);
+    setAddedIds((s) => new Set([...s, product.id]));
     setTimeout(() => {
       setAddedIds((s) => {
         const next = new Set(s);
-        next.delete(productId);
+        next.delete(product.id);
         return next;
       });
     }, 1000);
   }
-
-  const cartTotal = Object.values(cart).reduce((a, b) => a + b, 0);
 
   const filtered = products.filter((p) => {
     if (activeCategory && p.category !== activeCategory) return false;
@@ -86,12 +93,12 @@ export default function MagazinClient({ products, petName, petSpecies, isLoggedI
               style={{ background: "var(--card-bg)", borderColor: "var(--card-border)", color: "var(--foreground)" }}
             >
               🛒
-              {cartTotal > 0 && (
+              {cart.count > 0 && (
                 <span
                   className="rounded-full px-1.5 py-0.5 text-[10px] font-bold text-white"
                   style={{ background: "var(--primary)" }}
                 >
-                  {cartTotal}
+                  {cart.count}
                 </span>
               )}
             </Link>
@@ -170,7 +177,7 @@ export default function MagazinClient({ products, petName, petSpecies, isLoggedI
       {filtered.length > 0 ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {filtered.map((p) => {
-            const inCart = cart[p.id] ?? 0;
+            const inCart = cart.items.find((i) => i.id === p.id)?.quantity ?? 0;
             const justAdded = addedIds.has(p.id);
             return (
               <div
@@ -215,8 +222,10 @@ export default function MagazinClient({ products, petName, petSpecies, isLoggedI
                       {formatPrice(p.price_cents, p.currency)}
                     </p>
                     <button
-                      onClick={() => handleAdd(p.id)}
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white transition-all active:scale-95"
+                      onClick={() => handleAdd(p)}
+                      disabled={p.price_cents === 0 || p.stock <= 0 || inCart >= p.stock}
+                      title={p.price_cents === 0 ? "Preț nestabilit încă" : undefined}
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                       style={{
                         background: justAdded ? "#16a34a" : "var(--primary)",
                         transform: justAdded ? "scale(1.1)" : "scale(1)",

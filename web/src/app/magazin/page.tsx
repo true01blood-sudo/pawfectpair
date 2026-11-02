@@ -33,7 +33,7 @@ export default async function MagazinPage() {
 
   const { data: products } = await supabase
     .from("products")
-    .select("id, name, price_cents, currency, photo_url, category, delivery_info, species_tags, profiles(full_name)")
+    .select("id, name, price_cents, currency, photo_url, category, delivery_info, species_tags, stock, profiles(full_name)")
     .eq("status", "active")
     .order("created_at", { ascending: false });
 
@@ -46,6 +46,7 @@ export default async function MagazinPage() {
     category: (p.category ?? null) as string | null,
     delivery_info: (p.delivery_info ?? null) as string | null,
     species_tags: (p.species_tags ?? null) as string[] | null,
+    stock: (p.stock ?? 0) as number,
     seller_name: ((p.profiles as unknown as { full_name: string } | null)?.full_name ?? null) as string | null,
   }));
 
