@@ -5,7 +5,7 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, Pressable, RefreshControl,
-  Image as RNImage, StyleSheet, FlatList, BackHandler, ToastAndroid, Platform,
+  Image as RNImage, StyleSheet, FlatList, BackHandler, ToastAndroid, Platform, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -15,7 +15,7 @@ import { useAppTheme } from '../../components/theme-provider';
 import { Card } from '../../components/ui';
 import { useMyPets, useUpcomingRecords, useEduArticles } from '../../hooks';
 import { useProfile } from '../../hooks/useProfile';
-import { useEvents, useSetEventRsvp } from '../../hooks/useEvents';
+import { useEvents, useSetEventRsvp, useMyRsvps } from '../../hooks/useEvents';
 import { useAuthStore } from '../../store/auth.store';
 import { MEDICAL_TYPE_LABELS } from '@pawfectpair/shared';
 
@@ -64,7 +64,23 @@ export default function HomeScreen() {
       .filter((e) => new Date(e.starts_at).getTime() >= now)
       .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())[0] ?? null;
   }, [events.data]);
+  const myRsvps = useMyRsvps();
+  const nextEventRsvp = useMemo(() => {
+    if (!nextEvent) return null;
+    const match = (myRsvps.data ?? []).find((r) => r.event_id === nextEvent.id);
+    return match && match.status !== 'cancelled' ? match.status : null;
+  }, [myRsvps.data, nextEvent]);
   const setRsvp = useSetEventRsvp();
+  const handleJoinEvent = () => {
+    if (!nextEvent) return;
+    setRsvp.mutate(
+      { event_id: nextEvent.id, status: 'going' },
+      {
+        onSuccess: () => Alert.alert('Te-ai alăturat!', `Participarea la „${nextEvent.title}” a fost confirmată.`),
+        onError: (e: Error) => Alert.alert('Nu am putut confirma participarea', e.message || 'Încearcă din nou.'),
+      }
+    );
+  };
 
   const articles = useEduArticles();
   const latestArticle = articles.data?.[0] ?? null;
@@ -232,8 +248,8 @@ export default function HomeScreen() {
         <View style={{ paddingHorizontal: sp.lg, marginTop: sp.md, gap: sp.md }}>
           {/* Community event card (real next published event) */}
           {nextEvent && (
-            <Pressable onPress={() => router.push('/(tabs)/cercuri')}>
-              <View style={[styles.feedCard, { backgroundColor: s.surface, borderColor: s.border }]}>
+            <View style={[styles.feedCard, { backgroundColor: s.surface, borderColor: s.border }]}>
+              <Pressable onPress={() => router.push('/modul/petevents')}>
                 <View style={{ height: 180, borderRadius: 12, overflow: 'hidden', backgroundColor: s.surfaceAlt }}>
                   <View style={{ position: 'absolute', bottom: 10, left: 12, zIndex: 1 }}>
                     <View style={{ backgroundColor: s.primary, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 }}>
@@ -250,7 +266,7 @@ export default function HomeScreen() {
                     </View>
                   )}
                 </View>
-                <View style={{ padding: 12, gap: 6 }}>
+                <View style={{ padding: 12, paddingBottom: 6, gap: 6 }}>
                   <Text style={{ color: s.text, fontSize: 16, fontFamily: theme.typography.fontFamilyBold }} numberOfLines={1}>
                     {nextEvent.title}
                   </Text>
@@ -266,21 +282,21 @@ export default function HomeScreen() {
                       <Text style={{ color: s.textMuted, fontSize: 12 }} numberOfLines={1}>{nextEvent.location ?? nextEvent.city}</Text>
                     </View>
                   </View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
-                    <Text style={{ color: s.textMuted, fontSize: 12 }}>{nextEvent.participant_count ?? 0} going</Text>
-                    <Pressable
-                      style={[styles.joinBtn, { backgroundColor: s.primary }]}
-                      onPress={() => setRsvp.mutate({ event_id: nextEvent.id, status: 'going' })}
-                      disabled={setRsvp.isPending}
-                    >
-                      <Text style={{ color: '#fff', fontSize: 13, fontFamily: theme.typography.fontFamilySemibold }}>
-                        Join
-                      </Text>
-                    </Pressable>
-                  </View>
                 </View>
+              </Pressable>
+              <View style={{ paddingHorizontal: 12, paddingBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Text style={{ color: s.textMuted, fontSize: 12 }}>{nextEvent.participant_count ?? 0} going</Text>
+                <Pressable
+                  style={[styles.joinBtn, { backgroundColor: nextEventRsvp === 'going' ? s.success : s.primary }]}
+                  onPress={handleJoinEvent}
+                  disabled={setRsvp.isPending || nextEventRsvp === 'going'}
+                >
+                  <Text style={{ color: '#fff', fontSize: 13, fontFamily: theme.typography.fontFamilySemibold }}>
+                    {nextEventRsvp === 'going' ? '✓ Going' : 'Join'}
+                  </Text>
+                </Pressable>
               </View>
-            </Pressable>
+            </View>
           )}
 
           {/* Latest article card (real edu_articles content) */}

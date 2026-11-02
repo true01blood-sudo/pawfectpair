@@ -34,43 +34,55 @@ export default function ModuleHubScreen() {
         </View>
 
         {/* Faza 1 */}
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-            ✅ {t('modules.faza1')}
-          </Text>
-          <View style={[styles.phaseBadge, { backgroundColor: theme.colors.success }]}>
-            <Text style={styles.phaseBadgeText}>{phase1.length} module</Text>
-          </View>
-        </View>
-        <View style={styles.grid}>
-          {phase1.map((m) => <ModuleCard key={m.id} module={m} />)}
-        </View>
+        {phase1.length > 0 && (
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                ✅ {t('modules.faza1')}
+              </Text>
+              <View style={[styles.phaseBadge, { backgroundColor: theme.colors.success }]}>
+                <Text style={styles.phaseBadgeText}>{phase1.length} module</Text>
+              </View>
+            </View>
+            <View style={styles.grid}>
+              {phase1.map((m) => <ModuleCard key={m.id} module={m} />)}
+            </View>
+          </>
+        )}
 
         {/* Faza 2 */}
-        <View style={[styles.sectionHeader, { marginTop: theme.spacing.xl }]}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-            🚧 {t('modules.faza2')}
-          </Text>
-          <View style={[styles.phaseBadge, { backgroundColor: theme.colors.accent }]}>
-            <Text style={[styles.phaseBadgeText, { color: '#1a1410' }]}>{phase2.length} module</Text>
-          </View>
-        </View>
-        <View style={styles.grid}>
-          {phase2.map((m) => <ModuleCard key={m.id} module={m} />)}
-        </View>
+        {phase2.length > 0 && (
+          <>
+            <View style={[styles.sectionHeader, { marginTop: theme.spacing.xl }]}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                🚧 {t('modules.faza2')}
+              </Text>
+              <View style={[styles.phaseBadge, { backgroundColor: theme.colors.accent }]}>
+                <Text style={[styles.phaseBadgeText, { color: '#1a1410' }]}>{phase2.length} module</Text>
+              </View>
+            </View>
+            <View style={styles.grid}>
+              {phase2.map((m) => <ModuleCard key={m.id} module={m} />)}
+            </View>
+          </>
+        )}
 
         {/* Faza 3 */}
-        <View style={[styles.sectionHeader, { marginTop: theme.spacing.xl }]}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-            📋 {t('modules.faza3')}
-          </Text>
-          <View style={[styles.phaseBadge, { backgroundColor: theme.colors.surfaceAlt }]}>
-            <Text style={[styles.phaseBadgeText, { color: theme.colors.text }]}>{phase3.length} module</Text>
-          </View>
-        </View>
-        <View style={styles.grid}>
-          {phase3.map((m) => <ModuleCard key={m.id} module={m} />)}
-        </View>
+        {phase3.length > 0 && (
+          <>
+            <View style={[styles.sectionHeader, { marginTop: theme.spacing.xl }]}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                📋 {t('modules.faza3')}
+              </Text>
+              <View style={[styles.phaseBadge, { backgroundColor: theme.colors.surfaceAlt }]}>
+                <Text style={[styles.phaseBadgeText, { color: theme.colors.text }]}>{phase3.length} module</Text>
+              </View>
+            </View>
+            <View style={styles.grid}>
+              {phase3.map((m) => <ModuleCard key={m.id} module={m} />)}
+            </View>
+          </>
+        )}
 
         {/* Footer info */}
         <View style={[styles.footer, { backgroundColor: theme.colors.surfaceAlt, borderColor: theme.colors.border }]}>

@@ -100,13 +100,21 @@ export default function ExploreScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: sp.xxl + 16 }} showsVerticalScrollIndicator={false}>
 
         {/* ── Header ── */}
-        <View style={{ paddingHorizontal: sp.lg, paddingTop: sp.sm }}>
-          <Text style={{ color: s.text, fontSize: 26, fontFamily: theme.typography.fontFamilyBold, lineHeight: 32 }}>
-            Explore care near you
-          </Text>
-          <Text style={{ color: s.textMuted, fontSize: 14, marginTop: 2 }}>
-            Trusted professionals, great care, close to home.
-          </Text>
+        <View style={{ paddingHorizontal: sp.lg, paddingTop: sp.sm, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: s.text, fontSize: 26, fontFamily: theme.typography.fontFamilyBold, lineHeight: 32 }}>
+              Explore care near you
+            </Text>
+            <Text style={{ color: s.textMuted, fontSize: 14, marginTop: 2 }}>
+              Trusted professionals, great care, close to home.
+            </Text>
+          </View>
+          <Pressable
+            onPress={() => router.push('/(tabs)/module')}
+            style={[styles.allModulesBtn, { borderColor: s.border, backgroundColor: s.surface }]}
+          >
+            <Ionicons name="grid-outline" size={20} color={s.text} />
+          </Pressable>
         </View>
 
         {/* ── Search bar ── */}
@@ -277,6 +285,15 @@ export default function ExploreScreen() {
 }
 
 const styles = StyleSheet.create({
+  allModulesBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 10,
+  },
   searchBar: {
     flex: 1,
     flexDirection: 'row',

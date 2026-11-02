@@ -126,7 +126,7 @@ export default function Header({ isLoggedIn = false }: { isLoggedIn?: boolean })
     "/programari", "/planificator", "/statistici", "/educatie",
     "/profil", "/suport", "/forum", "/comunitate", "/sos", "/resq",
     "/veterinari", "/magazin", "/adoptii", "/notificari", "/admin",
-    "/cont", "/animale", "/contact", "/legal", "/clinic", "/pensiuni", "/evenimente",
+    "/cont", "/animale", "/contact", "/legal", "/clinic", "/pensiuni", "/evenimente", "/memorial",
   ];
   if (isLoggedIn && APP_ROUTES.some((r) => r === pathname || pathname.startsWith(r + "/"))) {
     return null;

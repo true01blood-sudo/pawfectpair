@@ -2,20 +2,17 @@
  * Circles tab — community hub: events, groups, social
  * Design: pawfectpair-design aesthetic
  */
-import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, ScrollView, Pressable, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../components/theme-provider';
+import { StateView } from '../../components/ui';
+import { useEvents, useMyRsvps, useSetEventRsvp } from '../../hooks/useEvents';
+import { EVENT_TYPE_EMOJI } from '@pawfectpair/shared';
 
 const CIRCLE_TABS = ['Events', 'Groups', 'Stories'] as const;
-
-const SAMPLE_EVENTS = [
-  { id: '1', title: 'Weekend pack walk', date: 'Sat · 10:00', location: 'Central Park', going: 12, category: 'walk' },
-  { id: '2', title: 'Dog training class', date: 'Sun · 14:00', location: 'Training center', going: 8, category: 'training' },
-  { id: '3', title: 'Pet adoption day', date: 'Sat · 09:00', location: 'City shelter', going: 25, category: 'adoption' },
-];
 
 const SAMPLE_GROUPS = [
   { id: '1', name: 'Golden Retriever owners', members: 142, icon: 'paw' },
@@ -23,10 +20,44 @@ const SAMPLE_GROUPS = [
   { id: '3', name: 'Cat lovers club', members: 234, icon: 'paw' },
 ];
 
+function notifyGroupsComingSoon() {
+  Alert.alert('În curând', 'Grupurile de comunitate vin într-o versiune viitoare.');
+}
+
 export default function CercuriScreen() {
   const theme = useAppTheme();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<typeof CIRCLE_TABS[number]>('Events');
+
+  const eventsQ = useEvents({});
+  const myRsvpsQ = useMyRsvps();
+  const setRsvp = useSetEventRsvp();
+
+  const upcomingEvents = useMemo(() => {
+    const now = Date.now();
+    return (eventsQ.data ?? [])
+      .filter((e) => new Date(e.starts_at).getTime() >= now)
+      .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
+      .slice(0, 6);
+  }, [eventsQ.data]);
+
+  const rsvpByEvent = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const r of myRsvpsQ.data ?? []) {
+      if (r.status !== 'cancelled') map.set(r.event_id, r.status);
+    }
+    return map;
+  }, [myRsvpsQ.data]);
+
+  function handleJoin(eventId: string, title: string) {
+    setRsvp.mutate(
+      { event_id: eventId, status: 'going' },
+      {
+        onSuccess: () => Alert.alert('Te-ai alăturat!', `Participarea la „${title}” a fost confirmată.`),
+        onError: (e: Error) => Alert.alert('Nu am putut confirma participarea', e.message || 'Încearcă din nou.'),
+      }
+    );
+  }
 
   const s = theme.colors;
   const sp = theme.spacing;
@@ -63,7 +94,7 @@ export default function CercuriScreen() {
               </Text>
             </View>
           </Pressable>
-          <Pressable style={{ flex: 1 }}>
+          <Pressable style={{ flex: 1 }} onPress={notifyGroupsComingSoon}>
             <View style={[styles.quickCard, { backgroundColor: s.surface, borderColor: s.border, borderWidth: 1 }]}>
               <Ionicons name="people" size={22} color={s.primary} />
               <Text style={{ color: s.text, fontSize: 13, fontFamily: theme.typography.fontFamilySemibold, marginTop: 6 }}>
@@ -71,7 +102,7 @@ export default function CercuriScreen() {
               </Text>
             </View>
           </Pressable>
-          <Pressable style={{ flex: 1 }}>
+          <Pressable style={{ flex: 1 }} onPress={() => router.push('/modul/petevents')}>
             <View style={[styles.quickCard, { backgroundColor: s.surface, borderColor: s.border, borderWidth: 1 }]}>
               <Ionicons name="add-circle" size={22} color={s.primary} />
               <Text style={{ color: s.text, fontSize: 13, fontFamily: theme.typography.fontFamilySemibold, marginTop: 6 }}>
@@ -104,63 +135,84 @@ export default function CercuriScreen() {
         {/* ── Events ── */}
         {activeTab === 'Events' && (
           <View style={{ paddingHorizontal: sp.lg, marginTop: sp.md, gap: sp.md }}>
-            {SAMPLE_EVENTS.map((ev) => (
-              <Pressable key={ev.id}>
-                <View style={[styles.eventCard, { backgroundColor: s.surface, borderColor: s.border }]}>
-                  <View style={[styles.eventIcon, { backgroundColor: `${s.primary}15` }]}>
-                    <Ionicons name="calendar" size={22} color={s.primary} />
-                  </View>
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={{ color: s.text, fontSize: 15, fontFamily: theme.typography.fontFamilySemibold }}>
-                      {ev.title}
-                    </Text>
-                    <View style={{ flexDirection: 'row', gap: 12, marginTop: 4 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Ionicons name="time-outline" size={12} color={s.textMuted} />
-                        <Text style={{ color: s.textMuted, fontSize: 12 }}>{ev.date}</Text>
+            <StateView
+              loading={eventsQ.isLoading}
+              empty={!eventsQ.isLoading && upcomingEvents.length === 0}
+              emoji="🎪"
+              title="Niciun eveniment programat"
+              description="Fii primul care creează un eveniment pentru comunitate."
+            >
+              {upcomingEvents.map((ev) => {
+                const myStatus = rsvpByEvent.get(ev.id);
+                const going = myStatus === 'going';
+                return (
+                  <View key={ev.id} style={[styles.eventCard, { flexDirection: 'column', backgroundColor: s.surface, borderColor: s.border, marginBottom: sp.md }]}>
+                    <Pressable onPress={() => router.push('/modul/petevents')} style={{ flexDirection: 'row', flex: 1 }}>
+                      <View style={[styles.eventIcon, { backgroundColor: `${s.primary}15` }]}>
+                        <Text style={{ fontSize: 20 }}>{EVENT_TYPE_EMOJI[ev.event_type] ?? '🎪'}</Text>
                       </View>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Ionicons name="location-outline" size={12} color={s.textMuted} />
-                        <Text style={{ color: s.textMuted, fontSize: 12 }}>{ev.location}</Text>
+                      <View style={{ flex: 1, marginLeft: 12 }}>
+                        <Text style={{ color: s.text, fontSize: 15, fontFamily: theme.typography.fontFamilySemibold }} numberOfLines={1}>
+                          {ev.title}
+                        </Text>
+                        <View style={{ flexDirection: 'row', gap: 12, marginTop: 4 }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                            <Ionicons name="time-outline" size={12} color={s.textMuted} />
+                            <Text style={{ color: s.textMuted, fontSize: 12 }}>
+                              {new Date(ev.starts_at).toLocaleDateString('ro-RO', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}
+                            </Text>
+                          </View>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                            <Ionicons name="location-outline" size={12} color={s.textMuted} />
+                            <Text style={{ color: s.textMuted, fontSize: 12 }} numberOfLines={1}>{ev.location ?? ev.city}</Text>
+                          </View>
+                        </View>
                       </View>
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
-                      <Text style={{ color: s.textMuted, fontSize: 12 }}>{ev.going} going</Text>
-                      <Pressable style={[styles.joinBtn, { backgroundColor: s.primary }]}>
+                    </Pressable>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, marginLeft: 56 }}>
+                      <Text style={{ color: s.textMuted, fontSize: 12 }}>{ev.participant_count ?? 0} going</Text>
+                      <Pressable
+                        onPress={() => handleJoin(ev.id, ev.title)}
+                        disabled={setRsvp.isPending || going}
+                        style={[styles.joinBtn, { backgroundColor: going ? s.success : s.primary }]}
+                      >
                         <Text style={{ color: '#fff', fontSize: 12, fontFamily: theme.typography.fontFamilySemibold }}>
-                          Join
+                          {going ? '✓ Going' : 'Join'}
                         </Text>
                       </Pressable>
                     </View>
                   </View>
-                </View>
-              </Pressable>
-            ))}
+                );
+              })}
+            </StateView>
           </View>
         )}
 
-        {/* ── Groups ── */}
+        {/* ── Groups (preview — feature coming soon, not backed by real data yet) ── */}
         {activeTab === 'Groups' && (
           <View style={{ paddingHorizontal: sp.lg, marginTop: sp.md, gap: sp.sm }}>
+            <View style={[styles.comingSoonBanner, { backgroundColor: `${s.primary}10`, borderColor: s.border }]}>
+              <Text style={{ color: s.textMuted, fontSize: 12 }}>
+                🚧 Grupurile de comunitate vin într-o versiune viitoare — previzualizare.
+              </Text>
+            </View>
             {SAMPLE_GROUPS.map((g) => (
-              <Pressable key={g.id}>
-                <View style={[styles.groupRow, { backgroundColor: s.surface, borderColor: s.border }]}>
-                  <View style={[styles.groupIcon, { backgroundColor: `${s.primary}15` }]}>
-                    <Ionicons name={g.icon as any} size={20} color={s.primary} />
-                  </View>
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={{ color: s.text, fontSize: 14, fontFamily: theme.typography.fontFamilySemibold }}>
-                      {g.name}
-                    </Text>
-                    <Text style={{ color: s.textMuted, fontSize: 12 }}>{g.members} members</Text>
-                  </View>
-                  <Pressable style={[styles.followBtn, { borderColor: s.primary }]}>
-                    <Text style={{ color: s.primary, fontSize: 12, fontFamily: theme.typography.fontFamilySemibold }}>
-                      Join
-                    </Text>
-                  </Pressable>
+              <View key={g.id} style={[styles.groupRow, { backgroundColor: s.surface, borderColor: s.border, opacity: 0.6 }]}>
+                <View style={[styles.groupIcon, { backgroundColor: `${s.primary}15` }]}>
+                  <Ionicons name={g.icon as any} size={20} color={s.primary} />
                 </View>
-              </Pressable>
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={{ color: s.text, fontSize: 14, fontFamily: theme.typography.fontFamilySemibold }}>
+                    {g.name}
+                  </Text>
+                  <Text style={{ color: s.textMuted, fontSize: 12 }}>{g.members} members</Text>
+                </View>
+                <View style={[styles.followBtn, { borderColor: s.border }]}>
+                  <Text style={{ color: s.textMuted, fontSize: 12, fontFamily: theme.typography.fontFamilySemibold }}>
+                    Soon
+                  </Text>
+                </View>
+              </View>
             ))}
           </View>
         )}
@@ -176,7 +228,10 @@ export default function CercuriScreen() {
               <Text style={{ color: s.textMuted, fontSize: 13, textAlign: 'center', marginTop: 4 }}>
                 Share a moment with your pet community
               </Text>
-              <Pressable style={[styles.shareBtn, { backgroundColor: s.primary, marginTop: 16 }]}>
+              <Pressable
+                style={[styles.shareBtn, { backgroundColor: s.primary, marginTop: 16 }]}
+                onPress={() => Alert.alert('În curând', 'Stories pentru comunitate vin într-o versiune viitoare.')}
+              >
                 <Text style={{ color: '#fff', fontSize: 14, fontFamily: theme.typography.fontFamilySemibold }}>
                   Share a story
                 </Text>
@@ -230,6 +285,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 16,
+  },
+  comingSoonBanner: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 10,
+    marginBottom: 4,
   },
   groupRow: {
     flexDirection: 'row',

@@ -79,6 +79,29 @@ function BreedingIcon() {
   );
 }
 
+function PensiuniIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 4v16"/>
+      <path d="M2 8h18a2 2 0 0 1 2 2v10"/>
+      <path d="M2 17h20"/>
+      <path d="M6 8v9"/>
+    </svg>
+  );
+}
+
+function MemorialIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="2.5"/>
+      <path d="M12 2a3 3 0 0 1 0 6 3 3 0 0 1 0-6Z"/>
+      <path d="M12 16a3 3 0 0 1 0 6 3 3 0 0 1 0-6Z"/>
+      <path d="M2 12a3 3 0 0 1 6 0 3 3 0 0 1-6 0Z"/>
+      <path d="M16 12a3 3 0 0 1 6 0 3 3 0 0 1-6 0Z"/>
+    </svg>
+  );
+}
+
 function AdoptionIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -173,7 +196,9 @@ const SHORTCUTS = [
   { href: "/educatie", label: "Educație", Icon: LearnIcon },
   { href: "/magazin", label: "Magazin", Icon: ShopIcon },
   { href: "/reproductie", label: "Reproducție", Icon: BreedingIcon },
+  { href: "/pensiuni", label: "Pensiuni", Icon: PensiuniIcon },
   { href: "/adoptii", label: "Adopții", Icon: AdoptionIcon },
+  { href: "/memorial", label: "Memorial", Icon: MemorialIcon },
 ];
 
 export default function AppSidebar() {
