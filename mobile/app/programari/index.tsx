@@ -15,7 +15,14 @@ import {
   useMyTrainerBookings,
   useCancelVetAppointment,
   useCancelTrainerBooking,
+  useMyVetProfile,
+  useIncomingVetAppointments,
+  useSetVetAppointmentStatus,
+  useIncomingTrainerBookings,
+  useSetTrainerBookingStatus,
 } from '../../hooks/useVetDetail';
+import { useMyTrainerProfile } from '../../hooks/useEdu';
+import type { IncomingVetAppointmentRow, IncomingTrainerBookingRow } from '../../lib/supabase/queries';
 
 type Kind = 'vet' | 'trainer';
 type Item = {
@@ -54,6 +61,14 @@ export default function MyAppointmentsScreen() {
   const trainerBookings = useMyTrainerBookings();
   const cancelVet = useCancelVetAppointment();
   const cancelTrainer = useCancelTrainerBooking();
+
+  const myVetProfile = useMyVetProfile();
+  const incomingVetAppts = useIncomingVetAppointments(myVetProfile.data?.id);
+  const setVetStatus = useSetVetAppointmentStatus(myVetProfile.data?.id ?? '');
+
+  const myTrainerProfile = useMyTrainerProfile();
+  const incomingTrainerBookings = useIncomingTrainerBookings(myTrainerProfile.data?.id);
+  const setTrainerStatus = useSetTrainerBookingStatus(myTrainerProfile.data?.id ?? '');
 
   const loading = vetAppts.isLoading || trainerBookings.isLoading;
   const refreshing = vetAppts.isRefetching || trainerBookings.isRefetching;
@@ -105,6 +120,8 @@ export default function MyAppointmentsScreen() {
   function onRefresh() {
     vetAppts.refetch();
     trainerBookings.refetch();
+    if (myVetProfile.data) incomingVetAppts.refetch();
+    if (myTrainerProfile.data) incomingTrainerBookings.refetch();
   }
 
   function renderItem(item: Item) {
@@ -150,6 +167,86 @@ export default function MyAppointmentsScreen() {
     );
   }
 
+  function renderIncomingVet(a: IncomingVetAppointmentRow) {
+    return (
+      <View key={a.id} style={[styles.card, { backgroundColor: s.surface, borderColor: s.border }]}>
+        <View style={styles.row}>
+          {a.pets?.photo_url ? (
+            <Image source={{ uri: a.pets.photo_url }} style={styles.thumb} contentFit="cover" />
+          ) : (
+            <View style={[styles.thumb, { backgroundColor: s.surfaceAlt, alignItems: 'center', justifyContent: 'center' }]}>
+              <Ionicons name="paw" size={18} color={s.primary} />
+            </View>
+          )}
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: s.text, fontSize: 14, fontFamily: theme.typography.fontFamilySemibold }} numberOfLines={1}>
+              {a.pets?.name ?? 'Animal'}
+            </Text>
+            <Text style={{ color: s.textMuted, fontSize: 12, marginTop: 2 }}>
+              {new Date(a.starts_at).toLocaleDateString('ro-RO', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+            </Text>
+            {a.reason ? <Text style={{ color: s.textMuted, fontSize: 12, marginTop: 2 }} numberOfLines={1}>{a.reason}</Text> : null}
+          </View>
+          <View style={[styles.statusBadge, { borderColor: statusColor(a.status, theme) }]}>
+            <Text style={{ color: statusColor(a.status, theme), fontSize: 10, fontFamily: theme.typography.fontFamilyBold }}>
+              {STATUS_LABEL[a.status] ?? a.status}
+            </Text>
+          </View>
+        </View>
+        {a.status === 'requested' && (
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+            <Pressable onPress={() => setVetStatus.mutate({ id: a.id, status: 'confirmed' })} style={[styles.actionBtn, { backgroundColor: s.primary }]}>
+              <Text style={{ color: '#fff', fontSize: 12, fontFamily: theme.typography.fontFamilySemibold }}>Confirmă</Text>
+            </Pressable>
+            <Pressable onPress={() => setVetStatus.mutate({ id: a.id, status: 'cancelled' })} style={[styles.actionBtn, { borderWidth: 1, borderColor: s.border }]}>
+              <Text style={{ color: s.text, fontSize: 12, fontFamily: theme.typography.fontFamilySemibold }}>Anulează</Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
+    );
+  }
+
+  function renderIncomingTrainer(b: IncomingTrainerBookingRow) {
+    return (
+      <View key={b.id} style={[styles.card, { backgroundColor: s.surface, borderColor: s.border }]}>
+        <View style={styles.row}>
+          {b.pets?.photo_url ? (
+            <Image source={{ uri: b.pets.photo_url }} style={styles.thumb} contentFit="cover" />
+          ) : (
+            <View style={[styles.thumb, { backgroundColor: s.surfaceAlt, alignItems: 'center', justifyContent: 'center' }]}>
+              <Ionicons name="paw" size={18} color={s.primary} />
+            </View>
+          )}
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: s.text, fontSize: 14, fontFamily: theme.typography.fontFamilySemibold }} numberOfLines={1}>
+              {b.pets?.name ?? 'Animal'}
+            </Text>
+            <Text style={{ color: s.textMuted, fontSize: 12, marginTop: 2 }}>
+              {new Date(b.requested_at).toLocaleDateString('ro-RO', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+            </Text>
+            {b.notes ? <Text style={{ color: s.textMuted, fontSize: 12, marginTop: 2 }} numberOfLines={1}>{b.notes}</Text> : null}
+          </View>
+          <View style={[styles.statusBadge, { borderColor: statusColor(b.status, theme) }]}>
+            <Text style={{ color: statusColor(b.status, theme), fontSize: 10, fontFamily: theme.typography.fontFamilyBold }}>
+              {STATUS_LABEL[b.status] ?? b.status}
+            </Text>
+          </View>
+        </View>
+        {b.status === 'requested' && (
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+            <Pressable onPress={() => setTrainerStatus.mutate({ id: b.id, status: 'confirmed' })} style={[styles.actionBtn, { backgroundColor: s.primary }]}>
+              <Text style={{ color: '#fff', fontSize: 12, fontFamily: theme.typography.fontFamilySemibold }}>Confirmă</Text>
+            </Pressable>
+            <Pressable onPress={() => setTrainerStatus.mutate({ id: b.id, status: 'declined' })} style={[styles.actionBtn, { borderWidth: 1, borderColor: s.border }]}>
+              <Text style={{ color: s.text, fontSize: 12, fontFamily: theme.typography.fontFamilySemibold }}>Respinge</Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: s.background }} edges={['bottom']}>
       <Stack.Screen options={{ title: 'Programările mele' }} />
@@ -177,6 +274,32 @@ export default function MyAppointmentsScreen() {
             </>
           )}
         </StateView>
+
+        {myVetProfile.data && (
+          <>
+            <Text style={[styles.sectionTitle, { color: s.text, marginTop: sp.lg }]}>
+              Cereri primite ({myVetProfile.data.clinic_name})
+            </Text>
+            {(incomingVetAppts.data ?? []).length > 0 ? (
+              <View style={{ gap: sp.sm }}>{(incomingVetAppts.data ?? []).map(renderIncomingVet)}</View>
+            ) : (
+              <Text style={{ color: s.textMuted, fontSize: 13 }}>Nicio cerere primită.</Text>
+            )}
+          </>
+        )}
+
+        {myTrainerProfile.data && (
+          <>
+            <Text style={[styles.sectionTitle, { color: s.text, marginTop: sp.lg }]}>
+              Cereri primite (profilul tău de trainer)
+            </Text>
+            {(incomingTrainerBookings.data ?? []).length > 0 ? (
+              <View style={{ gap: sp.sm }}>{(incomingTrainerBookings.data ?? []).map(renderIncomingTrainer)}</View>
+            ) : (
+              <Text style={{ color: s.textMuted, fontSize: 13 }}>Nicio cerere primită.</Text>
+            )}
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -189,4 +312,5 @@ const styles = StyleSheet.create({
   thumb: { width: 44, height: 44, borderRadius: 12 },
   statusBadge: { borderWidth: 1.5, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4 },
   cancelBtn: { alignSelf: 'flex-end', marginTop: 8 },
+  actionBtn: { flex: 1, borderRadius: 10, paddingVertical: 8, alignItems: 'center' },
 });

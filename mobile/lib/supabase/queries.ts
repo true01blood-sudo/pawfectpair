@@ -2575,6 +2575,12 @@ export const queries = {
   // My appointments (vets + trainers)
   fetchMyVetAppointments,
   cancelVetAppointment,
+  // Cereri primite — ca vet/trainer
+  fetchMyVetProfile,
+  fetchIncomingVetAppointments,
+  setVetAppointmentStatus,
+  fetchIncomingTrainerBookings,
+  setTrainerBookingStatus,
 };
 
 // ============================================================
@@ -2808,6 +2814,75 @@ export async function cancelVetAppointment(id: string): Promise<void> {
 
 export async function cancelTrainerBooking(id: string): Promise<void> {
   const { error } = await supabase.from('trainer_bookings').update({ status: 'cancelled' }).eq('id', id);
+  if (error) throw error;
+}
+
+// ============================================================
+// Cereri primite — ca veterinar / trainer (gestionare programări)
+// ============================================================
+
+export interface MyVetProfile {
+  id: string;
+  clinic_name: string;
+}
+
+export async function fetchMyVetProfile(userId: string): Promise<MyVetProfile | null> {
+  const { data, error } = await supabase
+    .from('vets')
+    .select('id, clinic_name')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data as MyVetProfile | null;
+}
+
+export interface IncomingVetAppointmentRow {
+  id: string;
+  pet_id: string;
+  starts_at: string;
+  reason: string | null;
+  status: VetAppointmentStatus;
+  pets: { name: string; photo_url: string | null } | null;
+}
+
+/** Programările primite de cabinetul meu (ca veterinar). */
+export async function fetchIncomingVetAppointments(vetId: string): Promise<IncomingVetAppointmentRow[]> {
+  const { data, error } = await supabase
+    .from('vet_appointments')
+    .select('id, pet_id, starts_at, reason, status, pets(name, photo_url)')
+    .eq('vet_id', vetId)
+    .order('starts_at', { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as unknown as IncomingVetAppointmentRow[];
+}
+
+export async function setVetAppointmentStatus(id: string, status: VetAppointmentStatus): Promise<void> {
+  const { error } = await supabase.from('vet_appointments').update({ status }).eq('id', id);
+  if (error) throw error;
+}
+
+export interface IncomingTrainerBookingRow {
+  id: string;
+  pet_id: string;
+  requested_at: string;
+  notes: string | null;
+  status: TrainerBookingStatus;
+  pets: { name: string; photo_url: string | null } | null;
+}
+
+/** Cererile primite de profilul meu de trainer. */
+export async function fetchIncomingTrainerBookings(trainerId: string): Promise<IncomingTrainerBookingRow[]> {
+  const { data, error } = await supabase
+    .from('trainer_bookings')
+    .select('id, pet_id, requested_at, notes, status, pets(name, photo_url)')
+    .eq('trainer_id', trainerId)
+    .order('requested_at', { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as unknown as IncomingTrainerBookingRow[];
+}
+
+export async function setTrainerBookingStatus(id: string, status: TrainerBookingStatus): Promise<void> {
+  const { error } = await supabase.from('trainer_bookings').update({ status }).eq('id', id);
   if (error) throw error;
 }
 

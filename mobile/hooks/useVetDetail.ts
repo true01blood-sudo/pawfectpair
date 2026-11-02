@@ -3,7 +3,12 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queries } from '../lib/supabase/queries';
-import type { BookVetAppointmentInput, RequestTrainerBookingInput } from '../lib/supabase/queries';
+import type {
+  BookVetAppointmentInput,
+  RequestTrainerBookingInput,
+  VetAppointmentStatus,
+  TrainerBookingStatus,
+} from '../lib/supabase/queries';
 import { useAuthStore } from '../store/auth.store';
 
 export const VET_DETAIL_KEY = (id: string) => ['vet', id] as const;
@@ -126,5 +131,57 @@ export function useCancelVetAppointment() {
     onSuccess: () => {
       if (user) qc.invalidateQueries({ queryKey: MY_VET_APPOINTMENTS_KEY(user.id) });
     },
+  });
+}
+
+// ============================================================
+// Cereri primite — ca veterinar / trainer (gestionare)
+// ============================================================
+
+export const MY_VET_PROFILE_KEY = (uid: string) => ['vet-profile', 'mine', uid] as const;
+export const INCOMING_VET_APPTS_KEY = (vetId: string) => ['vet-appointments', 'incoming', vetId] as const;
+export const INCOMING_TRAINER_BOOKINGS_KEY = (trainerId: string) => ['trainer-bookings', 'incoming', trainerId] as const;
+
+export function useMyVetProfile() {
+  const user = useAuthStore((s) => s.user);
+  const uid = user?.id ?? '';
+  return useQuery({
+    queryKey: MY_VET_PROFILE_KEY(uid),
+    queryFn: () => queries.fetchMyVetProfile(uid),
+    enabled: !!uid,
+  });
+}
+
+export function useIncomingVetAppointments(vetId: string | undefined) {
+  return useQuery({
+    queryKey: INCOMING_VET_APPTS_KEY(vetId ?? ''),
+    queryFn: () => queries.fetchIncomingVetAppointments(vetId!),
+    enabled: !!vetId,
+  });
+}
+
+export function useSetVetAppointmentStatus(vetId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: VetAppointmentStatus }) =>
+      queries.setVetAppointmentStatus(id, status),
+    onSuccess: () => qc.invalidateQueries({ queryKey: INCOMING_VET_APPTS_KEY(vetId) }),
+  });
+}
+
+export function useIncomingTrainerBookings(trainerId: string | undefined) {
+  return useQuery({
+    queryKey: INCOMING_TRAINER_BOOKINGS_KEY(trainerId ?? ''),
+    queryFn: () => queries.fetchIncomingTrainerBookings(trainerId!),
+    enabled: !!trainerId,
+  });
+}
+
+export function useSetTrainerBookingStatus(trainerId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: TrainerBookingStatus }) =>
+      queries.setTrainerBookingStatus(id, status),
+    onSuccess: () => qc.invalidateQueries({ queryKey: INCOMING_TRAINER_BOOKINGS_KEY(trainerId) }),
   });
 }
