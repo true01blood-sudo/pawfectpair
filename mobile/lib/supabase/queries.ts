@@ -2581,6 +2581,13 @@ export const queries = {
   setVetAppointmentStatus,
   fetchIncomingTrainerBookings,
   setTrainerBookingStatus,
+  // Partajare dosar medical
+  fetchActiveShares,
+  createMedicalRecordShare,
+  revokeMedicalRecordShare,
+  // Pedigree
+  fetchPedigreeEntries,
+  upsertPedigreeEntry,
 };
 
 // ============================================================
@@ -2884,6 +2891,96 @@ export async function fetchIncomingTrainerBookings(trainerId: string): Promise<I
 
 export async function setTrainerBookingStatus(id: string, status: TrainerBookingStatus): Promise<void> {
   const { error } = await supabase.from('trainer_bookings').update({ status }).eq('id', id);
+  if (error) throw error;
+}
+
+// ============================================================
+// Partajare dosar medical (medical_record_shares) — acces temporar vet
+// ============================================================
+
+export interface MedicalRecordShareRow {
+  id: string;
+  pet_id: string;
+  vet_id: string;
+  record_ids: string[] | null;
+  purpose: string | null;
+  expires_at: string;
+  status: 'active' | 'revoked';
+  created_at: string;
+  vets: { clinic_name: string } | null;
+}
+
+export async function fetchActiveShares(petId: string): Promise<MedicalRecordShareRow[]> {
+  const { data, error } = await supabase
+    .from('medical_record_shares')
+    .select('id, pet_id, vet_id, record_ids, purpose, expires_at, status, created_at, vets(clinic_name)')
+    .eq('pet_id', petId)
+    .eq('status', 'active')
+    .gt('expires_at', new Date().toISOString())
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as MedicalRecordShareRow[];
+}
+
+export interface CreateMedicalRecordShareInput {
+  pet_id: string;
+  owner_id: string;
+  vet_id: string;
+  record_ids: string[] | null;
+  purpose: string | null;
+  expires_at: string;
+}
+
+export async function createMedicalRecordShare(input: CreateMedicalRecordShareInput): Promise<{ id: string }> {
+  const { data, error } = await supabase.from('medical_record_shares').insert(input).select('id').single();
+  if (error) throw error;
+  return data as { id: string };
+}
+
+export async function revokeMedicalRecordShare(id: string): Promise<void> {
+  const { error } = await supabase.from('medical_record_shares').update({ status: 'revoked' }).eq('id', id);
+  if (error) throw error;
+}
+
+// ============================================================
+// Pedigree (pet_pedigree_entries) — arbore genealogic real
+// ============================================================
+
+export type PedigreeRelation =
+  | 'sire' | 'dam'
+  | 'paternal_grandsire' | 'paternal_granddam'
+  | 'maternal_grandsire' | 'maternal_granddam';
+
+export interface PedigreeEntryRow {
+  id: string;
+  pet_id: string;
+  relation: PedigreeRelation;
+  name: string;
+  registered_name: string | null;
+  registry: string | null;
+}
+
+export async function fetchPedigreeEntries(petId: string): Promise<PedigreeEntryRow[]> {
+  const { data, error } = await supabase
+    .from('pet_pedigree_entries')
+    .select('id, pet_id, relation, name, registered_name, registry')
+    .eq('pet_id', petId);
+  if (error) throw error;
+  return (data ?? []) as PedigreeEntryRow[];
+}
+
+export interface UpsertPedigreeEntryInput {
+  pet_id: string;
+  relation: PedigreeRelation;
+  name: string;
+  registered_name: string | null;
+  registry: string | null;
+}
+
+export async function upsertPedigreeEntry(input: UpsertPedigreeEntryInput): Promise<void> {
+  const { error } = await supabase
+    .from('pet_pedigree_entries')
+    .upsert({ ...input, updated_at: new Date().toISOString() }, { onConflict: 'pet_id,relation' });
   if (error) throw error;
 }
 

@@ -3,40 +3,23 @@
  * Design: tabs All records/Vaccinations/Tests, share modal cu date access temporar.
  * Conform mockup "Medical file + Share records (Temporary record access)".
  */
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, Pressable, Modal,
-  Switch, Alert,
+  View, Text, StyleSheet, ScrollView, Pressable, Modal, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { toDateInput } from '@pawfectpair/shared';
 import { useAppTheme } from '../../../components/theme-provider';
+import { Input, Button } from '../../../components/ui';
 import { usePet, useMedicalRecords } from '../../../hooks';
+import { useMyVetAppointments } from '../../../hooks/useVetDetail';
+import { useActiveShares, useCreateMedicalRecordShare, useRevokeMedicalRecordShare } from '../../../hooks/useMedicalShares';
 import { formatDateRO } from '@pawfectpair/shared';
 
 type RecordTab = 'all' | 'vaccinations' | 'tests';
-
-type ActiveShare = {
-  id: string;
-  providerName: string;
-  providerRole: string;
-  providerClinic: string;
-  expiresAt: string;
-  purpose: string;
-};
-
-const DEMO_ACTIVE_SHARES: ActiveShare[] = [
-  {
-    id: 'sh1',
-    providerName: 'Dr. Marco Bianchi',
-    providerRole: 'Veterinar',
-    providerClinic: 'Rome Vet Clinic',
-    expiresAt: '22 Nov 2026, 18:00',
-    purpose: 'Travel vet',
-  },
-];
 
 export default function DosarScreen() {
   const { t } = useTranslation();
@@ -44,12 +27,31 @@ export default function DosarScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: pet } = usePet(id);
-  const { data: records } = useMedicalRecords(id);
+  const { data: records } = useMedicalRecords(id ?? '');
 
   const [activeTab, setActiveTab] = useState<RecordTab>('all');
   const [showShareModal, setShowShareModal] = useState(false);
   const [selectedRecords, setSelectedRecords] = useState<string[]>([]);
-  const [shareStep, setShareStep] = useState<1 | 2>(1);
+  const [selectedVetId, setSelectedVetId] = useState('');
+  const [purpose, setPurpose] = useState('');
+  const [expiresDate, setExpiresDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return toDateInput(d);
+  });
+
+  const myVetAppts = useMyVetAppointments();
+  const activeShares = useActiveShares(id);
+  const createShare = useCreateMedicalRecordShare(id ?? '');
+  const revokeShare = useRevokeMedicalRecordShare(id ?? '');
+
+  const myVets = useMemo(() => {
+    const seen = new Map<string, { vet_id: string; clinic_name: string }>();
+    for (const a of myVetAppts.data ?? []) {
+      if (!seen.has(a.vet_id)) seen.set(a.vet_id, { vet_id: a.vet_id, clinic_name: a.vets?.clinic_name ?? 'Cabinet veterinar' });
+    }
+    return Array.from(seen.values());
+  }, [myVetAppts.data]);
 
   const tabs: { key: RecordTab; label: string }[] = [
     { key: 'all', label: t('dosar.tabAll', 'Toate') },
@@ -57,10 +59,10 @@ export default function DosarScreen() {
     { key: 'tests', label: t('dosar.tabTests', 'Teste') },
   ];
 
-  const filteredRecords = (records ?? []).filter((r: any) => {
+  const filteredRecords = (records ?? []).filter((r) => {
     if (activeTab === 'all') return true;
-    if (activeTab === 'vaccinations') return r.record_type === 'vaccination';
-    if (activeTab === 'tests') return ['blood_test', 'xray', 'other'].includes(r.record_type);
+    if (activeTab === 'vaccinations') return r.type === 'vaccination';
+    if (activeTab === 'tests') return ['surgery', 'other'].includes(r.type);
     return true;
   });
 
@@ -70,14 +72,49 @@ export default function DosarScreen() {
     );
   }
 
-  function handleWithdrawShare(shareId: string) {
+  function handleWithdrawShare(shareId: string, vetName: string) {
     Alert.alert(
       t('dosar.withdrawTitle', 'Retrage accesul'),
-      t('dosar.withdrawConfirm', 'Ești sigur că vrei să retragi accesul?'),
+      `Sigur retragi accesul lui ${vetName}?`,
       [
         { text: t('app.cancel', 'Anulează'), style: 'cancel' },
-        { text: t('dosar.withdraw', 'Retrage'), style: 'destructive', onPress: () => {} },
+        {
+          text: t('dosar.withdraw', 'Retrage'),
+          style: 'destructive',
+          onPress: () => revokeShare.mutate(shareId),
+        },
       ]
+    );
+  }
+
+  function resetModal() {
+    setShowShareModal(false);
+    setSelectedRecords([]);
+    setSelectedVetId('');
+    setPurpose('');
+  }
+
+  function handleSubmitShare() {
+    if (!selectedVetId) return;
+    const expiresAt = new Date(`${expiresDate}T23:59:59`);
+    if (Number.isNaN(expiresAt.getTime()) || expiresAt <= new Date()) {
+      Alert.alert('Dată invalidă', 'Alege o dată de expirare viitoare.');
+      return;
+    }
+    createShare.mutate(
+      {
+        vet_id: selectedVetId,
+        record_ids: selectedRecords.length > 0 ? selectedRecords : null,
+        purpose: purpose.trim() || null,
+        expires_at: expiresAt.toISOString(),
+      },
+      {
+        onSuccess: () => {
+          resetModal();
+          Alert.alert('Partajat!', 'Veterinarul poate vedea acum înregistrările selectate, până la expirare.');
+        },
+        onError: (e: Error) => Alert.alert('Eroare', e.message || 'Nu am putut partaja dosarul.'),
+      }
     );
   }
 
@@ -142,22 +179,8 @@ export default function DosarScreen() {
           ))}
         </ScrollView>
 
-        {/* Alergii & medicație permanentă */}
-        <View style={[styles.allergyCard, { marginHorizontal: 20, backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }]}>
-          <Ionicons name="warning-outline" size={18} color="#D97706" />
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: '#92400E', fontWeight: '700', fontSize: 13 }}>
-              {t('dosar.allergies', 'Alergii & medicație')}
-            </Text>
-            <Text style={{ color: '#92400E', fontSize: 12, marginTop: 2 }}>
-              {t('dosar.noAllergies', 'Fără alergii cunoscute')} · {t('dosar.monthlyTreatment', 'Tratament lunar purici & căpușe')}
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={16} color="#D97706" />
-        </View>
-
         {/* Lista înregistrări */}
-        <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
+        <View style={{ paddingHorizontal: 20, marginTop: 8 }}>
           <View style={styles.sectionHeader}>
             <Text style={{ color: theme.colors.text, fontSize: 15, fontFamily: theme.typography.fontFamilyBold }}>
               {t('dosar.recentRecords', 'Înregistrări recente')}
@@ -175,71 +198,72 @@ export default function DosarScreen() {
               </Text>
             </View>
           ) : (
-            filteredRecords.map((r: any) => (
-              <Pressable
+            filteredRecords.map((r) => (
+              <View
                 key={r.id}
                 style={[styles.recordRow, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
               >
                 <View style={[styles.recordDot, { backgroundColor: '#22C55E' }]} />
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '600' }}>
-                    {r.title || r.record_type}
+                    {r.title}
                   </Text>
                   <Text style={{ color: theme.colors.textMuted, fontSize: 12, marginTop: 2 }}>
-                    {r.provider_name || 'Veterinar'} · {formatDateRO(r.date)}
+                    {formatDateRO(r.record_date)}
+                    {r.next_due_date ? ` · scadentă: ${formatDateRO(r.next_due_date)}` : ''}
                   </Text>
-                  {r.record_type && (
-                    <View style={{ flexDirection: 'row', gap: 6, marginTop: 6 }}>
-                      <View style={[styles.typeChip, { backgroundColor: theme.colors.background }]}>
-                        <Text style={{ color: theme.colors.textMuted, fontSize: 11 }}>{r.record_type}</Text>
-                      </View>
+                  <View style={{ flexDirection: 'row', gap: 6, marginTop: 6 }}>
+                    <View style={[styles.typeChip, { backgroundColor: theme.colors.background }]}>
+                      <Text style={{ color: theme.colors.textMuted, fontSize: 11 }}>{r.type}</Text>
                     </View>
-                  )}
+                  </View>
                 </View>
-                <Ionicons name="chevron-forward" size={16} color={theme.colors.textMuted} />
-              </Pressable>
+              </View>
             ))
           )}
         </View>
 
         {/* Acces activ grantat */}
-        {DEMO_ACTIVE_SHARES.length > 0 && (
-          <View style={{ paddingHorizontal: 20, marginTop: 24 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 15, fontFamily: theme.typography.fontFamilyBold, marginBottom: 10 }}>
-              {t('dosar.activeSharing', 'Acces activ')}
+        <View style={{ paddingHorizontal: 20, marginTop: 24 }}>
+          <Text style={{ color: theme.colors.text, fontSize: 15, fontFamily: theme.typography.fontFamilyBold, marginBottom: 10 }}>
+            {t('dosar.activeSharing', 'Acces activ')}
+          </Text>
+          {(activeShares.data ?? []).length === 0 ? (
+            <Text style={{ color: theme.colors.textMuted, fontSize: 13 }}>
+              Nu ai partajat dosarul cu niciun veterinar momentan.
             </Text>
-            {DEMO_ACTIVE_SHARES.map((s) => (
+          ) : (
+            (activeShares.data ?? []).map((s) => (
               <View key={s.id} style={[styles.shareCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
                 <View style={{ flex: 1 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    <Ionicons name="airplane" size={14} color={theme.colors.primary} />
-                    <Text style={{ color: theme.colors.textMuted, fontSize: 11, fontWeight: '600', textTransform: 'uppercase' }}>
+                  {s.purpose ? (
+                    <Text style={{ color: theme.colors.textMuted, fontSize: 11, fontWeight: '600', textTransform: 'uppercase', marginBottom: 4 }}>
                       {s.purpose}
                     </Text>
-                  </View>
+                  ) : null}
                   <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 14 }}>
-                    {s.providerName}
+                    {s.vets?.clinic_name ?? 'Cabinet veterinar'}
                   </Text>
                   <Text style={{ color: theme.colors.textMuted, fontSize: 12 }}>
-                    {s.providerClinic} · Expiră {s.expiresAt}
+                    {s.record_ids ? `${s.record_ids.length} înregistrări` : 'Toate înregistrările'} · Expiră {new Date(s.expires_at).toLocaleDateString('ro-RO')}
                   </Text>
                 </View>
-                <Pressable onPress={() => handleWithdrawShare(s.id)}>
+                <Pressable onPress={() => handleWithdrawShare(s.id, s.vets?.clinic_name ?? 'veterinarul')}>
                   <Text style={{ color: '#EF4444', fontSize: 12, fontWeight: '600' }}>
                     {t('dosar.withdraw', 'Retrage')}
                   </Text>
                 </Pressable>
               </View>
-            ))}
-          </View>
-        )}
+            ))
+          )}
+        </View>
 
         {/* Notă footer */}
         <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
           <View style={[styles.infoBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-            <Ionicons name="information-circle-outline" size={16} color={theme.colors.textMuted} />
+            <Ionicons name="lock-closed-outline" size={16} color={theme.colors.textMuted} />
             <Text style={{ color: theme.colors.textMuted, fontSize: 12, flex: 1 }}>
-              {t('dosar.downloadNote', 'Copiile descărcate nu pot fi retrase odată partajate.')}
+              {t('dosar.downloadNote', 'Veterinarul poate doar vedea înregistrările alese, nu le poate edita sau șterge. Accesul expiră automat.')}
             </Text>
           </View>
         </View>
@@ -248,12 +272,14 @@ export default function DosarScreen() {
       {/* Buton Share Selected Records */}
       <View style={[styles.bottomBar, { backgroundColor: theme.colors.background, borderTopColor: theme.colors.border }]}>
         <Pressable
-          onPress={() => setShowShareModal(true)}
+          onPress={() => (myVets.length === 0
+            ? Alert.alert('Niciun veterinar', 'Poți partaja dosarul doar cu un cabinet la care ai avut o programare.')
+            : setShowShareModal(true))}
           style={[styles.primaryBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}
         >
           <Ionicons name="share-outline" size={18} color="#fff" />
           <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
-            {t('dosar.shareRecords', 'Partajează înregistrări selectate')}
+            {t('dosar.shareRecords', 'Partajează dosarul cu un veterinar')}
           </Text>
         </Pressable>
       </View>
@@ -261,9 +287,8 @@ export default function DosarScreen() {
       {/* Modal Share */}
       <Modal visible={showShareModal} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top', 'bottom']}>
-          {/* Modal Header */}
           <View style={[styles.modalHeader, { borderBottomColor: theme.colors.border }]}>
-            <Pressable onPress={() => { setShowShareModal(false); setShareStep(1); setSelectedRecords([]); }}>
+            <Pressable onPress={resetModal}>
               <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
             </Pressable>
             <Text style={{ color: theme.colors.text, fontSize: 17, fontFamily: theme.typography.fontFamilyBold }}>
@@ -273,7 +298,6 @@ export default function DosarScreen() {
           </View>
 
           <ScrollView contentContainerStyle={{ padding: 20 }}>
-            {/* Titlu acces temporar */}
             <Text style={{ color: theme.colors.text, fontSize: 22, fontFamily: theme.typography.fontFamilyBold, marginBottom: 4 }}>
               {t('dosar.temporaryAccess', 'Acces temporar')}
             </Text>
@@ -282,49 +306,57 @@ export default function DosarScreen() {
             </Text>
 
             {/* Provider selector */}
-            <Pressable style={[styles.providerCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-              <View style={[styles.providerAvatar, { backgroundColor: theme.colors.accent }]}>
-                <Text style={{ fontSize: 22 }}>👩‍⚕️</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 15 }}>
-                  Dr. Andrea Rossi
-                </Text>
-                <Text style={{ color: theme.colors.textMuted, fontSize: 12 }}>
-                  Lake Vet · Veterinar · Lugano
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
-            </Pressable>
+            <Text style={{ color: theme.colors.text, fontSize: 15, fontFamily: theme.typography.fontFamilyBold, marginBottom: 12 }}>
+              Alege veterinarul
+            </Text>
+            {myVets.map((v) => (
+              <Pressable
+                key={v.vet_id}
+                onPress={() => setSelectedVetId(v.vet_id)}
+                style={[styles.providerCard, {
+                  marginBottom: 8,
+                  borderColor: selectedVetId === v.vet_id ? theme.colors.primary : theme.colors.border,
+                  backgroundColor: selectedVetId === v.vet_id ? `${theme.colors.primary}10` : theme.colors.surface,
+                }]}
+              >
+                <View style={[styles.providerAvatar, { backgroundColor: theme.colors.accent }]}>
+                  <Text style={{ fontSize: 22 }}>🏥</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 15 }}>
+                    {v.clinic_name}
+                  </Text>
+                </View>
+                {selectedVetId === v.vet_id && <Ionicons name="checkmark-circle" size={20} color={theme.colors.primary} />}
+              </Pressable>
+            ))}
 
             {/* Selectare înregistrări */}
-            <Text style={{ color: theme.colors.text, fontSize: 15, fontFamily: theme.typography.fontFamilyBold, marginTop: 20, marginBottom: 12 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 15, fontFamily: theme.typography.fontFamilyBold, marginTop: 20, marginBottom: 4 }}>
               {t('dosar.selectRecords', 'Selectează înregistrări')}
             </Text>
+            <Text style={{ color: theme.colors.textMuted, fontSize: 12, marginBottom: 12 }}>
+              Nicio selecție = toate înregistrările.
+            </Text>
 
-            {[
-              { id: 'vacc', name: 'Fișă vaccinuri', date: '3 Oct 2026', type: 'PDF (2 pag.)', selected: true },
-              { id: 'tests', name: 'Teste recente', date: '15 Aug 2026', type: 'PDF (4 pag.)', selected: true },
-              { id: 'checkup', name: 'Control anual', date: '12 Nov 2026', type: 'PDF (3 pag.)', selected: false },
-            ].map((rec) => (
+            {(records ?? []).map((rec) => (
               <Pressable
                 key={rec.id}
                 onPress={() => toggleRecord(rec.id)}
                 style={[styles.recordSelectRow, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
               >
                 <View style={[styles.checkbox, {
-                  backgroundColor: (selectedRecords.includes(rec.id) || rec.selected) ? theme.colors.primary : 'transparent',
-                  borderColor: (selectedRecords.includes(rec.id) || rec.selected) ? theme.colors.primary : theme.colors.border,
+                  backgroundColor: selectedRecords.includes(rec.id) ? theme.colors.primary : 'transparent',
+                  borderColor: selectedRecords.includes(rec.id) ? theme.colors.primary : theme.colors.border,
                 }]}>
-                  {(selectedRecords.includes(rec.id) || rec.selected) && (
+                  {selectedRecords.includes(rec.id) && (
                     <Ionicons name="checkmark" size={14} color="#fff" />
                   )}
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: theme.colors.text, fontWeight: '600', fontSize: 14 }}>{rec.name}</Text>
-                  <Text style={{ color: theme.colors.textMuted, fontSize: 12 }}>{rec.date} · {rec.type}</Text>
+                  <Text style={{ color: theme.colors.text, fontWeight: '600', fontSize: 14 }}>{rec.title}</Text>
+                  <Text style={{ color: theme.colors.textMuted, fontSize: 12 }}>{formatDateRO(rec.record_date)} · {rec.type}</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={16} color={theme.colors.textMuted} />
               </Pressable>
             ))}
 
@@ -332,25 +364,22 @@ export default function DosarScreen() {
             <Text style={{ color: theme.colors.text, fontSize: 15, fontFamily: theme.typography.fontFamilyBold, marginTop: 20, marginBottom: 12 }}>
               {t('dosar.accessDetails', 'Detalii acces')}
             </Text>
-            <View style={styles.accessDatesRow}>
-              <View style={[styles.dateBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                <Ionicons name="calendar-outline" size={16} color={theme.colors.primary} />
-                <View>
-                  <Text style={{ color: theme.colors.textMuted, fontSize: 11 }}>Începe</Text>
-                  <Text style={{ color: theme.colors.text, fontWeight: '600', fontSize: 13 }}>15 Nov 2026, 09:00</Text>
-                </View>
-              </View>
-              <View style={[styles.dateBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                <Ionicons name="calendar-outline" size={16} color="#EF4444" />
-                <View>
-                  <Text style={{ color: theme.colors.textMuted, fontSize: 11 }}>Se termină</Text>
-                  <Text style={{ color: theme.colors.text, fontWeight: '600', fontSize: 13 }}>22 Nov 2026, 18:00</Text>
-                </View>
-              </View>
-            </View>
+            <Input
+              label="Expiră la (AAAA-LL-ZZ)"
+              value={expiresDate}
+              onChangeText={setExpiresDate}
+              maxLength={10}
+              placeholder={toDateInput()}
+            />
+            <Input
+              label="Motiv (opțional)"
+              value={purpose}
+              onChangeText={setPurpose}
+              placeholder="Ex. consult de rutină"
+              maxLength={120}
+            />
 
-            {/* Info expiră automat */}
-            <View style={[styles.infoBox, { backgroundColor: '#F0FDF4', borderColor: '#86EFAC', marginTop: 12 }]}>
+            <View style={[styles.infoBox, { backgroundColor: '#F0FDF4', borderColor: '#86EFAC', marginTop: 4 }]}>
               <Ionicons name="lock-closed" size={16} color="#16A34A" />
               <Text style={{ color: '#166534', fontSize: 12, flex: 1 }}>
                 {t('dosar.autoExpire', 'Accesul expiră automat. Veterinarul poate vedea doar înregistrările selectate — nu poate edita sau șterge nimic.')}
@@ -358,16 +387,15 @@ export default function DosarScreen() {
             </View>
           </ScrollView>
 
-          {/* CTA Review sharing */}
           <View style={[styles.bottomBar, { backgroundColor: theme.colors.background, borderTopColor: theme.colors.border }]}>
-            <Pressable
-              onPress={() => setShowShareModal(false)}
-              style={[styles.primaryBtn, { backgroundColor: theme.colors.primary, flex: 1 }]}
-            >
-              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
-                {t('dosar.reviewSharing', 'Verifică partajarea →')}
-              </Text>
-            </Pressable>
+            <Button
+              title="Verifică partajarea →"
+              onPress={handleSubmitShare}
+              disabled={!selectedVetId || createShare.isPending}
+              loading={createShare.isPending}
+              fullWidth
+              size="lg"
+            />
           </View>
         </SafeAreaView>
       </Modal>
@@ -383,7 +411,6 @@ const styles = StyleSheet.create({
   petCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 14, padding: 12 },
   petAvatar: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   tabChip: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 7 },
-  allergyCard: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 12, padding: 12, marginTop: 8 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
   recordRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -401,11 +428,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     padding: 20, borderBottomWidth: 1,
   },
-  providerCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 14, padding: 14 },
+  providerCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1.5, borderRadius: 14, padding: 14 },
   providerAvatar: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   recordSelectRow: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 8 },
   checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  accessDatesRow: { flexDirection: 'row', gap: 10 },
-  dateBox: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, padding: 12 },
   emptyState: { alignItems: 'center', paddingVertical: 32 },
 });
