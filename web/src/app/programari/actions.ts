@@ -24,3 +24,21 @@ export async function setAppointmentStatus(
   revalidatePath("/clinic/cereri");
   revalidatePath("/clinic/program");
 }
+
+export async function setTrainerBookingStatus(
+  bookingId: string,
+  status: "confirmed" | "declined" | "cancelled" | "completed",
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  await supabase
+    .from("trainer_bookings")
+    .update({ status })
+    .eq("id", bookingId);
+
+  revalidatePath("/programari");
+}

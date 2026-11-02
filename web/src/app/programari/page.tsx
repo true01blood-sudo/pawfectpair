@@ -1,18 +1,20 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
-import { setAppointmentStatus } from "./actions";
+import { setAppointmentStatus, setTrainerBookingStatus } from "./actions";
 import AppShell from "@/components/AppShell";
 
 const statusColors: Record<string, string> = {
   requested: "#d97706",
   confirmed: "#16a34a",
+  declined: "#ef4444",
   cancelled: "#ef4444",
   completed: "#6b7280",
 };
 const statusLabels: Record<string, string> = {
   requested: "în așteptare",
   confirmed: "confirmată",
+  declined: "respinsă",
   cancelled: "anulată",
   completed: "finalizată",
 };
@@ -36,6 +38,15 @@ type AppointmentRow = {
   status: string;
   pets: { name: string } | null;
   vets: { clinic_name: string } | null;
+};
+
+type TrainerBookingRow = {
+  id: string;
+  requested_at: string;
+  notes: string | null;
+  status: string;
+  pets: { name: string } | null;
+  edu_trainers: { display_name: string } | null;
 };
 
 export default async function ProgramariPage() {
@@ -63,6 +74,26 @@ export default async function ProgramariPage() {
         .select("id, starts_at, reason, status, pets(name)")
         .eq("vet_id", myVet.id)
         .order("starts_at", { ascending: true })
+    : { data: null };
+
+  const { data: myTrainerBookings } = await supabase
+    .from("trainer_bookings")
+    .select("id, requested_at, notes, status, pets(name), edu_trainers(display_name)")
+    .eq("owner_id", user.id)
+    .order("requested_at", { ascending: true });
+
+  const { data: myTrainerProfile } = await supabase
+    .from("edu_trainers")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const { data: incomingTrainerBookings } = myTrainerProfile
+    ? await supabase
+        .from("trainer_bookings")
+        .select("id, requested_at, notes, status, pets(name)")
+        .eq("trainer_id", myTrainerProfile.id)
+        .order("requested_at", { ascending: true })
     : { data: null };
 
   return (
@@ -109,6 +140,39 @@ export default async function ProgramariPage() {
             )}
           </section>
 
+          <section className="mt-10">
+            <h2 className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
+              Sesiuni cu traineri
+            </h2>
+            {myTrainerBookings && myTrainerBookings.length > 0 ? (
+              <ul className="flex flex-col gap-3">
+                {(myTrainerBookings as unknown as TrainerBookingRow[]).map((b) => (
+                  <li
+                    key={b.id}
+                    className="card-hover rounded-2xl border p-4 text-sm shadow-sm"
+                    style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
+                  >
+                    <p className="font-semibold" style={{ color: "var(--foreground)" }}>
+                      {b.pets?.name} @ {b.edu_trainers?.display_name}
+                    </p>
+                    <p className="mt-1 flex items-center gap-2" style={{ color: "var(--muted)" }}>
+                      {new Date(b.requested_at).toLocaleString("ro-RO")}
+                      <StatusBadge status={b.status} />
+                    </p>
+                    {b.notes && <p className="mt-1" style={{ color: "var(--muted)" }}>{b.notes}</p>}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p
+                className="rounded-2xl border border-dashed p-8 text-center text-sm"
+                style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
+              >
+                Nu ai încă sesiuni cu traineri.
+              </p>
+            )}
+          </section>
+
           {myVet && (
             <section className="mt-10">
               <h2 className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
@@ -139,6 +203,55 @@ export default async function ProgramariPage() {
                               style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
                             >
                               Anulează
+                            </button>
+                          </form>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p
+                  className="rounded-2xl border border-dashed p-8 text-center text-sm"
+                  style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
+                >
+                  Nicio cerere primită.
+                </p>
+              )}
+            </section>
+          )}
+
+          {myTrainerProfile && (
+            <section className="mt-10">
+              <h2 className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
+                Cereri primite (profilul tău de trainer)
+              </h2>
+              {incomingTrainerBookings && incomingTrainerBookings.length > 0 ? (
+                <ul className="flex flex-col gap-3">
+                  {(incomingTrainerBookings as unknown as TrainerBookingRow[]).map((b) => (
+                    <li
+                      key={b.id}
+                      className="card-hover rounded-2xl border p-4 text-sm shadow-sm"
+                      style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
+                    >
+                      <p className="font-semibold" style={{ color: "var(--foreground)" }}>
+                        {b.pets?.name} · {new Date(b.requested_at).toLocaleString("ro-RO")}
+                      </p>
+                      {b.notes && <p className="mt-1" style={{ color: "var(--muted)" }}>{b.notes}</p>}
+                      <p className="mt-1"><StatusBadge status={b.status} /></p>
+                      {b.status === "requested" && (
+                        <div className="mt-3 flex gap-2">
+                          <form action={setTrainerBookingStatus.bind(null, b.id, "confirmed")}>
+                            <button className="min-h-9 rounded-full bg-primary px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90">
+                              Confirmă
+                            </button>
+                          </form>
+                          <form action={setTrainerBookingStatus.bind(null, b.id, "declined")}>
+                            <button
+                              className="min-h-9 rounded-full border px-4 text-xs font-medium transition-colors hover:border-primary/40"
+                              style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
+                            >
+                              Respinge
                             </button>
                           </form>
                         </div>

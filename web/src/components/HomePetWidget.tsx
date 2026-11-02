@@ -135,7 +135,7 @@ export default function HomePetWidget({
         <Link
           href="/animale"
           className="flex items-center gap-3 rounded-2xl border p-3 transition-colors hover:border-primary/40"
-          style={{ background: "#DCE7D6", borderColor: "#c4d9bc" }}
+          style={{ background: "var(--sage)", borderColor: "#c4d9bc" }}
         >
           {pet.photo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
