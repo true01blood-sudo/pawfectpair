@@ -27,6 +27,9 @@ export function StateView({
   children,
 }: StateProps) {
   const t = useAppTheme();
+  // `empty` este starea controlată de caller; dacă nu e specificată explicit,
+  // cădem pe prezența emoji/title (compatibilitate cu apelurile „doar afișaj").
+  const showEmpty = empty !== undefined ? empty : Boolean(emoji || title);
   if (loading) {
     return (
       <View style={{ paddingVertical: 32, alignItems: 'center' }}>
@@ -41,7 +44,7 @@ export function StateView({
       </View>
     );
   }
-  if (empty || emoji || title) {
+  if (showEmpty) {
     return (
       <View style={{ paddingVertical: 32, paddingHorizontal: 24, alignItems: 'center' }}>
         {emoji && <Text style={{ fontSize: 44, marginBottom: 8 }}>{emoji}</Text>}
