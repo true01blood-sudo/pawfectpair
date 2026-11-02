@@ -44,18 +44,18 @@ export default async function ProdusDetailPage({
           ? "Preț de stabilit"
           : `${(product.price_cents / 100).toFixed(2)} ${product.currency}`}
       </p>
-      {product.category && <p className="text-sm text-zinc-500">{product.category}</p>}
-      <p className="mt-2 text-sm text-zinc-600">
+      {product.category && <p className="text-sm text-muted">{product.category}</p>}
+      <p className="mt-2 text-sm text-muted">
         Vândut de <span className="font-medium">{seller?.full_name ?? "PawfectPair"}</span>
       </p>
       {product.delivery_info && (
-        <p className="mt-1 text-sm text-zinc-600">🚚 {product.delivery_info}</p>
+        <p className="mt-1 text-sm text-muted">🚚 {product.delivery_info}</p>
       )}
-      {product.description && <p className="mt-3 text-sm text-zinc-700">{product.description}</p>}
-      <p className="mt-2 text-xs text-zinc-400">Stoc: {product.stock}</p>
+      {product.description && <p className="mt-3 text-sm text-muted">{product.description}</p>}
+      <p className="mt-2 text-xs text-muted">Stoc: {product.stock}</p>
 
       {product.price_cents === 0 ? (
-        <p className="mt-6 text-sm text-zinc-500">
+        <p className="mt-6 text-sm text-muted">
           Vânzătorul nu a stabilit încă un preț pentru acest produs.
         </p>
       ) : product.stock > 0 ? (
@@ -78,7 +78,7 @@ export default async function ProdusDetailPage({
             </form>
           </div>
         ) : (
-          <p className="mt-6 text-sm text-zinc-600">
+          <p className="mt-6 text-sm text-muted">
             <a href="/login" className="text-primary underline">Autentifică-te</a> pentru a comanda.
           </p>
         )

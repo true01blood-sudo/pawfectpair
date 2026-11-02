@@ -55,7 +55,7 @@ export default function ImageUpload({
 
   return (
     <div className="flex min-w-0 flex-col gap-2">
-      <label className="text-xs text-zinc-500">{label}</label>
+      <label className="text-xs text-muted">{label}</label>
       <input type="hidden" name={name} value={uploadedUrl} />
       <div className="flex min-w-0 items-center gap-3">
         {(preview || uploadedUrl) && (
@@ -69,7 +69,7 @@ export default function ImageUpload({
           className="min-h-11 w-full min-w-0 rounded-xl border px-3 py-2 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
         />
       </div>
-      {uploading && <p className="text-xs text-zinc-500">Se încarcă...</p>}
+      {uploading && <p className="text-xs text-muted">Se încarcă...</p>}
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );

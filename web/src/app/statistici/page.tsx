@@ -4,7 +4,7 @@ import BottomNav from "@/components/BottomNav";
 import AppShell from "@/components/AppShell";
 
 function Sparkline({ values }: { values: number[] }) {
-  if (values.length < 2) return <p className="text-xs text-zinc-400">Prea puține date pentru grafic.</p>;
+  if (values.length < 2) return <p className="text-xs text-muted">Prea puține date pentru grafic.</p>;
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
@@ -62,24 +62,24 @@ export default async function StatisticiPage() {
         <main
         className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-8">
         <h1 className="text-xl font-bold sm:text-2xl">Statistici</h1>
-        <p className="text-sm text-zinc-500">Rezumat real, bazat pe datele tale din PetWell și Planificator.</p>
+        <p className="text-sm text-muted">Rezumat real, bazat pe datele tale din PetWell și Planificator.</p>
 
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-2xl border p-4">
+          <div className="rounded-2xl border border-card-border p-4">
             <p className="text-2xl font-bold text-primary">{pets?.length ?? 0}</p>
-            <p className="text-xs text-zinc-500">Animale</p>
+            <p className="text-xs text-muted">Animale</p>
           </div>
-          <div className="rounded-2xl border p-4">
+          <div className="rounded-2xl border border-card-border p-4">
             <p className="text-2xl font-bold text-primary">{taskPct}%</p>
-            <p className="text-xs text-zinc-500">Activități bifate</p>
+            <p className="text-xs text-muted">Activități bifate</p>
           </div>
-          <div className="rounded-2xl border p-4">
+          <div className="rounded-2xl border border-card-border p-4">
             <p className="text-2xl font-bold text-primary">{apptConfirmed}/{apptTotal}</p>
-            <p className="text-xs text-zinc-500">Programări confirmate</p>
+            <p className="text-xs text-muted">Programări confirmate</p>
           </div>
-          <div className="rounded-2xl border p-4">
+          <div className="rounded-2xl border border-card-border p-4">
             <p className="text-2xl font-bold text-primary">{medRecords?.length ?? 0}</p>
-            <p className="text-xs text-zinc-500">Evenimente medicale</p>
+            <p className="text-xs text-muted">Evenimente medicale</p>
           </div>
         </div>
 
@@ -89,16 +89,16 @@ export default async function StatisticiPage() {
             <div className="flex flex-col gap-2">
               {Object.entries(recordsByType).map(([type, count]) => (
                 <div key={type} className="flex items-center gap-3 text-sm">
-                  <span className="w-28 shrink-0 text-zinc-600">{type}</span>
-                  <div className="h-3 flex-1 rounded-full bg-zinc-100">
+                  <span className="w-28 shrink-0 text-muted">{type}</span>
+                  <div className="h-3 flex-1 rounded-full bg-surface">
                     <div className="h-3 rounded-full bg-primary" style={{ width: `${(count / maxRecords) * 100}%` }} />
                   </div>
-                  <span className="w-6 text-right text-zinc-500">{count}</span>
+                  <span className="w-6 text-right text-muted">{count}</span>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-zinc-500">Nicio înregistrare medicală încă.</p>
+            <p className="text-sm text-muted">Nicio înregistrare medicală încă.</p>
           )}
         </section>
 
@@ -109,7 +109,7 @@ export default async function StatisticiPage() {
               {pets.map((pet) => {
                 const petWeights = (weights ?? []).filter((w) => w.pet_id === pet.id).map((w) => w.weight_kg);
                 return (
-                  <div key={pet.id} className="rounded-2xl border p-4">
+                  <div key={pet.id} className="rounded-2xl border border-card-border p-4">
                     <p className="mb-2 text-sm font-medium">{pet.name}</p>
                     <Sparkline values={petWeights} />
                   </div>
@@ -117,7 +117,7 @@ export default async function StatisticiPage() {
               })}
             </div>
           ) : (
-            <p className="text-sm text-zinc-500">Adaugă un animal pentru a vedea statistici.</p>
+            <p className="text-sm text-muted">Adaugă un animal pentru a vedea statistici.</p>
           )}
         </section>
       </main>

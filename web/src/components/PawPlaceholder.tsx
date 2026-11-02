@@ -10,8 +10,8 @@ export function PetPlaceholder({ className = "" }: { className?: string }) {
 
 export function ProductPlaceholder({ className = "" }: { className?: string }) {
   return (
-    <div className={`flex items-center justify-center bg-zinc-100 ${className}`}>
-      <BagIcon className="h-1/3 w-1/3 text-zinc-300" />
+    <div className={`flex items-center justify-center bg-surface ${className}`}>
+      <BagIcon className="h-1/3 w-1/3 text-muted" />
     </div>
   );
 }

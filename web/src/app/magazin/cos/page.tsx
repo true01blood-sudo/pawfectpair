@@ -12,7 +12,7 @@ export default function CosPage() {
       <main className="mx-auto w-full max-w-xl flex-1 px-4 py-16 text-center">
         <div className="text-5xl mb-4">🛒</div>
         <p className="text-xl font-semibold mb-2">Coșul tău este gol</p>
-        <p className="text-sm text-zinc-500 mb-6">Adaugă produse din magazin pentru a continua.</p>
+        <p className="text-sm text-muted mb-6">Adaugă produse din magazin pentru a continua.</p>
         <Link href="/magazin" className="rounded-full bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-dark transition-colors">
           Mergi la magazin
         </Link>

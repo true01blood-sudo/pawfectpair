@@ -146,19 +146,19 @@ export default async function Home() {
                   <br />
                   {t.hero.titleEnd.split("\n")[1]}
                 </h1>
-                <p className="mt-4 text-lg text-zinc-500">
+                <p className="mt-4 text-lg text-muted">
                   {t.hero.subtitle}
                 </p>
 
                 {/* Search bar */}
-                <div className="mt-6 flex items-center gap-2 rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm">
-                  <svg className="ml-2 h-5 w-5 shrink-0 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <div className="mt-6 flex items-center gap-2 rounded-2xl border border-card-border bg-card p-2 shadow-sm">
+                  <svg className="ml-2 h-5 w-5 shrink-0 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                   </svg>
                   <input
                     type="text"
                     placeholder={t.hero.searchPlaceholder}
-                    className="flex-1 bg-transparent text-sm text-dark placeholder-zinc-400 outline-none"
+                    className="flex-1 bg-transparent text-sm text-dark placeholder-muted outline-none"
                   />
                   <Link
                     href="/adoptii"
@@ -201,7 +201,7 @@ export default async function Home() {
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-xl">🐶</div>
                         <div>
                           <p className="font-semibold text-dark">Max — Labrador, 2 ani</p>
-                          <p className="text-xs text-zinc-400">Ultima vizită: acum 3 luni</p>
+                          <p className="text-xs text-muted">Ultima vizită: acum 3 luni</p>
                         </div>
                         <span className="ml-auto rounded-full bg-orange-50 px-2 py-0.5 text-xs font-bold text-primary">Reminder</span>
                       </div>
@@ -214,12 +214,12 @@ export default async function Home() {
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-xl">🐱</div>
                         <div>
                           <p className="font-semibold text-dark">Luna — Pisică, 1 an</p>
-                          <p className="text-xs text-zinc-400">GPS activ · acasă</p>
+                          <p className="text-xs text-muted">GPS activ · acasă</p>
                         </div>
                         <span className="ml-auto h-2.5 w-2.5 rounded-full bg-green-500"></span>
                       </div>
                     </div>
-                    <p className="text-center text-xs text-zinc-400">Creează un cont gratuit pentru profilul animalului tău</p>
+                    <p className="text-center text-xs text-muted">Creează un cont gratuit pentru profilul animalului tău</p>
                   </div>
               </div>
             </div>
@@ -326,7 +326,7 @@ export default async function Home() {
                 <div className="mt-4 space-y-3">
                   {[
                     { emoji: "💉", title: "Antirabic", sub: "Urmează în 12 zile", badge: "Reminder", badgeColor: "bg-primary text-white" },
-                    { emoji: "⚖️", title: "Greutate: 28 kg", sub: "+0.5 kg față de luna trecută", badge: "↑ normal", badgeColor: "text-zinc-400" },
+                    { emoji: "⚖️", title: "Greutate: 28 kg", sub: "+0.5 kg față de luna trecută", badge: "↑ normal", badgeColor: "text-muted" },
                     { emoji: "🩺", title: "Control anual", sub: "Vineri, 14:00 — Dr. Ionescu", badge: "Confirmat", badgeColor: "bg-green-50 text-green-700" },
                   ].map((row) => (
                     <div key={row.title} className="flex items-center justify-between rounded-xl px-4 py-3" style={{ background: "var(--surface)" }}>
@@ -342,8 +342,8 @@ export default async function Home() {
                   ))}
                 </div>
                 <div className="mt-4 flex gap-2">
-                  <Link href="/programari" className="flex-1 rounded-xl border py-2.5 text-center text-xs font-semibold text-dark hover:bg-zinc-50 transition-colors" style={{ borderColor: "var(--card-border)" }}>+ Programare</Link>
-                  <Link href="/animale" className="flex-1 rounded-xl border py-2.5 text-center text-xs font-semibold text-dark hover:bg-zinc-50 transition-colors" style={{ borderColor: "var(--card-border)" }}>Fișă completă</Link>
+                  <Link href="/programari" className="flex-1 rounded-xl border py-2.5 text-center text-xs font-semibold text-dark hover:bg-surface transition-colors" style={{ borderColor: "var(--card-border)" }}>+ Programare</Link>
+                  <Link href="/animale" className="flex-1 rounded-xl border py-2.5 text-center text-xs font-semibold text-dark hover:bg-surface transition-colors" style={{ borderColor: "var(--card-border)" }}>Fișă completă</Link>
                 </div>
               </div>
             </div>
@@ -476,7 +476,7 @@ export default async function Home() {
           <div className="rounded-3xl border p-10 text-center" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
             <span className="text-5xl">📱</span>
             <h2 className="font-heading mt-4 text-2xl font-bold text-dark sm:text-3xl">{t.download.title}</h2>
-            <p className="mt-2 text-zinc-500">{t.download.subtitle}</p>
+            <p className="mt-2 text-muted">{t.download.subtitle}</p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a href={ANDROID_APP_URL} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold text-white hover:opacity-90 transition-opacity"

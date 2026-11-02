@@ -132,7 +132,7 @@ export default async function SetariPage() {
                   </div>
                   <div className="relative">
                     <input type="checkbox" defaultChecked className="sr-only peer" />
-                    <div className="w-10 h-6 rounded-full bg-gray-300 peer-checked:bg-primary transition-colors" />
+                    <div className="w-10 h-6 rounded-full bg-card-border peer-checked:bg-primary transition-colors" />
                     <div className="absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform peer-checked:translate-x-4" />
                   </div>
                 </label>

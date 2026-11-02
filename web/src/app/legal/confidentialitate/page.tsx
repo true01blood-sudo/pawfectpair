@@ -9,7 +9,7 @@ export default function ConfidentialitatePage() {
   return (
     <>
       <h1>Politica de confidențialitate</h1>
-      <p className="text-sm text-zinc-500">Ultima actualizare: 25 iulie 2026</p>
+      <p className="text-sm text-muted">Ultima actualizare: 25 iulie 2026</p>
 
       <p>
         Această politică explică ce date colectăm prin PawfectPair, de ce, și
@@ -75,7 +75,7 @@ export default function ConfidentialitatePage() {
       <h2>9. Contact</h2>
       <p>Pentru orice solicitare privind datele tale: contact@pawfectpair.app</p>
 
-      <p className="mt-8 rounded-xl border border-dashed p-4 text-xs text-zinc-500">
+      <p className="mt-8 rounded-xl border border-dashed p-4 text-xs text-muted">
         Notă: acest document este un draft funcțional pentru lansarea
         inițială și nu reprezintă consultanță juridică. Recomandăm
         revizuirea lui de către un specialist în protecția datelor înainte

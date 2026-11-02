@@ -77,7 +77,7 @@ export default async function PetHealthPage({
           <h1 className="text-xl font-bold sm:text-2xl">{pet.name} — fișă medicală</h1>
         </div>
       </div>
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-muted">
         {pet.breed || pet.species}
         {pet.weight_kg ? ` · ${pet.weight_kg} kg` : ""}
       </p>
@@ -99,7 +99,7 @@ export default async function PetHealthPage({
           </select>
           <input name="breed" placeholder="Rasă (opțional)" defaultValue={pet.breed ?? ""} className="min-h-11 rounded-xl border px-3 text-sm" />
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-zinc-500">Data nașterii</label>
+            <label className="text-xs text-muted">Data nașterii</label>
             <input name="birth_date" type="date" defaultValue={pet.birth_date ?? ""} className="min-h-11 rounded-xl border px-3 text-sm" />
           </div>
           <div className="col-span-2 min-w-0 sm:col-span-1">
@@ -145,12 +145,12 @@ export default async function PetHealthPage({
           <ul className="flex flex-wrap gap-2 text-sm">
             {weights.map((w, i) => (
               <li key={i} className="rounded-full border px-3 py-1">
-                {w.weight_kg} kg <span className="text-zinc-400">· {w.logged_at}</span>
+                {w.weight_kg} kg <span className="text-muted">· {w.logged_at}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-zinc-500">Nicio înregistrare de greutate.</p>
+          <p className="text-sm text-muted">Nicio înregistrare de greutate.</p>
         )}
         <form action={addWeightLog.bind(null, id)} className="mt-3 flex gap-2">
           <input
@@ -177,16 +177,16 @@ export default async function PetHealthPage({
                 <p className="font-medium">
                   {typeLabels[r.type] ?? r.type} — {r.title}
                 </p>
-                <p className="text-zinc-500">
+                <p className="text-muted">
                   {r.record_date}
                   {r.next_due_date ? ` · următoarea scadență: ${r.next_due_date}` : ""}
                 </p>
-                {r.notes && <p className="mt-1 text-zinc-600">{r.notes}</p>}
+                {r.notes && <p className="mt-1 text-muted">{r.notes}</p>}
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-zinc-500">Niciun eveniment medical înregistrat.</p>
+          <p className="text-sm text-muted">Niciun eveniment medical înregistrat.</p>
         )}
 
         <form action={addMedicalRecord.bind(null, id)} className="mt-4 flex flex-col gap-3">
@@ -203,11 +203,11 @@ export default async function PetHealthPage({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500">Data</label>
+              <label className="text-xs text-muted">Data</label>
               <input name="record_date" type="date" className="min-h-11 rounded-xl border px-3 text-sm" />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500">Următoarea scadență (opțional)</label>
+              <label className="text-xs text-muted">Următoarea scadență (opțional)</label>
               <input name="next_due_date" type="date" className="min-h-11 rounded-xl border px-3 text-sm" />
             </div>
           </div>

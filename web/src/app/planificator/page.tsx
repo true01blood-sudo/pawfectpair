@@ -45,7 +45,7 @@ export default async function PlanificatorPage() {
         <h1 className="text-xl font-bold sm:text-2xl">Planificator</h1>
 
         {!myPets || myPets.length === 0 ? (
-          <p className="mt-4 text-sm text-zinc-600">
+          <p className="mt-4 text-sm text-muted">
             Adaugă mai întâi un animal în{" "}
             <a href="/profil" className="text-primary underline">profilul tău</a>.
           </p>
@@ -59,7 +59,7 @@ export default async function PlanificatorPage() {
                       <p className="font-medium">
                         {categoryLabels[t.category]} — {t.title}
                       </p>
-                      <p className="text-zinc-500">
+                      <p className="text-muted">
                         {t.pets?.name} · {new Date(t.due_at).toLocaleString("ro-RO")}
                         {t.recurrence !== "none" && ` · repetă ${t.recurrence === "daily" ? "zilnic" : "săptămânal"}`}
                       </p>
@@ -73,7 +73,7 @@ export default async function PlanificatorPage() {
                 ))}
               </ul>
             ) : (
-              <p className="mt-4 text-sm text-zinc-500">Nicio activitate planificată.</p>
+              <p className="mt-4 text-sm text-muted">Nicio activitate planificată.</p>
             )}
 
             <h2 className="mt-8 mb-3 font-semibold">Adaugă activitate</h2>
