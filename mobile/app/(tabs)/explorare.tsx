@@ -210,72 +210,77 @@ export default function ExploreScreen() {
                 description={search.trim() ? 'Încearcă un alt termen de căutare.' : 'Nu sunt încă profiluri publice în această categorie.'}
               />
             ) : (
-              filteredCards.map((p) => (
+              filteredCards.map((p) => {
+                const detailHref = activeCategory.id === 'care' ? `/veterinari/${p.id}` : `/antrenori/${p.id}`;
+                return (
                 <View key={p.id} style={[styles.providerCard, { backgroundColor: s.surface, borderColor: s.border }]}>
-                  <View style={[styles.providerImg, { backgroundColor: s.surfaceAlt }]}>
-                    {p.photoUrl ? (
-                      <Image source={{ uri: p.photoUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-                    ) : (
-                      <Ionicons
-                        name={activeCategory.id === 'care' ? 'medical' : 'school'}
-                        size={30}
-                        color={s.primary}
-                        style={{ opacity: 0.4 }}
-                      />
-                    )}
-                  </View>
-                  <View style={{ padding: 12, gap: 4 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Text style={{ color: s.text, fontSize: 16, fontFamily: theme.typography.fontFamilyBold }}>
-                        {p.name}
-                      </Text>
-                      {p.verified && (
-                        <View style={[styles.verifiedBadge, { backgroundColor: '#22C55E15' }]}>
-                          <Ionicons name="checkmark-circle" size={12} color="#22C55E" />
-                          <Text style={{ color: '#22C55E', fontSize: 11, marginLeft: 3 }}>Verified</Text>
+                  <Pressable onPress={() => router.push(detailHref as any)}>
+                    <View style={[styles.providerImg, { backgroundColor: s.surfaceAlt }]}>
+                      {p.photoUrl ? (
+                        <Image source={{ uri: p.photoUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                      ) : (
+                        <Ionicons
+                          name={activeCategory.id === 'care' ? 'medical' : 'school'}
+                          size={30}
+                          color={s.primary}
+                          style={{ opacity: 0.4 }}
+                        />
+                      )}
+                    </View>
+                    <View style={{ padding: 12, paddingBottom: 0, gap: 4 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={{ color: s.text, fontSize: 16, fontFamily: theme.typography.fontFamilyBold }}>
+                          {p.name}
+                        </Text>
+                        {p.verified && (
+                          <View style={[styles.verifiedBadge, { backgroundColor: '#22C55E15' }]}>
+                            <Ionicons name="checkmark-circle" size={12} color="#22C55E" />
+                            <Text style={{ color: '#22C55E', fontSize: 11, marginLeft: 3 }}>Verified</Text>
+                          </View>
+                        )}
+                      </View>
+                      {p.reviewCount > 0 ? (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                          <Ionicons name="star" size={13} color="#F59E0B" />
+                          <Text style={{ color: s.text, fontSize: 13 }}>{p.rating.toFixed(1)} ({p.reviewCount})</Text>
+                          {p.location && <Text style={{ color: s.textMuted }}>·</Text>}
+                          {p.location && <Text style={{ color: s.textMuted, fontSize: 13 }}>{p.location}</Text>}
+                        </View>
+                      ) : (
+                        p.location && <Text style={{ color: s.textMuted, fontSize: 13 }}>{p.location}</Text>
+                      )}
+                      {p.services.length > 0 && (
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                          {p.services.map((sv) => (
+                            <View key={sv} style={[styles.serviceBadge, { backgroundColor: s.surfaceAlt }]}>
+                              <Text style={{ color: s.textMuted, fontSize: 11 }}>{sv}</Text>
+                            </View>
+                          ))}
                         </View>
                       )}
                     </View>
-                    {p.reviewCount > 0 ? (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <Ionicons name="star" size={13} color="#F59E0B" />
-                        <Text style={{ color: s.text, fontSize: 13 }}>{p.rating.toFixed(1)} ({p.reviewCount})</Text>
-                        {p.location && <Text style={{ color: s.textMuted }}>·</Text>}
-                        {p.location && <Text style={{ color: s.textMuted, fontSize: 13 }}>{p.location}</Text>}
-                      </View>
-                    ) : (
-                      p.location && <Text style={{ color: s.textMuted, fontSize: 13 }}>{p.location}</Text>
-                    )}
-                    {p.services.length > 0 && (
-                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-                        {p.services.map((sv) => (
-                          <View key={sv} style={[styles.serviceBadge, { backgroundColor: s.surfaceAlt }]}>
-                            <Text style={{ color: s.textMuted, fontSize: 11 }}>{sv}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    )}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
-                      {p.price ? (
-                        <Text style={{ color: s.text, fontSize: 14, fontFamily: theme.typography.fontFamilyBold }}>
-                          {p.price}
+                  </Pressable>
+                  <View style={{ paddingHorizontal: 12, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    {p.price ? (
+                      <Text style={{ color: s.text, fontSize: 14, fontFamily: theme.typography.fontFamilyBold }}>
+                        {p.price}
+                      </Text>
+                    ) : <View />}
+                    {p.phone && (
+                      <Pressable
+                        onPress={() => Linking.openURL(`tel:${p.phone}`)}
+                        style={[styles.viewProfileBtn, { backgroundColor: s.primary }]}
+                      >
+                        <Ionicons name="call-outline" size={13} color="#fff" style={{ marginRight: 5 }} />
+                        <Text style={{ color: '#fff', fontSize: 13, fontFamily: theme.typography.fontFamilySemibold }}>
+                          Call
                         </Text>
-                      ) : <View />}
-                      {p.phone && (
-                        <Pressable
-                          onPress={() => Linking.openURL(`tel:${p.phone}`)}
-                          style={[styles.viewProfileBtn, { backgroundColor: s.primary }]}
-                        >
-                          <Ionicons name="call-outline" size={13} color="#fff" style={{ marginRight: 5 }} />
-                          <Text style={{ color: '#fff', fontSize: 13, fontFamily: theme.typography.fontFamilySemibold }}>
-                            Call
-                          </Text>
-                        </Pressable>
-                      )}
-                    </View>
+                      </Pressable>
+                    )}
                   </View>
                 </View>
-              ))
+                );
+              })
             )}
           </View>
         )}

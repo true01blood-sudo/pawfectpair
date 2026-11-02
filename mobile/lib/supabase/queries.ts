@@ -2560,6 +2560,14 @@ export const queries = {
   fetchBreedingListings,
   // Explore — Vets
   fetchVets,
+  // Vet detail + booking
+  fetchVetDetail,
+  fetchVetServicesFull,
+  fetchVetReviewsFull,
+  submitVetReview,
+  bookVetAppointment,
+  // Trainer detail
+  fetchTrainerDetail,
 };
 
 // ============================================================
@@ -2664,4 +2672,113 @@ export async function fetchVets(filters: { city?: string } = {}, limit = 50): Pr
       reviewCount: ratings.length,
     };
   });
+}
+
+// ============================================================
+// Vet detail + booking (ecran de detaliu + programare)
+// ============================================================
+
+export interface VetDetail {
+  id: string;
+  user_id: string | null;
+  clinic_name: string;
+  city: string | null;
+  address: string | null;
+  phone: string | null;
+  bio: string | null;
+  photo_url: string | null;
+  photos: string[];
+  is_licensed: boolean;
+  experienced_team: boolean;
+  modern_facility: boolean;
+}
+
+export interface VetService {
+  id: string;
+  name: string;
+  duration_minutes: number | null;
+  price_cents: number;
+  currency: string;
+}
+
+export interface VetReview {
+  user_id: string;
+  rating: number;
+  comment: string | null;
+  profiles: { full_name: string | null } | null;
+}
+
+export async function fetchVetDetail(id: string): Promise<VetDetail | null> {
+  const { data, error } = await supabase
+    .from('vets')
+    .select('id, user_id, clinic_name, city, address, phone, bio, photo_url, photos, is_licensed, experienced_team, modern_facility')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data as VetDetail | null;
+}
+
+export async function fetchVetServicesFull(vetId: string): Promise<VetService[]> {
+  const { data, error } = await supabase
+    .from('vet_services')
+    .select('id, name, duration_minutes, price_cents, currency')
+    .eq('vet_id', vetId)
+    .order('price_cents', { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as VetService[];
+}
+
+export async function fetchVetReviewsFull(vetId: string): Promise<VetReview[]> {
+  const { data, error } = await supabase
+    .from('vet_reviews')
+    .select('user_id, rating, comment, profiles(full_name)')
+    .eq('vet_id', vetId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as VetReview[];
+}
+
+export async function submitVetReview(
+  vetId: string,
+  userId: string,
+  rating: number,
+  comment: string | null
+): Promise<void> {
+  const { error } = await supabase
+    .from('vet_reviews')
+    .upsert({ vet_id: vetId, user_id: userId, rating, comment }, { onConflict: 'vet_id,user_id' });
+  if (error) throw error;
+}
+
+export interface BookVetAppointmentInput {
+  vet_id: string;
+  pet_id: string;
+  owner_id: string;
+  starts_at: string;
+  reason: string | null;
+  service_id: string | null;
+}
+
+export async function bookVetAppointment(input: BookVetAppointmentInput): Promise<{ id: string }> {
+  const { data, error } = await supabase
+    .from('vet_appointments')
+    .insert(input)
+    .select('id')
+    .single();
+  if (error) throw error;
+  return data as { id: string };
+}
+
+// ============================================================
+// Trainer detail (edu_trainers) — ecran de detaliu
+// ============================================================
+
+export async function fetchTrainerDetail(id: string): Promise<Trainer | null> {
+  const { data, error } = await supabase
+    .from('edu_trainers')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data as Trainer | null;
 }
