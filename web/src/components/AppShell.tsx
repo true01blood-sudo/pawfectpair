@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import AppSidebar from "@/components/AppSidebar";
 import AppHeader from "@/components/AppHeader";
 import HomePetWidget from "@/components/HomePetWidget";
@@ -10,7 +10,7 @@ type Props = {
 
 export default async function AppShell({ children, mainClassName }: Props) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
 
   // Fara autentificare: afisam doar continutul (header-ul public din layout.tsx e vizibil)
   if (!user) {
