@@ -37,13 +37,6 @@ export default async function Home() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: listings } = await supabase
-    .from("adoption_listings")
-    .select("id, name, species, breed, city, photo_url")
-    .eq("status", "available")
-    .order("created_at", { ascending: false })
-    .limit(6);
-
   // ── AppShell layout for authenticated users ──
   if (user) {
     const userName = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? "tu";
@@ -60,22 +53,14 @@ export default async function Home() {
       .order("created_at", { ascending: false })
       .limit(20);
 
-    // Fetch reaction counts for fetched posts
+    // Reactii + comentarii — independente intre ele, pornite in paralel
     const postIds = (rawPosts ?? []).map((p) => p.id as string);
-    const { data: reactions } = postIds.length
-      ? await supabase
-          .from("social_post_reactions")
-          .select("post_id, reaction, user_id")
-          .in("post_id", postIds)
-      : { data: [] };
-
-    // Fetch comment counts
-    const { data: commentRows } = postIds.length
-      ? await supabase
-          .from("social_post_comments")
-          .select("post_id")
-          .in("post_id", postIds)
-      : { data: [] };
+    const [{ data: reactions }, { data: commentRows }] = postIds.length
+      ? await Promise.all([
+          supabase.from("social_post_reactions").select("post_id, reaction, user_id").in("post_id", postIds),
+          supabase.from("social_post_comments").select("post_id").in("post_id", postIds),
+        ])
+      : [{ data: [] }, { data: [] }];
 
     // Aggregate counts
     const reactionMap: Record<string, Record<string, number>> = {};
@@ -129,6 +114,13 @@ export default async function Home() {
       </>
     );
   }
+
+  const { data: listings } = await supabase
+    .from("adoption_listings")
+    .select("id, name, species, breed, city, photo_url")
+    .eq("status", "available")
+    .order("created_at", { ascending: false })
+    .limit(6);
 
   return (
     <>

@@ -462,7 +462,7 @@ export async function fetchConversations(userId: string): Promise<Conversation[]
       pet_a:pets!matches_pet_a_id_fkey(id, name, photo_url, species, owner_id),
       pet_b:pets!matches_pet_b_id_fkey(id, name, photo_url, species, owner_id)
     `)
-    .or(`pet_a.owner_id.eq.${userId},pet_b.owner_id.eq.${userId}`)
+    .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`)
     .order('created_at', { ascending: false });
   if (error) throw error;
 
