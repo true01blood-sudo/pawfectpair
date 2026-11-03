@@ -12,17 +12,13 @@ export default async function VetDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: vet } = await supabase
-    .from("vets")
-    .select("*")
-    .eq("id", id)
-    .single();
+  // Cabinetul si userul curent nu depind unul de altul — pornite in paralel
+  const [{ data: vet }, { data: { user } }] = await Promise.all([
+    supabase.from("vets").select("*").eq("id", id).single(),
+    supabase.auth.getUser(),
+  ]);
 
   if (!vet) notFound();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   const [{ data: myPets }, { data: reviews }, { data: services }] = await Promise.all([
     user

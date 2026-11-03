@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
@@ -68,8 +69,9 @@ export default async function AdoptiiPage({
                 className="card-hover rounded-2xl border border-card-border bg-card p-3 shadow-sm hover:border-primary"
               >
                 {pet.photo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={pet.photo_url} alt={pet.name} className="mb-2 aspect-square w-full rounded-xl object-cover" />
+                  <div className="relative mb-2 aspect-square w-full overflow-hidden rounded-xl">
+                    <Image src={pet.photo_url} alt={pet.name} fill sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw" className="object-cover" />
+                  </div>
                 ) : (
                   <PetPlaceholder className="mb-2 aspect-square w-full rounded-xl" />
                 )}

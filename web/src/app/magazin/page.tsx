@@ -13,29 +13,33 @@ export const metadata: Metadata = {
 
 export default async function MagazinPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: profile } = user
-    ? await supabase.from("profiles").select("role").eq("id", user.id).single()
-    : { data: null };
+  // Userul si lista de produse nu depind unul de altul — pornite in paralel
+  const [{ data: { user } }, { data: products }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
+      .from("products")
+      .select("id, name, price_cents, currency, photo_url, category, delivery_info, species_tags, stock, profiles(full_name)")
+      .eq("status", "active")
+      .order("created_at", { ascending: false }),
+  ]);
 
-  // Fetch user's first pet for "For Luna" filter
-  const { data: pet } = user
-    ? await supabase
-        .from("pets")
-        .select("name, species")
-        .eq("owner_id", user.id)
-        .eq("is_active", true)
-        .order("created_at", { ascending: true })
-        .limit(1)
-        .maybeSingle()
-    : { data: null };
-
-  const { data: products } = await supabase
-    .from("products")
-    .select("id, name, price_cents, currency, photo_url, category, delivery_info, species_tags, stock, profiles(full_name)")
-    .eq("status", "active")
-    .order("created_at", { ascending: false });
+  // profile + pet depind de user.id, dar nu una de cealalta — tot paralel
+  const [{ data: profile }, { data: pet }] = await Promise.all([
+    user
+      ? supabase.from("profiles").select("role").eq("id", user.id).single()
+      : Promise.resolve({ data: null }),
+    user
+      ? supabase
+          .from("pets")
+          .select("name, species")
+          .eq("owner_id", user.id)
+          .eq("is_active", true)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
 
   const mappedProducts = (products ?? []).map((p) => ({
     id: p.id as string,

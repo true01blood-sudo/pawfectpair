@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { StarsDisplay, StarsInput } from "@/components/Stars";
 import { submitBreedingReview } from "../actions";
 
@@ -103,8 +104,7 @@ export default function BreedingDetailClient({ listing, owner, reviews, currentU
         style={{ aspectRatio: "4/3", background: "linear-gradient(135deg, #fff7ed 0%, #fde8d0 100%)" }}
       >
         {gallery.length > 0 ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={gallery[0]} alt={title} className="w-full h-full object-cover" />
+          <Image src={gallery[0]} alt={title} fill sizes="(max-width: 640px) 100vw, 576px" className="object-cover" priority />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-8xl">{speciesEmoji}</div>
         )}

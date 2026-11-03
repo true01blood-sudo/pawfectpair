@@ -30,15 +30,13 @@ export default async function AdoptieDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: listing } = await supabase
-    .from("adoption_listings")
-    .select("*")
-    .eq("id", id)
-    .single();
+  // Anuntul si userul curent nu depind unul de altul — pornite in paralel
+  const [{ data: listing }, { data: { user } }] = await Promise.all([
+    supabase.from("adoption_listings").select("*").eq("id", id).single(),
+    supabase.auth.getUser(),
+  ]);
 
   if (!listing) notFound();
-
-  const { data: { user } } = await supabase.auth.getUser();
 
   const isOwner = user?.id === listing.posted_by;
 

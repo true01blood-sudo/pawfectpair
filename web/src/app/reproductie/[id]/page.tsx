@@ -30,29 +30,24 @@ export default async function BreedingDetailPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: listing } = await supabase
-    .from("breeding_listings")
-    .select("*")
-    .eq("id", id)
-    .eq("status", "active")
-    .single();
+  // Anuntul si userul curent nu depind unul de altul — pornite in paralel
+  const [{ data: listing }, { data: { user } }] = await Promise.all([
+    supabase.from("breeding_listings").select("*").eq("id", id).eq("status", "active").single(),
+    supabase.auth.getUser(),
+  ]);
 
   if (!listing) notFound();
 
-  // Fetch owner profile
-  const { data: owner } = await supabase
-    .from("profiles")
-    .select("full_name, avatar_url, is_verified")
-    .eq("id", listing.owner_id)
-    .single();
-
-  const { data: reviews } = await supabase
-    .from("breeding_reviews")
-    .select("user_id, rating, comment, created_at, profiles(full_name)")
-    .eq("listing_id", id)
-    .order("created_at", { ascending: false });
+  // Profilul proprietarului si recenziile nu depind unul de altul — paralel
+  const [{ data: owner }, { data: reviews }] = await Promise.all([
+    supabase.from("profiles").select("full_name, avatar_url, is_verified").eq("id", listing.owner_id).single(),
+    supabase
+      .from("breeding_reviews")
+      .select("user_id, rating, comment, created_at, profiles(full_name)")
+      .eq("listing_id", id)
+      .order("created_at", { ascending: false }),
+  ]);
 
   return (
     <>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import AppShell from "@/components/AppShell";
@@ -34,7 +35,6 @@ export default async function ReproductiePage({
 }) {
   const { specie, rasa, gen } = await searchParams;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
   let query = supabase
     .from("breeding_listings")
@@ -46,9 +46,12 @@ export default async function ReproductiePage({
   if (rasa) query = query.ilike("breed", `%${rasa}%`);
   if (gen) query = query.eq("gender", gen);
 
-  const { data: listings } = await query;
-
-  const { data: reviews } = await supabase.from("breeding_reviews").select("listing_id, rating");
+  // Userul, anunturile si recenziile nu depind una de alta — pornite in paralel
+  const [{ data: { user } }, { data: listings }, { data: reviews }] = await Promise.all([
+    supabase.auth.getUser(),
+    query,
+    supabase.from("breeding_reviews").select("listing_id, rating"),
+  ]);
   const ratingByListing = new Map<string, number[]>();
   reviews?.forEach((r) => {
     const arr = ratingByListing.get(r.listing_id) ?? [];
@@ -205,8 +208,7 @@ export default async function ReproductiePage({
                       style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fde8d0 100%)" }}
                     >
                       {listing.photo_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={listing.photo_url} alt={listing.title} className="h-full w-full object-cover" />
+                        <Image src={listing.photo_url} alt={listing.title} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
                       ) : (
                         <span className="text-7xl">{speciesEmoji(listing.species)}</span>
                       )}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ProductPlaceholder } from "@/components/PawPlaceholder";
 import { useCart } from "@/components/CartContext";
 
@@ -188,8 +189,7 @@ export default function MagazinClient({ products, petName, petSpecies, isLoggedI
                 <Link href={`/magazin/${p.id}`}>
                   <div className="relative aspect-square w-full overflow-hidden">
                     {p.photo_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.photo_url} alt={p.name} className="h-full w-full object-cover" />
+                      <Image src={p.photo_url} alt={p.name} fill sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw" className="object-cover" />
                     ) : (
                       <ProductPlaceholder className="h-full w-full" />
                     )}

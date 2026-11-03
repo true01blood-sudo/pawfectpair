@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { placeOrder } from "../actions";
 import BackLink from "@/components/BackLink";
@@ -13,26 +14,21 @@ export default async function ProdusDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: product } = await supabase
-    .from("products")
-    .select("*, profiles(full_name)")
-    .eq("id", id)
-    .single();
+  // Produsul si userul curent nu depind unul de altul — pornite in paralel
+  const [{ data: product }, { data: { user } }] = await Promise.all([
+    supabase.from("products").select("*, profiles(full_name)").eq("id", id).single(),
+    supabase.auth.getUser(),
+  ]);
   if (!product) notFound();
 
   const seller = product.profiles as unknown as { full_name: string } | null;
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
       <BackLink href="/magazin" label="Magazin" />
       {product.photo_url ? (
-        <div className="aspect-square w-full overflow-hidden rounded-2xl">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={product.photo_url} alt={product.name} className="h-full w-full object-cover" />
+        <div className="relative aspect-square w-full overflow-hidden rounded-2xl">
+          <Image src={product.photo_url} alt={product.name} fill sizes="(max-width: 640px) 100vw, 576px" className="object-cover" />
         </div>
       ) : (
         <ProductPlaceholder className="aspect-square w-full rounded-2xl" />

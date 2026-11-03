@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { applyToListing } from "./actions";
 
 type Listing = {
@@ -115,11 +116,13 @@ export default function AdoptiiDetailClient({ listing, isLoggedIn, isOwner, myAp
         }}
       >
         {photos[activePhoto] ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={photos[activePhoto]}
             alt={listing.name}
-            className="w-full h-full object-cover"
+            fill
+            sizes="(max-width: 640px) 100vw, 576px"
+            className="object-cover"
+            priority
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-8xl">

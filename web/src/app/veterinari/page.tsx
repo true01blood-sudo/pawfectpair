@@ -13,18 +13,18 @@ export default async function VeterinariPage({
 }) {
   const { oras } = await searchParams;
   const supabase = await createClient();
-  const { data: allVets } = await supabase
-    .from("vets")
-    .select("id, clinic_name, city, address, phone, bio")
-    .order("created_at", { ascending: false });
+
+  // Cabinetele si recenziile nu depind unele de altele — pornite in paralel
+  const [{ data: allVets }, { data: allReviews }] = await Promise.all([
+    supabase.from("vets").select("id, clinic_name, city, address, phone, bio").order("created_at", { ascending: false }),
+    supabase.from("vet_reviews").select("vet_id, rating"),
+  ]);
 
   const cities = Array.from(
     new Set((allVets ?? []).map((v) => v.city).filter((c): c is string => Boolean(c)))
   ).sort();
 
   const vets = oras ? (allVets ?? []).filter((v) => v.city === oras) : allVets;
-
-  const { data: allReviews } = await supabase.from("vet_reviews").select("vet_id, rating");
   const ratingsByVet = new Map<string, number[]>();
   allReviews?.forEach((r) => {
     const arr = ratingsByVet.get(r.vet_id) ?? [];

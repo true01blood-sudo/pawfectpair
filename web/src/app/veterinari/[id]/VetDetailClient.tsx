@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { StarsDisplay, StarsInput } from "@/components/Stars";
 import { submitReview } from "../actions";
 
@@ -60,8 +61,7 @@ export default function VetDetailClient({ vet, services, reviews, myPets, isOwne
         style={{ aspectRatio: "4/3", background: "linear-gradient(135deg, #f0faf4 0%, #d8f3e4 100%)" }}
       >
         {gallery.length > 0 ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={gallery[0]} alt={clinicName} className="w-full h-full object-cover" />
+          <Image src={gallery[0]} alt={clinicName} fill sizes="(max-width: 640px) 100vw, 672px" className="object-cover" priority />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-7xl">🏥</div>
         )}
