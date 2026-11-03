@@ -323,11 +323,14 @@ export async function fetchUpcomingRecords(
 }
 
 export async function createMedicalRecord(
-  input: MedicalRecordInput
+  input: MedicalRecordInput,
+  createdBy: string
 ): Promise<MedicalRecord> {
   if (!isValidUuid(input.pet_id)) throw new Error('ID animal invalid');
+  if (!isValidUuid(createdBy)) throw new Error('ID utilizator invalid');
   const safe = {
     ...input,
+    created_by: createdBy,
     title: sanitizeText(input.title, 120),
     notes: input.notes ? sanitizeText(input.notes, 2000) : null,
   };

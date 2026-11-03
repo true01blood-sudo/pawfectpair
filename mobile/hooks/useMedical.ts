@@ -30,8 +30,12 @@ export function useUpcomingRecords() {
 
 export function useCreateMedicalRecord() {
   const qc = useQueryClient();
+  const user = useAuthStore((s) => s.user);
   return useMutation({
-    mutationFn: (input: MedicalRecordInput) => queries.createMedicalRecord(input),
+    mutationFn: (input: MedicalRecordInput) => {
+      if (!user) throw new Error('Nu ești autentificat');
+      return queries.createMedicalRecord(input, user.id);
+    },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: MEDICAL_KEY(data.pet_id) });
       qc.invalidateQueries({ queryKey: ['medical', 'upcoming'] });
