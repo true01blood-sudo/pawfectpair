@@ -16,6 +16,7 @@ import { Card } from '../../components/ui';
 import { useMyPets, useUpcomingRecords, useEduArticles } from '../../hooks';
 import { useProfile } from '../../hooks/useProfile';
 import { useEvents, useSetEventRsvp, useMyRsvps } from '../../hooks/useEvents';
+import { ModulesQuickGrid } from '../../components/module/ModulesQuickGrid';
 import { useUnreadNotificationsCount } from '../../hooks/useNotifications';
 import { useAuthStore } from '../../store/auth.store';
 import { MEDICAL_TYPE_LABELS } from '@pawfectpair/shared';
@@ -150,6 +151,16 @@ export default function HomeScreen() {
           <Text style={{ color: s.textMuted, fontSize: 14, marginTop: 2 }}>
             Local stories, events and tips for happier pets.
           </Text>
+        </View>
+
+        {/* ── Toate modulele — acces direct, organic (nu mai doar din Explorare) ── */}
+        <View style={{ marginTop: sp.lg, paddingHorizontal: sp.lg }}>
+          <Text style={{ color: s.text, fontSize: 15, fontFamily: theme.typography.fontFamilyBold, marginBottom: 4 }}>
+            Toate modulele
+          </Text>
+          <View style={[styles.modulesCard, { backgroundColor: s.surface, borderColor: s.border }]}>
+            <ModulesQuickGrid />
+          </View>
         </View>
 
         {/* ── Pet avatar row ── */}
@@ -395,6 +406,12 @@ const styles = StyleSheet.create({
     height: 9,
     borderRadius: 5,
     borderWidth: 1.5,
+  },
+  modulesCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
   },
   petAvatar: {
     width: 56,
