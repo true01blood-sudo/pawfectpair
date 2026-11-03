@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
 import BottomNav from "@/components/BottomNav";
 import AdoptiiDetailClient from "./AdoptiiDetailClient";
@@ -31,9 +31,9 @@ export default async function AdoptieDetailPage({
   const supabase = await createClient();
 
   // Anuntul si userul curent nu depind unul de altul — pornite in paralel
-  const [{ data: listing }, { data: { user } }] = await Promise.all([
+  const [{ data: listing }, user] = await Promise.all([
     supabase.from("adoption_listings").select("*").eq("id", id).single(),
-    supabase.auth.getUser(),
+    getUser(),
   ]);
 
   if (!listing) notFound();

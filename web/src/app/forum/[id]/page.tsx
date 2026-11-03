@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { addComment } from "../actions";
 import BackLink from "@/components/BackLink";
 import AppShell from "@/components/AppShell";
@@ -26,9 +26,7 @@ export default async function ForumPostPage({
     .eq("post_id", id)
     .order("created_at", { ascending: true });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   const author = post.profiles as unknown as { full_name: string } | null;
 

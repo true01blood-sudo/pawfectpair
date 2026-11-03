@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { createBreedingListing } from "../actions";
 import BackLink from "@/components/BackLink";
 import AppShell from "@/components/AppShell";
@@ -11,9 +11,7 @@ const inputStyle = { borderColor: "var(--card-border)", background: "var(--card-
 
 export default async function AdaugaReproductiePage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
 
   return (

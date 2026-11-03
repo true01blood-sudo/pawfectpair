@@ -1,5 +1,5 @@
 import { redirect, notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
 import BottomNav from "@/components/BottomNav";
 import BookingWizard from "./BookingWizard";
@@ -14,9 +14,7 @@ export default async function RezervaPage({
   const { id } = await params;
   const { serviciu } = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
 
   const { data: vet } = await supabase.from("vets").select("id, clinic_name").eq("id", id).single();

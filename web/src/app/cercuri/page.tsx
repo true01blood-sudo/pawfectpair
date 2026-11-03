@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import AppShell from "@/components/AppShell";
 import { joinCircle, leaveCircle } from "./actions";
@@ -44,7 +44,7 @@ export default async function CercuriPage({
 }) {
   const { tip, specie } = await searchParams;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
 
   let query = supabase
     .from("circles")

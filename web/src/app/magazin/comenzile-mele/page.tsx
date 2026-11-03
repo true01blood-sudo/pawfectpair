@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import BackLink from "@/components/BackLink";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -31,9 +31,7 @@ export default async function ComenzilemMelePage({
   searchParams: Promise<{ comanda?: string }>;
 }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
 
   const { comanda } = await searchParams;

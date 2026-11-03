@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { reportCase } from "../actions";
 
 export default async function ResqNouPage({
@@ -8,9 +8,7 @@ export default async function ResqNouPage({
   searchParams: Promise<{ pet?: string }>;
 }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
 
   const { pet: petIdParam } = await searchParams;

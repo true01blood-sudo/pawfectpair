@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import Breadcrumb from "@/components/Breadcrumb";
 import { cancelPetEvent, deletePetEvent } from "../actions";
 
@@ -15,9 +15,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 export default async function AdminEvenimentePage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();

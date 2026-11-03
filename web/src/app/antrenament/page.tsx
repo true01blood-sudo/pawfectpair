@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import AppShell from "@/components/AppShell";
 
@@ -29,7 +29,7 @@ const SPECIALTY_EMOJI: Record<string, string> = {
 
 export default async function AntrenamentPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
 
   const { data: trainers } = await supabase
     .from("edu_trainers")

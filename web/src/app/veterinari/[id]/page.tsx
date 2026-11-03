@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
 import BottomNav from "@/components/BottomNav";
 import VetDetailClient from "./VetDetailClient";
@@ -13,9 +13,9 @@ export default async function VetDetailPage({
   const supabase = await createClient();
 
   // Cabinetul si userul curent nu depind unul de altul — pornite in paralel
-  const [{ data: vet }, { data: { user } }] = await Promise.all([
+  const [{ data: vet }, user] = await Promise.all([
     supabase.from("vets").select("*").eq("id", id).single(),
-    supabase.auth.getUser(),
+    getUser(),
   ]);
 
   if (!vet) notFound();

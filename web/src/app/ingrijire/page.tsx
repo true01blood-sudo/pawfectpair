@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
 import BottomNav from "@/components/BottomNav";
 
@@ -75,7 +75,7 @@ function formatDueDate(dueAt: string): { label: string; overdue: boolean } {
 
 export default async function IngrijirePage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
 
   const { data: upcomingTasks } = await supabase

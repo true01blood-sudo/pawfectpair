@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { swipePet } from "./actions";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
@@ -15,9 +15,7 @@ export default async function ComunitatePage({
   searchParams: Promise<{ pet?: string; specie?: string; sex?: string }>;
 }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
 
   const { data: myPets } = await supabase

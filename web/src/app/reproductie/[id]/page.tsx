@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
 import BottomNav from "@/components/BottomNav";
 import BreedingDetailClient from "./BreedingDetailClient";
@@ -32,9 +32,9 @@ export default async function BreedingDetailPage({
   const supabase = await createClient();
 
   // Anuntul si userul curent nu depind unul de altul — pornite in paralel
-  const [{ data: listing }, { data: { user } }] = await Promise.all([
+  const [{ data: listing }, user] = await Promise.all([
     supabase.from("breeding_listings").select("*").eq("id", id).eq("status", "active").single(),
-    supabase.auth.getUser(),
+    getUser(),
   ]);
 
   if (!listing) notFound();

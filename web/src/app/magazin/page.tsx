@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { becomeSeller } from "./actions";
 import AppShell from "@/components/AppShell";
@@ -15,8 +15,8 @@ export default async function MagazinPage() {
   const supabase = await createClient();
 
   // Userul si lista de produse nu depind unul de altul — pornite in paralel
-  const [{ data: { user } }, { data: products }] = await Promise.all([
-    supabase.auth.getUser(),
+  const [user, { data: products }] = await Promise.all([
+    getUser(),
     supabase
       .from("products")
       .select("id, name, price_cents, currency, photo_url, category, delivery_info, species_tags, stock, profiles(full_name)")

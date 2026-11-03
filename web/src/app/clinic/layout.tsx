@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import ClinicSidebar from "@/components/ClinicSidebar";
 import AppHeader from "@/components/AppHeader";
 
 export default async function ClinicLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
 
   const userName = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? "";

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { setAppointmentStatus, setTrainerBookingStatus } from "./actions";
 import AppShell from "@/components/AppShell";
@@ -51,9 +51,7 @@ type TrainerBookingRow = {
 
 export default async function ProgramariPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
 
   const { data: myAppointments } = await supabase

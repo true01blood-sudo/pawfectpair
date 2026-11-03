@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { submitPensiuneReview, createBooking } from "../actions";
 import BackLink from "@/components/BackLink";
 import { StarsDisplay, StarsInput } from "@/components/Stars";
@@ -50,9 +50,7 @@ export default async function PensiuneDetailPage({
 
   if (!listing) notFound();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   const { data: myPets } = user
     ? await supabase.from("pets").select("id, name").eq("owner_id", user.id)

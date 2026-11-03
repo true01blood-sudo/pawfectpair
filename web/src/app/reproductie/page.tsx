@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import AppShell from "@/components/AppShell";
 import { StarsDisplay } from "@/components/Stars";
@@ -47,8 +47,8 @@ export default async function ReproductiePage({
   if (gen) query = query.eq("gender", gen);
 
   // Userul, anunturile si recenziile nu depind una de alta — pornite in paralel
-  const [{ data: { user } }, { data: listings }, { data: reviews }] = await Promise.all([
-    supabase.auth.getUser(),
+  const [user, { data: listings }, { data: reviews }] = await Promise.all([
+    getUser(),
     query,
     supabase.from("breeding_reviews").select("listing_id, rating"),
   ]);

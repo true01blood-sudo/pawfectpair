@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { placeOrder } from "../actions";
 import BackLink from "@/components/BackLink";
 import { ProductPlaceholder } from "@/components/PawPlaceholder";
@@ -15,9 +15,9 @@ export default async function ProdusDetailPage({
   const supabase = await createClient();
 
   // Produsul si userul curent nu depind unul de altul — pornite in paralel
-  const [{ data: product }, { data: { user } }] = await Promise.all([
+  const [{ data: product }, user] = await Promise.all([
     supabase.from("products").select("*, profiles(full_name)").eq("id", id).single(),
-    supabase.auth.getUser(),
+    getUser(),
   ]);
   if (!product) notFound();
 

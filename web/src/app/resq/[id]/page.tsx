@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
 import { resolveCase } from "../actions";
 import BackLink from "@/components/BackLink";
@@ -17,9 +17,7 @@ export default async function ResqDetailPage({
   const { data: c } = await supabase.from("resq_cases").select("*").eq("id", id).single();
   if (!c) notFound();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   const isOwner = user?.id === c.reporter_id;
 
   return (

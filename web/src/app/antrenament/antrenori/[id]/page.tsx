@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
 import BottomNav from "@/components/BottomNav";
 import TrainerDetailClient from "./TrainerDetailClient";
@@ -21,9 +21,7 @@ export default async function TrainerDetailPage({
 
   if (!trainer) notFound();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   const { data: myPets } = user
     ? await supabase.from("pets").select("id, name, photo_url").eq("owner_id", user.id)

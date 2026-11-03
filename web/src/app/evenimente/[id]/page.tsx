@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { setRsvp } from "../actions";
 import BackLink from "@/components/BackLink";
 import AppShell from "@/components/AppShell";
@@ -31,9 +31,7 @@ export default async function EventDetailPage({
 
   if (!event) notFound();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   const { data: rsvps } = await supabase
     .from("event_participants")

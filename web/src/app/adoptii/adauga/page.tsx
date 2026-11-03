@@ -1,14 +1,12 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { createListing } from "./actions";
 import ImageUpload from "@/components/ImageUpload";
 import { SPECIES_OPTIONS } from "@/lib/species";
 
 export default async function AdaugaAdoptiePage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) {
     redirect("/login");

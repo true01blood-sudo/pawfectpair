@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
 import BottomNav from "@/components/BottomNav";
 import BackLink from "@/components/BackLink";
@@ -14,9 +14,7 @@ const POLICY_TYPES = [
 
 export default async function AdaugaPolitaPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
 
   const { data: pets } = await supabase.from("pets").select("id, name").eq("owner_id", user.id);

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import Breadcrumb from "@/components/Breadcrumb";
 import {
   updateListingStatus, deleteListing, deleteForumPost, updateResqStatus, deleteResqCase,
@@ -18,7 +18,7 @@ const statusLabels: Record<string, { label: string; color: string }> = {
 
 export default async function AdminContinutPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "admin") redirect("/");

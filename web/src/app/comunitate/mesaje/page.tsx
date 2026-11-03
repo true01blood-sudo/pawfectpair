@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
 import AppShell from "@/components/AppShell";
 import BottomNav from "@/components/BottomNav";
@@ -20,7 +20,7 @@ function relativeTime(iso: string): string {
 
 export default async function MesajePage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
 
   const { data: matches } = await supabase
