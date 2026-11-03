@@ -49,16 +49,26 @@ function parseArgs() {
   };
 }
 
-/** Citeste SUPABASE_DB_URL din web/.env.local, fara sa depinda de shell env. */
+/**
+ * Citeste conexiunea Postgres din web/.env.local, fara sa depinda de shell env.
+ * Preferam POOLER_URL — hostul direct (db.<ref>.supabase.co) rezolva deseori
+ * doar pe IPv6, ceea ce pica cu ENOTFOUND pe multe retele/Windows; pooler-ul
+ * (PgBouncer, aws-0-<regiune>.pooler.supabase.com) e IPv4-compatibil.
+ */
 function loadDbUrl() {
+  if (process.env.SUPABASE_DB_POOLER_URL) return process.env.SUPABASE_DB_POOLER_URL;
   if (process.env.SUPABASE_DB_URL) return process.env.SUPABASE_DB_URL;
+
   const envPath = path.join(__dirname, "..", "..", "web", ".env.local");
   const text = fs.readFileSync(envPath, "utf8");
+  const values = {};
   for (const line of text.split("\n")) {
-    const m = line.match(/^SUPABASE_DB_URL\s*=\s*(.+)\s*$/);
-    if (m) return m[1].trim().replace(/^["']|["']$/g, "");
+    const m = line.match(/^(SUPABASE_DB_POOLER_URL|SUPABASE_DB_URL)\s*=\s*(.+)\s*$/);
+    if (m) values[m[1]] = m[2].trim().replace(/^["']|["']$/g, "");
   }
-  throw new Error(`SUPABASE_DB_URL nu a fost gasit in ${envPath}`);
+  const url = values.SUPABASE_DB_POOLER_URL || values.SUPABASE_DB_URL;
+  if (!url) throw new Error(`SUPABASE_DB_POOLER_URL / SUPABASE_DB_URL nu au fost gasite in ${envPath}`);
+  return url;
 }
 
 async function sleep(ms) {
