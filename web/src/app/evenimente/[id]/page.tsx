@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { setRsvp } from "../actions";
 import BackLink from "@/components/BackLink";
@@ -52,8 +53,9 @@ export default async function EventDetailPage({
           <BackLink href="/evenimente" label="Evenimente" />
 
           {event.photo_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={event.photo_url} alt={event.title} className="mt-3 h-48 w-full rounded-2xl object-cover" />
+            <div className="relative mt-3 h-48 w-full overflow-hidden rounded-2xl">
+              <Image src={event.photo_url} alt={event.title} fill sizes="(max-width: 640px) 100vw, 640px" className="object-cover" />
+            </div>
           )}
 
           <div className="mt-4 flex items-center gap-2 flex-wrap">

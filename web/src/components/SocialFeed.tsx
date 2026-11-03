@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useState } from "react";
 import { toggleReaction, createPost } from "@/app/social-actions";
 
@@ -165,8 +166,7 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
           style={{ background: "linear-gradient(135deg, #e8f4ea 0%, #c8ddc9 100%)", aspectRatio: "16/9" }}
         >
           {post.mediaUrl && post.mediaType === "image" ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={post.mediaUrl} alt="" className="h-full w-full object-cover" />
+            <Image src={post.mediaUrl} alt="" fill sizes="(max-width: 640px) 100vw, 600px" className="object-cover" />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-7xl opacity-40">🐕</div>

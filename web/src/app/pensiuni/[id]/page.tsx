@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { submitPensiuneReview, createBooking } from "../actions";
 import BackLink from "@/components/BackLink";
@@ -79,8 +80,9 @@ export default async function PensiuneDetailPage({
           {gallery.length > 0 && (
             <div className="mt-3 flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
               {gallery.map((url, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={i} src={url} alt={`${listing.title} ${i + 1}`} className="h-40 w-56 shrink-0 rounded-2xl object-cover" />
+                <div key={i} className="relative h-40 w-56 shrink-0 overflow-hidden rounded-2xl">
+                  <Image src={url} alt={`${listing.title} ${i + 1}`} fill sizes="224px" className="object-cover" />
+                </div>
               ))}
             </div>
           )}

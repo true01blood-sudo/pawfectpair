@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 
@@ -342,10 +343,9 @@ export default async function ClinicPage() {
               className="rounded-2xl overflow-hidden mb-3"
               style={{ background: "linear-gradient(135deg, #e8f4ea 0%, #c4d9bc 100%)" }}
             >
-              <div className="aspect-[4/3] flex items-center justify-center text-6xl">
+              <div className="relative aspect-[4/3] flex items-center justify-center text-6xl">
                 {pet?.photo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={pet.photo_url} alt={pet.name} className="w-full h-full object-cover" />
+                  <Image src={pet.photo_url} alt={pet.name} fill sizes="(max-width: 640px) 100vw, 400px" className="object-cover" />
                 ) : (
                   pet?.species === "Pisică" ? "🐱" : "🐶"
                 )}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
@@ -139,8 +140,9 @@ export default async function ComunitatePage({
           {candidate ? (
             <div className="rounded-2xl border border-card-border bg-card p-4">
               {candidate.photo_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={candidate.photo_url} alt={candidate.name} className="aspect-square w-full rounded-xl object-cover" />
+                <div className="relative aspect-square w-full overflow-hidden rounded-xl">
+                  <Image src={candidate.photo_url} alt={candidate.name} fill sizes="(max-width: 640px) 100vw, 400px" className="object-cover" />
+                </div>
               ) : (
                 <PetPlaceholder className="aspect-square w-full rounded-xl" />
               )}

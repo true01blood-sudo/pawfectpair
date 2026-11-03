@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -388,12 +389,11 @@ export default function MemorialClient({ myMemorials: rawMy, publicMemorials: ra
                 style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
               >
                 <div
-                  className="h-28 flex items-center justify-center text-4xl"
+                  className="relative h-28 flex items-center justify-center text-4xl"
                   style={{ background: "linear-gradient(135deg, #1e1b4b, #4c1d95)" }}
                 >
                   {mem.photo_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={mem.photo_url} alt={mem.pet_name} className="w-full h-full object-cover" />
+                    <Image src={mem.photo_url} alt={mem.pet_name} fill sizes="(max-width: 640px) 50vw, 250px" className="object-cover" />
                   ) : (
                     spEmoji(mem.species)
                   )}

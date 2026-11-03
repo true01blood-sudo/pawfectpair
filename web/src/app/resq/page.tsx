@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
@@ -53,8 +54,9 @@ export default async function ResqPage({
             {cases.map((c) => (
               <Link key={c.id} href={`/resq/${c.id}`} className="card-hover rounded-2xl border border-card-border bg-card p-3 shadow-sm hover:border-primary">
                 {c.photo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={c.photo_url} alt={c.name} className="mb-2 aspect-square w-full rounded-xl object-cover" />
+                  <div className="relative mb-2 aspect-square w-full overflow-hidden rounded-xl">
+                    <Image src={c.photo_url} alt={c.name} fill sizes="(max-width: 640px) 50vw, 250px" className="object-cover" />
+                  </div>
                 ) : (
                   <PetPlaceholder className="mb-2 aspect-square w-full rounded-xl" />
                 )}

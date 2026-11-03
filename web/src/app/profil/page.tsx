@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { addPet, signOut, updateProfile, updatePassword } from "./actions";
@@ -166,8 +167,9 @@ export default async function ProfilPage() {
                   <li key={prod.id} className="rounded-2xl border p-3 shadow-sm"
                     style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>
                     {prod.photo_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={prod.photo_url} alt={prod.name} className="mb-2 aspect-square w-full rounded-xl object-cover" />
+                      <div className="relative mb-2 aspect-square w-full overflow-hidden rounded-xl">
+                        <Image src={prod.photo_url} alt={prod.name} fill sizes="(max-width: 640px) 50vw, 250px" className="object-cover" />
+                      </div>
                     ) : (
                       <div className="mb-2 flex aspect-square w-full items-center justify-center rounded-xl text-2xl"
                         style={{ background: "var(--surface)" }}>📦</div>
@@ -203,8 +205,9 @@ export default async function ProfilPage() {
                       className="card-hover block rounded-2xl border p-3 shadow-sm hover:border-primary"
                       style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>
                       {l.photo_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={l.photo_url} alt={l.name} className="mb-2 aspect-square w-full rounded-xl object-cover" />
+                        <div className="relative mb-2 aspect-square w-full overflow-hidden rounded-xl">
+                          <Image src={l.photo_url} alt={l.name} fill sizes="(max-width: 640px) 50vw, 250px" className="object-cover" />
+                        </div>
                       ) : (
                         <PetPlaceholder className="mb-2 aspect-square w-full rounded-xl" />
                       )}

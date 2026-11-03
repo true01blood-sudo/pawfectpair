@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { PetPlaceholder } from "@/components/PawPlaceholder";
 import { resolveCase } from "../actions";
@@ -27,8 +28,9 @@ export default async function ResqDetailPage({
         <main className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-10">
           <BackLink href="/resq" label="PetResQ" />
           {c.photo_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={c.photo_url} alt={c.name} className="mt-2 aspect-video w-full rounded-2xl object-cover" />
+            <div className="relative mt-2 aspect-video w-full overflow-hidden rounded-2xl">
+              <Image src={c.photo_url} alt={c.name} fill sizes="(max-width: 640px) 100vw, 640px" className="object-cover" />
+            </div>
           ) : (
             <PetPlaceholder className="mt-2 aspect-video w-full rounded-2xl" />
           )}

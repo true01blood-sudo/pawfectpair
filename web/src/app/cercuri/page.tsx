@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import AppShell from "@/components/AppShell";
@@ -154,8 +155,7 @@ export default async function CercuriPage({
                     style={{ background: "linear-gradient(135deg, #fff7ed 0%, #fde8d0 100%)" }}
                   >
                     {circle.photo_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={circle.photo_url} alt={circle.name} className="h-full w-full object-cover" />
+                      <Image src={circle.photo_url} alt={circle.name} fill sizes="(max-width: 640px) 50vw, 300px" className="object-cover" />
                     ) : (
                       <span>{SPECIES_EMOJI[circle.species] ?? "🐾"}</span>
                     )}

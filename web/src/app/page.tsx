@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
@@ -393,8 +394,9 @@ export default async function Home() {
                     {listings.slice(0, 6).map((pet) => (
                       <Link key={pet.id} href={`/adoptii/${pet.id}`} className="group overflow-hidden rounded-2xl border shadow-sm hover:shadow-md transition-shadow" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
                         {pet.photo_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={pet.photo_url} alt={pet.name} className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                          <div className="relative aspect-square w-full overflow-hidden">
+                            <Image src={pet.photo_url} alt={pet.name} fill sizes="(max-width: 768px) 33vw, 200px" className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                          </div>
                         ) : (
                           <PetPlaceholder className="aspect-square w-full" />
                         )}
