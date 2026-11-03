@@ -1,0 +1,277 @@
+#!/usr/bin/env node
+/**
+ * Import pentru public.business_listings — magazine pentru animale +
+ * adaposturi/centre de adoptie (OSM Overpass), traineri (ACh.ro, best-effort).
+ *
+ * NU a fost rulat de Claude — scrierea in baza de date de productie
+ * necesita rularea explicita de catre user (vezi README.md).
+ *
+ * Rulare:
+ *   cd scripts/business-import
+ *   npm install
+ *   node import.js                 # toate categoriile
+ *   node import.js --only=osm      # doar OSM (shop/shelter)
+ *   node import.js --only=ach      # doar traineri ACh.ro
+ *   node import.js --dry-run       # descarca + parseaza, NU scrie in DB
+ */
+"use strict";
+
+const fs = require("fs");
+const path = require("path");
+const { Client } = require("pg");
+
+const USER_AGENT = "PawfectPairImportPipeline/1.0 (+https://pawfectpair.app)";
+
+const OVERPASS_ENDPOINTS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+];
+
+const OSM_QUERIES = {
+  pet_shop: (cc) =>
+    `[out:json][timeout:180];area["ISO3166-1"="${cc}"][admin_level=2]->.a;nwr["shop"="pet"](area.a);out center tags;`,
+  shelter: (cc) =>
+    `[out:json][timeout:180];area["ISO3166-1"="${cc}"][admin_level=2]->.a;nwr["amenity"="animal_shelter"](area.a);out center tags;`,
+};
+
+const ACH_PAGES = [
+  "https://www.ach.ro/site/index.php/ro/instructori-dresaj/instructori-dresaj",
+  "https://ach.ro/site/index.php/ro/instructori-dresaj/asistenti-dresaj",
+];
+
+function parseArgs() {
+  const args = process.argv.slice(2);
+  return {
+    only: (args.find((a) => a.startsWith("--only="))?.split("=")[1]) || "all",
+    dryRun: args.includes("--dry-run"),
+  };
+}
+
+/** Citeste SUPABASE_DB_URL din web/.env.local, fara sa depinda de shell env. */
+function loadDbUrl() {
+  if (process.env.SUPABASE_DB_URL) return process.env.SUPABASE_DB_URL;
+  const envPath = path.join(__dirname, "..", "..", "web", ".env.local");
+  const text = fs.readFileSync(envPath, "utf8");
+  for (const line of text.split("\n")) {
+    const m = line.match(/^SUPABASE_DB_URL\s*=\s*(.+)\s*$/);
+    if (m) return m[1].trim().replace(/^["']|["']$/g, "");
+  }
+  throw new Error(`SUPABASE_DB_URL nu a fost gasit in ${envPath}`);
+}
+
+async function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+async function fetchOverpass(query) {
+  let lastErr;
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        console.log(`  Overpass ${endpoint} (incercarea ${attempt})...`);
+        const resp = await fetch(endpoint, {
+          method: "POST",
+          headers: { "User-Agent": USER_AGENT, "Content-Type": "application/x-www-form-urlencoded" },
+          body: "data=" + encodeURIComponent(query),
+        });
+        if (resp.ok) return await resp.json();
+        console.warn(`  -> HTTP ${resp.status}`);
+        if (resp.status === 429 || resp.status === 502 || resp.status === 504) {
+          await sleep(attempt * 5000);
+          continue;
+        }
+        break; // alta eroare HTTP — trecem la urmatorul endpoint
+      } catch (e) {
+        lastErr = e;
+        console.warn(`  -> esuat: ${e.message}`);
+        await sleep(attempt * 3000);
+      }
+    }
+  }
+  throw new Error(`Niciun endpoint Overpass nu a raspuns: ${lastErr?.message ?? "necunoscut"}`);
+}
+
+function parseOsmElements(elements, category) {
+  const rows = [];
+  let skippedNoName = 0;
+  for (const el of elements) {
+    const tags = el.tags || {};
+    const name = tags.name || tags.operator || tags.brand;
+    if (!name) {
+      skippedNoName++;
+      continue;
+    }
+    const lat = el.lat ?? el.center?.lat ?? null;
+    const lng = el.lon ?? el.center?.lon ?? null;
+    const street = [tags["addr:street"], tags["addr:housenumber"]].filter(Boolean).join(" ");
+    rows.push({
+      category,
+      name,
+      city: tags["addr:city"] || tags["addr:suburb"] || null,
+      address: street || null,
+      lat,
+      lng,
+      phone: tags.phone || tags["contact:phone"] || null,
+      website: tags.website || tags["contact:website"] || null,
+      description: null,
+      source: "osm",
+      source_id: `${el.type}/${el.id}`,
+    });
+  }
+  return { rows, skippedNoName };
+}
+
+async function fetchOsmCategory(category) {
+  console.log(`\n[OSM] ${category} — interoghez Overpass...`);
+  const query = OSM_QUERIES[category]("RO");
+  const data = await fetchOverpass(query);
+  const elements = data.elements || [];
+  const { rows, skippedNoName } = parseOsmElements(elements, category);
+  console.log(`[OSM] ${category}: ${elements.length} rezultate, ${rows.length} cu nume (${skippedNoName} fara nume, ignorate)`);
+  return rows;
+}
+
+function stripTags(html) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, "\n")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+}
+
+function parseAchTable(html) {
+  const rows = [];
+  const trMatches = html.match(/<tr[\s\S]*?<\/tr>/gi) || [];
+  for (const tr of trMatches) {
+    const tds = tr.match(/<td[\s\S]*?<\/td>/gi) || [];
+    if (tds.length < 2) continue;
+    // td-ul cu poza e fie primul (are <img>), fie gol — numele e in urmatorul td cu <strong>.
+    const nameCell = tds.find((td) => /<strong>/i.test(td)) || tds[1] || tds[0];
+    const nameMatch = nameCell.match(/<strong>([\s\S]*?)<\/strong>/i);
+    const name = nameMatch ? stripTags(nameMatch[0]).join(" ").trim() : null;
+    if (!name || name.length < 4) continue;
+
+    const nameCellLines = stripTags(nameCell);
+    const addressLines = nameCellLines.slice(1); // restul liniilor din acelasi td = oras/adresa
+    const city = addressLines[0] || null;
+    const address = addressLines.slice(1).join(", ") || null;
+
+    const lastCell = tds[tds.length - 1];
+    const phoneMatch = stripTags(lastCell).join(" ").match(/0\d[\d\s]{7,}\d/);
+    const phone = phoneMatch ? phoneMatch[0].replace(/\s+/g, " ").trim() : null;
+
+    const slug = name.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    rows.push({
+      category: "trainer",
+      name,
+      city,
+      address,
+      lat: null,
+      lng: null,
+      phone,
+      website: null,
+      description: "Instructor dresaj canin autorizat — Asociația Chinologică Română (ACh.ro).",
+      source: "ach",
+      source_id: slug,
+    });
+  }
+  return rows;
+}
+
+async function fetchAchTrainers() {
+  console.log(`\n[ACH] traineri — descarc paginile oficiale...`);
+  const all = [];
+  for (const url of ACH_PAGES) {
+    try {
+      const resp = await fetch(url, { headers: { "User-Agent": USER_AGENT } });
+      if (!resp.ok) {
+        console.warn(`[ACH] ${url} -> HTTP ${resp.status}, ignor`);
+        continue;
+      }
+      const html = await resp.text();
+      const rows = parseAchTable(html);
+      console.log(`[ACH] ${url}: ${rows.length} intrari parsate`);
+      all.push(...rows);
+      await sleep(1500); // politete — nu lovim ach.ro cu cereri inlantuite
+    } catch (e) {
+      console.warn(`[ACH] ${url} esuat: ${e.message}, ignor`);
+    }
+  }
+  // dedup dupa slug (listele de instructori + asistenti se pot suprapune)
+  const seen = new Set();
+  const deduped = all.filter((r) => (seen.has(r.source_id) ? false : (seen.add(r.source_id), true)));
+  console.log(`[ACH] total unic: ${deduped.length}`);
+  return deduped;
+}
+
+async function upsertRows(client, rows) {
+  let inserted = 0;
+  let updated = 0;
+  for (const r of rows) {
+    const res = await client.query(
+      `insert into public.business_listings
+         (category, name, city, address, lat, lng, phone, website, description, source, source_id)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+       on conflict (source, source_id) do update set
+         name = excluded.name, city = excluded.city, address = excluded.address,
+         lat = excluded.lat, lng = excluded.lng, phone = excluded.phone,
+         website = excluded.website, description = excluded.description,
+         updated_at = now()
+       returning (xmax = 0) as inserted`,
+      [r.category, r.name, r.city, r.address, r.lat, r.lng, r.phone, r.website, r.description, r.source, r.source_id]
+    );
+    if (res.rows[0]?.inserted) inserted++;
+    else updated++;
+  }
+  return { inserted, updated };
+}
+
+async function main() {
+  const { only, dryRun } = parseArgs();
+  const allRows = [];
+
+  if (only === "all" || only === "osm") {
+    allRows.push(...(await fetchOsmCategory("pet_shop")));
+    allRows.push(...(await fetchOsmCategory("shelter")));
+  }
+  if (only === "all" || only === "ach") {
+    allRows.push(...(await fetchAchTrainers()));
+  }
+
+  console.log(`\nTotal randuri de importat: ${allRows.length}`);
+
+  if (dryRun) {
+    console.log("\n--dry-run: nu scriu in DB. Exemple:");
+    for (const r of allRows.slice(0, 10)) {
+      console.log(`  [${r.category}/${r.source}] ${r.name} — ${r.city ?? "?"} — tel=${r.phone ?? "-"}`);
+    }
+    return;
+  }
+
+  const dbUrl = loadDbUrl();
+  const client = new Client({ connectionString: dbUrl, ssl: { rejectUnauthorized: false } });
+  await client.connect();
+  try {
+    const byCategory = {};
+    for (const r of allRows) {
+      byCategory[r.category] = byCategory[r.category] || [];
+      byCategory[r.category].push(r);
+    }
+    for (const [category, rows] of Object.entries(byCategory)) {
+      const { inserted, updated } = await upsertRows(client, rows);
+      console.log(`[DB] ${category}: ${inserted} noi, ${updated} actualizate`);
+    }
+  } finally {
+    await client.end();
+  }
+}
+
+main().catch((e) => {
+  console.error("Import esuat:", e);
+  process.exit(1);
+});
