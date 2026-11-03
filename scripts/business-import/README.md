@@ -1,7 +1,9 @@
 # Import activități conexe — business_listings
 
 Populează `public.business_listings` (migrațiile `0070_business_listings.sql` +
-`0071_business_listings_transport_category.sql`) cu date reale din surse publice:
+`0071_business_listings_transport_category.sql`) și `public.vets`
+(migrațiile `0072_vets_geocoding.sql` + `0074_vets_import_source.sql`) cu
+date reale din surse publice:
 
 - **OSM Overpass** — `shop=pet` (magazine) și `amenity=animal_shelter` (adăposturi/centre
   de adopție), pentru România.
@@ -53,30 +55,47 @@ Populează `public.business_listings` (migrațiile `0070_business_listings.sql` 
   singur rând per transportator unic (proprietar + județ), doar cele cu
   autorizația curentă activă (ultima intrare din istoricul fiecărui vehicul).
 
-## Geocodare veterinari (geocode-vets.js)
+## Import veterinari reali (import-vets.js)
 
-`public.vets` are doar `city`/`address` text, deloc `lat`/`lng` — aplică mai
-întâi `supabase/migrations/0072_vets_geocoding.sql` (coloane noi, nulabile).
-Fără geocodare, veterinarii nu pot apărea ca pini pe hartă (mobil) sau în
-`/aproape` (web), doar în listă, fără distanță reală.
+`public.vets` avea doar 2 înregistrări reale (date de test) — pipeline-ul
+DSVSA/OSM original (`pawfectpair-design/geolocatie + alte module/`) nu a fost
+niciodată conectat la această bază de date de producție (scrie într-o bază
+Postgres separată, locală, definită în `schema.sql`/`docker-compose.yml` din
+acel folder). `import-vets.js` portează partea OSM a acelui pipeline direct
+aici, în `public.vets`, cu aceeași schemă de import (`source`/`source_id`,
+upsert idempotent) — aplică mai întâi `supabase/migrations/0074_vets_import_source.sql`.
 
-Nu există nicio cheie Google Geocoding API în acest proiect utilizabilă
-server-side (singura cheie Google e cea de Maps SDK din `mobile/app.json`,
-restricționată pe package+SHA-1 Android — ar fi respinsă de Google dacă ar fi
-folosită dintr-un script). Folosim în schimb **Nominatim** (geocodare gratuită
-OpenStreetMap, fără cheie) — respectă politica lor de 1 cerere/secundă.
+```bash
+node import-vets.js --dry-run   # testează, NU scrie in DB
+node import-vets.js             # import real
+```
+
+OSM (`amenity=veterinary`) vine deja cu `lat`/`lng` native — rezolvă
+geocodarea direct, fără Nominatim, pentru toate cabinetele din această sursă
+(testat: 357 cabinete reale, cu coordonate, găsite în România). Aplică
+`supabase/migrations/0072_vets_geocoding.sql` înainte (coloanele `lat`/`lng`).
+
+Cabinetele importate au `user_id = NULL` (revendicabile, la fel ca modelul
+deja existent pentru `vets`) — nu se inventează conturi.
+
+**Nu portat** — registrul DSVSA (listele județene oficiale, cu autorizația
+reală de funcționare): pipeline-ul original are pagini configurate pentru
+doar 2 din 42 de județe, cu formate diferite per județ (HTML, `.xlsx`, unele
+PDF excluse explicit) — parser mult mai fragil decât Overpass, o trecere
+separată dacă se cere.
+
+## Geocodare veterinari din alte surse (geocode-vets.js)
+
+Pentru veterinari fără coordonate native (ex. dacă se adaugă ulterior o sursă
+text-only, precum DSVSA) — **Nominatim** (geocodare gratuită OpenStreetMap,
+fără cheie; nu există nicio cheie Google Geocoding API utilizabilă
+server-side în acest proiect — singura cheie Google e cea de Maps SDK din
+`mobile/app.json`, restricționată pe package+SHA-1 Android).
 
 ```bash
 node geocode-vets.js --dry-run --limit=10   # testează pe primii 10, nu scrie in DB
 node geocode-vets.js                        # geocodeaza real toti vets fara lat/lng
 ```
-
-La momentul scrierii, `public.vets` are doar 2 înregistrări reale (date de
-test) — pipeline-ul DSVSA/OSM pentru veterinari (`pawfectpair-design/geolocatie
-+ alte module/`) nu a fost niciodată conectat la această bază de date de
-producție (scrie într-o bază Postgres separată, locală, definită în
-`schema.sql`/`docker-compose.yml` din acel folder) — e un gol separat, nu face
-parte din acest script.
 
 ## Normalizare orașe OSM (normalize-cities.js)
 

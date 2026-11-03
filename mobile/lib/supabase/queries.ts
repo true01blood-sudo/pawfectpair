@@ -2665,6 +2665,8 @@ export interface VetCardRow {
   bio: string | null;
   photo_url: string | null;
   is_licensed: boolean;
+  lat: number | null;
+  lng: number | null;
   services: string[];
   minPriceCents: number | null;
   rating: number;
@@ -2680,7 +2682,7 @@ export async function fetchVets(filters: { city?: string } = {}, limit = 50): Pr
   let q = supabase
     .from('vets')
     .select(
-      'id, clinic_name, city, address, phone, bio, photo_url, is_licensed, vet_reviews(rating), vet_services(name, price_cents)'
+      'id, clinic_name, city, address, phone, bio, photo_url, is_licensed, lat, lng, vet_reviews(rating), vet_services(name, price_cents)'
     )
     .order('created_at', { ascending: false })
     .limit(Math.max(1, Math.min(200, limit)));

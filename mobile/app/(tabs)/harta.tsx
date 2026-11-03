@@ -57,7 +57,8 @@ export default function HartaScreen() {
       id: `vet-${v.id}`,
       name: v.clinic_name,
       type: 'vet',
-      coords: undefined, // vets nu are inca coordonate reale — doar in lista
+      // coordonate native (import OSM) cand exista — vets importate manual/fara geocodare raman doar in lista
+      coords: v.lat != null && v.lng != null ? { latitude: v.lat, longitude: v.lng } : undefined,
       address: [v.address, v.city].filter(Boolean).join(', ') || undefined,
       phone: v.phone ?? undefined,
       rating: v.rating > 0 ? v.rating : undefined,

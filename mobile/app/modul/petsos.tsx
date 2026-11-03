@@ -36,6 +36,7 @@ import { Card, Button, StateView, Input } from '../../components/ui';
 import { useMyPets } from '../../hooks/usePets';
 import { useSosEvents, useCreateSosEvent, useSaveEmergencyContact } from '../../hooks/usePetsos';
 import { useVets } from '../../hooks/useVets';
+import { useLocation, calcDistanceKm } from '../../lib/location';
 import {
   SOS_TYPES,
   SOS_TYPE_EMOJI,
@@ -78,8 +79,24 @@ export default function PetSosScreen() {
   const [openGuide, setOpenGuide] = useState<string | null>(null);
 
   // --- veterinare (vets nu are coordonate inca — fara distanta reala, doar lista) ---
+  const { coords } = useLocation();
   const vetsQuery = useVets();
-  const vets = useMemo(() => (vetsQuery.data ?? []).slice(0, 3), [vetsQuery.data]);
+  const vets = useMemo(() => {
+    const data = vetsQuery.data ?? [];
+    // Veterinarii cu coordonate reale (importati din OSM) sunt sortati dupa distanta reala;
+    // cei fara coordonate raman la final, nesortati.
+    const withDist = data.map((v) => ({
+      ...v,
+      _dist: coords && v.lat != null && v.lng != null ? calcDistanceKm(coords, { latitude: v.lat, longitude: v.lng }) : null,
+    }));
+    withDist.sort((a, b) => {
+      if (a._dist == null && b._dist == null) return 0;
+      if (a._dist == null) return 1;
+      if (b._dist == null) return -1;
+      return a._dist - b._dist;
+    });
+    return withDist.slice(0, 3);
+  }, [vetsQuery.data, coords]);
 
   // prefills contact din animalul selectat
   useEffect(() => {
@@ -262,6 +279,7 @@ export default function PetSosScreen() {
                   </Text>
                   <Text style={{ color: theme.colors.textMuted, fontSize: 12 }} numberOfLines={1}>
                     {[v.address, v.city].filter(Boolean).join(', ')}
+                    {v._dist != null ? ` · ${v._dist.toFixed(1)} km` : ''}
                     {v.rating > 0 ? ` · ⭐ ${v.rating.toFixed(1)}` : ''}
                   </Text>
                 </View>
