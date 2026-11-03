@@ -19,6 +19,7 @@
 const fs = require("fs");
 const path = require("path");
 const { Client } = require("pg");
+const { normalizeCity } = require("./normalize-city");
 
 const USER_AGENT = "PawfectPairImportPipeline/1.0 (+https://pawfectpair.app)";
 
@@ -39,6 +40,17 @@ const OSM_QUERIES = {
 const ACH_PAGES = [
   "https://www.ach.ro/site/index.php/ro/instructori-dresaj/instructori-dresaj",
   "https://ach.ro/site/index.php/ro/instructori-dresaj/asistenti-dresaj",
+];
+
+// Registrul ANSVSA de transportatori autorizati de animale vii (Reg. UE 1/2005).
+// Fiecare view e deja filtrat server-side pe "activ" (nu mai trebuie cerute
+// separat MTSuspendate/MTAnulate/MTLSuspendate/etc. — acelea sunt liste
+// separate de autorizatii suspendate/anulate, nu fac parte din acest import).
+const ANSVSA_BASE = "https://domino.iqm.ro/ansv/ansvsa.nsf";
+const ANSVSA_LISTS = [
+  { view: "MT", label: "rutier, scurta durata" },
+  { view: "MTL", label: "rutier, lunga durata" },
+  { view: "MTN", label: "naval" },
 ];
 
 function parseArgs() {
@@ -116,10 +128,11 @@ function parseOsmElements(elements, category) {
     const lat = el.lat ?? el.center?.lat ?? null;
     const lng = el.lon ?? el.center?.lon ?? null;
     const street = [tags["addr:street"], tags["addr:housenumber"]].filter(Boolean).join(" ");
+    const rawCity = tags["addr:city"] || tags["addr:suburb"] || null;
     rows.push({
       category,
       name,
-      city: tags["addr:city"] || tags["addr:suburb"] || null,
+      city: rawCity ? normalizeCity(rawCity) : null,
       address: street || null,
       lat,
       lng,
@@ -219,6 +232,108 @@ async function fetchAchTrainers() {
   return deduped;
 }
 
+/**
+ * Site-ul ANSVSA (domino.iqm.ro, Lotus/HCL Domino) nu randeaza un <table> —
+ * fiecare rand e <div class="TR"> cu 5 celule <p class="p14...">: Judet, Nr.
+ * (id intern), Nr. circulatie (placa), Proprietar, Autorizatie (istoric
+ * complet, intrari separate prin <br/> — ultima intrare = starea curenta).
+ */
+function decodeAnsvsaEntities(s) {
+  return s.replace(/&amp;/g, "&").replace(/&nbsp;/g, " ").trim();
+}
+
+function parseAnsvsaRows(html) {
+  const ovaIdx = html.indexOf('<div class="OVA">');
+  if (ovaIdx === -1) return [];
+  const scoped = html.slice(ovaIdx);
+  const chunks = scoped.split('<div class="TR">').slice(1);
+  const cellRe = /<p class="p14[^"]*">([\s\S]*?)<\/p>/g;
+  const rows = [];
+  for (const c of chunks) {
+    cellRe.lastIndex = 0;
+    const cells = [];
+    let m;
+    while ((m = cellRe.exec(c)) && cells.length < 5) cells.push(decodeAnsvsaEntities(m[1]));
+    if (cells.length === 5 && cells[0] !== "Judet") {
+      rows.push({ judet: cells[0], owner: cells[3], authHistory: cells[4] });
+    }
+  }
+  return rows;
+}
+
+/** Status curent = ultima intrare din istoricul Autorizatie (separate prin <br/>). */
+function isCurrentlyActive(authHistory) {
+  const entries = authHistory.split(/<br\s*\/?>/i).map((e) => e.trim()).filter(Boolean);
+  const last = entries[entries.length - 1] || "";
+  return /^activa/i.test(last);
+}
+
+/** Paginare Domino: prima pagina fara parametru, apoi ?OpenForm&Start=500,1000,... */
+async function fetchAnsvsaView(view) {
+  const rows = [];
+  let start = 0;
+  for (let page = 0; page < 20; page++) { // siguranta — max 20 pagini (10.000 randuri)
+    const url = start === 0 ? `${ANSVSA_BASE}/${view}` : `${ANSVSA_BASE}/${view}?OpenForm&Start=${start}`;
+    let html;
+    try {
+      const resp = await fetch(url, { headers: { "User-Agent": USER_AGENT } });
+      if (!resp.ok) {
+        console.warn(`  ${view} Start=${start} -> HTTP ${resp.status}, opresc paginarea`);
+        break;
+      }
+      html = await resp.text();
+    } catch (e) {
+      console.warn(`  ${view} Start=${start} esuat: ${e.message}, opresc paginarea`);
+      break;
+    }
+    const pageRows = parseAnsvsaRows(html);
+    rows.push(...pageRows);
+    if (pageRows.length === 0 || !html.includes("Urmatoarele")) break;
+    start += 500;
+    await sleep(800); // politete fata de domino.iqm.ro
+  }
+  return rows;
+}
+
+async function fetchTransportListings() {
+  console.log(`\n[ANSVSA] transport — descarc registrul oficial de transportatori...`);
+  const byOwner = new Map(); // key: judet|proprietar -> { judet, owner }
+  for (const { view, label } of ANSVSA_LISTS) {
+    const rows = await fetchAnsvsaView(view);
+    let active = 0;
+    for (const r of rows) {
+      if (!isCurrentlyActive(r.authHistory)) continue;
+      active++;
+      const key = `${r.judet}|${r.owner}`;
+      if (!byOwner.has(key)) byOwner.set(key, { judet: r.judet, owner: r.owner });
+    }
+    console.log(`[ANSVSA] ${view} (${label}): ${rows.length} mijloace de transport, ${active} cu autorizatie activa`);
+    await sleep(800);
+  }
+
+  const unique = Array.from(byOwner.values());
+  console.log(`[ANSVSA] transportatori unici (deduplicat pe proprietar+judet, doar activi): ${unique.length}`);
+
+  return unique.map(({ judet, owner }) => {
+    const slug =
+      owner.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") +
+      "-" + judet.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    return {
+      category: "transport",
+      name: owner,
+      city: null,
+      address: null,
+      lat: null,
+      lng: null,
+      phone: null,
+      website: null,
+      description: `Transportator autorizat animale vii — jud. ${judet}.`,
+      source: "ansvsa",
+      source_id: slug,
+    };
+  });
+}
+
 async function upsertRows(client, rows) {
   let inserted = 0;
   let updated = 0;
@@ -251,6 +366,9 @@ async function main() {
   }
   if (only === "all" || only === "ach") {
     allRows.push(...(await fetchAchTrainers()));
+  }
+  if (only === "all" || only === "transport") {
+    allRows.push(...(await fetchTransportListings()));
   }
 
   console.log(`\nTotal randuri de importat: ${allRows.length}`);

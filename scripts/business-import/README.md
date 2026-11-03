@@ -1,20 +1,21 @@
 # Import activități conexe — business_listings
 
-Populează `public.business_listings` (migrația `0070_business_listings.sql`) cu date
-reale din surse publice:
+Populează `public.business_listings` (migrațiile `0070_business_listings.sql` +
+`0071_business_listings_transport_category.sql`) cu date reale din surse publice:
 
 - **OSM Overpass** — `shop=pet` (magazine) și `amenity=animal_shelter` (adăposturi/centre
   de adopție), pentru România.
 - **ACh.ro** — lista oficială de instructori/asistenți de dresaj canin autorizați
   (Asociația Chinologică Română), scraping best-effort pe HTML public.
-
-Nu include încă transportatorii (registrul ANSVSA) — sursă confirmată fezabilă
-separat, dar scraper-ul nu a fost construit.
+- **ANSVSA** — registrul oficial de transportatori autorizați de animale vii
+  (Reg. UE 1/2005): 3 liste (rutier scurtă/lungă durată, naval), fiecare deja
+  filtrată server-side pe autorizații active. Fără adresă/coordonate în sursă —
+  apare doar în listă, nu ca pin pe hartă (la fel ca traineri ACh.ro).
 
 ## Pași
 
-1. **Aplică migrația** (cineva cu acces trebuie să o ruleze — Claude nu scrie în baza
-   de date de producție fără aprobare explicită):
+1. **Aplică migrațiile** (cineva cu acces trebuie să le ruleze — Claude nu scrie în
+   baza de date de producție fără aprobare explicită):
    ```bash
    npx supabase db push --remote
    ```
@@ -35,7 +36,8 @@ separat, dar scraper-ul nu a fost construit.
    secret. Scrie direct prin conexiunea Postgres (ocolește RLS), upsert idempotent
    pe `(source, source_id)` — poți rula scriptul de mai multe ori fără duplicate.
 
-   Opțional, doar o sursă: `node import.js --only=osm` sau `node import.js --only=ach`.
+   Opțional, doar o sursă: `node import.js --only=osm`, `--only=ach` sau
+   `--only=transport`.
 
 ## Ce observă
 
@@ -45,12 +47,8 @@ separat, dar scraper-ul nu a fost construit.
 - Rândurile OSM fără `name` sunt ignorate (nu publicăm POI-uri neidentificate).
 - Pentru ACh.ro, câmpul `phone` e extras best-effort dintr-un regex pe text brut —
   verifică manual câteva rânduri după import.
-
-## Ce urmează (neconstruit încă)
-
-- Wiring UI: harta mobil (`mobile/app/(tabs)/harta.tsx`) rulează încă pe date demo —
-  va fi conectată la `business_listings` într-un pas separat, odată ce tabela chiar
-  există în producție și poate fi testată real.
-- O pagină web de director (nu există deloc o hartă pe web momentan).
-- Categoria `transport` (registrul ANSVSA — confirmat fezabil, ~2500 înregistrări
-  pe 9 URL-uri de listă, vezi raportul de research din conversație).
+- Pentru ANSVSA: site-ul (domino.iqm.ro) paginează la 500 rânduri — scriptul
+  urmărește automat linkul "Urmatoarele 500 de documente" până epuizează lista.
+  Registrul e per-vehicul (o firmă poate avea mai multe camioane); importăm un
+  singur rând per transportator unic (proprietar + județ), doar cele cu
+  autorizația curentă activă (ultima intrare din istoricul fiecărui vehicul).
