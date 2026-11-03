@@ -35,7 +35,7 @@ import { useAppTheme } from '../../components/theme-provider';
 import { Card, Button, StateView, Input } from '../../components/ui';
 import { useMyPets } from '../../hooks/usePets';
 import { useSosEvents, useCreateSosEvent, useSaveEmergencyContact } from '../../hooks/usePetsos';
-import { useLocation, sortByDistance, DEMO_PET_PLACES, calcDistanceKm } from '../../lib/location';
+import { useVets } from '../../hooks/useVets';
 import {
   SOS_TYPES,
   SOS_TYPE_EMOJI,
@@ -77,15 +77,9 @@ export default function PetSosScreen() {
   const [contactError, setContactError] = useState<string | null>(null);
   const [openGuide, setOpenGuide] = useState<string | null>(null);
 
-  // --- locație pentru veterinare apropiate ---
-  const { coords } = useLocation();
-  const vets = useMemo(() => {
-    const vetPlaces = DEMO_PET_PLACES.filter((p) => p.type === 'vet');
-    const from = coords
-      ? { latitude: coords.latitude, longitude: coords.longitude }
-      : { latitude: 44.4268, longitude: 26.1025 }; // fallback București
-    return sortByDistance(vetPlaces, from).slice(0, 3);
-  }, [coords]);
+  // --- veterinare (vets nu are coordonate inca — fara distanta reala, doar lista) ---
+  const vetsQuery = useVets();
+  const vets = useMemo(() => (vetsQuery.data ?? []).slice(0, 3), [vetsQuery.data]);
 
   // prefills contact din animalul selectat
   useEffect(() => {
@@ -259,31 +253,26 @@ export default function PetSosScreen() {
           <Text style={{ color: theme.colors.textMuted, fontSize: 13, fontWeight: '800', letterSpacing: 0.4 }}>
             🏥 {t('petsos.vetsSection')}
           </Text>
-          {vets.map((v) => {
-            const dist = coords ? calcDistanceKm({ latitude: coords.latitude, longitude: coords.longitude }, v.coords) : null;
-            return (
-              <Card key={v.id}>
-                <View style={styles.contactRow}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 14 }} numberOfLines={1}>
-                      {v.name}
-                      {v.isOpen ? ' 🟢' : ' 🔴'}
-                    </Text>
-                    <Text style={{ color: theme.colors.textMuted, fontSize: 12 }} numberOfLines={1}>
-                      {v.address}
-                      {dist != null ? ` · ${dist.toFixed(1)} km` : ''}
-                      {v.rating ? ` · ⭐ ${v.rating}` : ''}
-                    </Text>
-                  </View>
-                  {v.phone ? (
-                    <Pressable onPress={() => call(v.phone!)} style={[styles.callBtn, { backgroundColor: theme.colors.primaryLight }]}>
-                      <Ionicons name="call" size={18} color={theme.colors.primaryDark} />
-                    </Pressable>
-                  ) : null}
+          {vets.map((v) => (
+            <Card key={v.id}>
+              <View style={styles.contactRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 14 }} numberOfLines={1}>
+                    {v.clinic_name}
+                  </Text>
+                  <Text style={{ color: theme.colors.textMuted, fontSize: 12 }} numberOfLines={1}>
+                    {[v.address, v.city].filter(Boolean).join(', ')}
+                    {v.rating > 0 ? ` · ⭐ ${v.rating.toFixed(1)}` : ''}
+                  </Text>
                 </View>
-              </Card>
-            );
-          })}
+                {v.phone ? (
+                  <Pressable onPress={() => call(v.phone!)} style={[styles.callBtn, { backgroundColor: theme.colors.primaryLight }]}>
+                    <Ionicons name="call" size={18} color={theme.colors.primaryDark} />
+                  </Pressable>
+                ) : null}
+              </View>
+            </Card>
+          ))}
         </View>
 
         {/* ============ PRIM AJUTOR ============ */}

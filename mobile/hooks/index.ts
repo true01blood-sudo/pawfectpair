@@ -19,3 +19,5 @@ export {
   useEduArticles, useTrainers, useMyTrainerProfile,
   useSaveTrainerProfile, useToggleTrainerActive, useEduLibrary,
 } from './useEdu';
+export { useVets } from './useVets';
+export { useBusinessListings } from './useBusinessListings';

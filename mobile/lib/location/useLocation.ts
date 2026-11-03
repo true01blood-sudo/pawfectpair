@@ -15,8 +15,9 @@ export interface Coords {
 export interface PetPlace {
   id: string;
   name: string;
-  type: 'vet' | 'park' | 'shop' | 'shelter' | 'event';
-  coords: Coords;
+  type: 'vet' | 'shop' | 'shelter' | 'trainer';
+  /** Lipsește pentru surse fără coordonate reale (ex: vets) — nu poate apărea ca pin pe hartă. */
+  coords?: Coords;
   address?: string;
   phone?: string;
   website?: string;
@@ -118,21 +119,14 @@ function toRad(deg: number): number {
   return (deg * Math.PI) / 180;
 }
 
-/** Sortează locuri pet-friendly după distanță față de o coordonată */
+/** Sortează locuri pet-friendly după distanță față de o coordonată (cele fără coords rămân la final) */
 export function sortByDistance<T extends PetPlace>(places: T[], from: Coords): T[] {
   return places
-    .map((p) => ({ ...p, distance: calcDistanceKm(from, p.coords) }))
-    .sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0));
+    .map((p) => (p.coords ? { ...p, distance: calcDistanceKm(from, p.coords) } : p))
+    .sort((a, b) => {
+      if (a.distance == null && b.distance == null) return 0;
+      if (a.distance == null) return 1;
+      if (b.distance == null) return -1;
+      return a.distance - b.distance;
+    });
 }
-
-/** Date demo pentru locuri pet-friendly (Faza 2: integrare reală Google Maps Places API) */
-export const DEMO_PET_PLACES: PetPlace[] = [
-  { id: '1', name: 'Cabinet Veterinar Centru', type: 'vet', coords: { latitude: 44.4268, longitude: 26.1025 }, address: 'Str. Victoriei 12, București', phone: '+40 21 123 4567', isOpen: true, rating: 4.7 },
-  { id: '2', name: 'Pet Shop Happy Tails', type: 'shop', coords: { latitude: 44.4368, longitude: 26.1125 }, address: 'Calea Victoriei 100', phone: '+40 21 222 3344', isOpen: true, rating: 4.5 },
-  { id: '3', name: 'Parcul Herăstrău (pet-friendly)', type: 'park', coords: { latitude: 44.4668, longitude: 26.0825 }, isOpen: true, rating: 4.8 },
-  { id: '4', name: 'Adăpostul Speranța', type: 'shelter', coords: { latitude: 44.3868, longitude: 26.1225 }, address: 'Str. Animalelor 5', phone: '+40 21 999 8888', isOpen: false, rating: 4.6 },
-  { id: '5', name: 'Clinică Veterinară 24/7', type: 'vet', coords: { latitude: 44.4168, longitude: 26.0925 }, address: 'Bd. Mihai Bravu 200', phone: '+40 21 555 6666', isOpen: true, rating: 4.9 },
-  { id: '6', name: 'Pet Market Premium', type: 'shop', coords: { latitude: 44.4468, longitude: 26.0925 }, address: 'Piața Charles de Gaulle', isOpen: true, rating: 4.3 },
-  { id: '7', name: 'Parcul Tineretului', type: 'park', coords: { latitude: 44.3968, longitude: 26.1225 }, isOpen: true, rating: 4.4 },
-  { id: '8', name: 'Eveniment: Plimbare câini marți', type: 'event', coords: { latitude: 44.4568, longitude: 26.1025 }, isOpen: true, rating: 5.0 },
-];

@@ -1,9 +1,10 @@
 /**
- * Ecran Hartă — locuri pet-friendly în apropiere (veterinari, parcuri, magazine).
- * Folosește react-native-maps + expo-location.
- * Demo data în Faza 1; integrare Google Places API în Faza 2.
+ * Ecran Hartă — locuri pet-friendly în apropiere (veterinari, magazine,
+ * adăposturi, traineri). Date reale: vets (fără coordonate încă — doar
+ * listă) + business_listings (OSM + ACh.ro, cu coordonate — pini pe
+ * hartă). Vezi scripts/business-import/ pentru sursa datelor.
  */
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList, Linking, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
@@ -12,35 +13,67 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../components/theme-provider';
 import { Card, Button, StateView } from '../../components/ui';
-import { useLocation, sortByDistance, DEMO_PET_PLACES, calcDistanceKm, type PetPlace } from '../../lib/location';
+import { useLocation, sortByDistance, type PetPlace } from '../../lib/location';
+import { useBusinessListings, useVets } from '../../hooks';
+import type { BusinessListingCategory } from '../../lib/supabase/queries';
 
-type FilterType = 'all' | 'vet' | 'park' | 'shop' | 'shelter' | 'event';
+type FilterType = 'all' | 'vet' | 'shop' | 'shelter' | 'trainer';
 
-const PLACE_META: Record<PetPlace['type'], { emoji: string; color: string; labelKey: string }> = {
-  vet:     { emoji: '🏥', color: '#DC2626', labelKey: 'map.vets' },
-  park:    { emoji: '🌳', color: '#16A34A', labelKey: 'map.parks' },
-  shop:    { emoji: '🛍️', color: '#EC4899', labelKey: 'map.shops' },
-  shelter: { emoji: '🏠', color: '#F59E0B', labelKey: 'map.shelters' },
-  event:   { emoji: '🎪', color: '#8B5CF6', labelKey: 'map.events' },
+const PLACE_META: Record<PetPlace['type'], { emoji: string; color: string; label: string }> = {
+  vet:     { emoji: '🏥', color: '#DC2626', label: 'Veterinari' },
+  shop:    { emoji: '🛍️', color: '#EC4899', label: 'Magazine' },
+  shelter: { emoji: '🏠', color: '#F59E0B', label: 'Adăposturi' },
+  trainer: { emoji: '🎓', color: '#7C3AED', label: 'Traineri' },
+};
+
+const CATEGORY_TO_TYPE: Record<BusinessListingCategory, PetPlace['type']> = {
+  pet_shop: 'shop',
+  shelter: 'shelter',
+  trainer: 'trainer',
 };
 
 export default function HartaScreen() {
   const t = useTranslation().t;
   const theme = useAppTheme();
-  const { status, coords, getCurrentLocation, error } = useLocation();
+  const { status, coords, getCurrentLocation } = useLocation();
   const [filter, setFilter] = useState<FilterType>('all');
   const [view, setView] = useState<'map' | 'list'>('map');
 
-  // Sortăm locurile după distanță când avem locația curentă
-  const places = useMemo(() => {
-    if (coords) return sortByDistance(DEMO_PET_PLACES, coords);
-    return DEMO_PET_PLACES;
-  }, [coords]);
+  const listingsQuery = useBusinessListings();
+  const vetsQuery = useVets();
+  const loading = listingsQuery.isLoading || vetsQuery.isLoading;
+
+  const places: PetPlace[] = useMemo(() => {
+    const listings: PetPlace[] = (listingsQuery.data ?? []).map((l) => ({
+      id: `biz-${l.id}`,
+      name: l.name,
+      type: CATEGORY_TO_TYPE[l.category],
+      coords: l.lat != null && l.lng != null ? { latitude: l.lat, longitude: l.lng } : undefined,
+      address: [l.address, l.city].filter(Boolean).join(', ') || undefined,
+      phone: l.phone ?? undefined,
+      website: l.website ?? undefined,
+    }));
+    const vets: PetPlace[] = (vetsQuery.data ?? []).map((v) => ({
+      id: `vet-${v.id}`,
+      name: v.clinic_name,
+      type: 'vet',
+      coords: undefined, // vets nu are inca coordonate reale — doar in lista
+      address: [v.address, v.city].filter(Boolean).join(', ') || undefined,
+      phone: v.phone ?? undefined,
+      rating: v.rating > 0 ? v.rating : undefined,
+    }));
+    return [...vets, ...listings];
+  }, [listingsQuery.data, vetsQuery.data]);
+
+  // Sortăm locurile după distanță când avem locația curentă (cele fără coords rămân la final)
+  const sorted = useMemo(() => (coords ? sortByDistance(places, coords) : places), [places, coords]);
 
   const filtered = useMemo(() => {
-    if (filter === 'all') return places;
-    return places.filter((p) => p.type === filter);
-  }, [places, filter]);
+    if (filter === 'all') return sorted;
+    return sorted.filter((p) => p.type === filter);
+  }, [sorted, filter]);
+
+  const mappable = useMemo(() => filtered.filter((p): p is PetPlace & { coords: NonNullable<PetPlace['coords']> } => !!p.coords), [filtered]);
 
   // Default region — București centru
   const initialRegion = coords
@@ -76,11 +109,15 @@ export default function HartaScreen() {
       {/* Filtre */}
       <View style={[styles.filters, { backgroundColor: theme.colors.surface }]}>
         <FilterChip label={t('map.nearby')} active={filter === 'all'} onPress={() => setFilter('all')} color={theme.colors.primary} />
-        <FilterChip label={`🏥 ${t('map.vets')}`} active={filter === 'vet'} onPress={() => setFilter('vet')} color={theme.colors.primary} />
-        <FilterChip label={`🌳 ${t('map.parks')}`} active={filter === 'park'} onPress={() => setFilter('park')} color={theme.colors.primary} />
-        <FilterChip label={`🛍️ ${t('map.shops')}`} active={filter === 'shop'} onPress={() => setFilter('shop')} color={theme.colors.primary} />
-        <FilterChip label={`🏠 ${t('map.shelters')}`} active={filter === 'shelter'} onPress={() => setFilter('shelter')} color={theme.colors.primary} />
-        <FilterChip label={`🎪 ${t('map.events')}`} active={filter === 'event'} onPress={() => setFilter('event')} color={theme.colors.primary} />
+        {(Object.keys(PLACE_META) as PetPlace['type'][]).map((type) => (
+          <FilterChip
+            key={type}
+            label={`${PLACE_META[type].emoji} ${PLACE_META[type].label}`}
+            active={filter === type}
+            onPress={() => setFilter(type)}
+            color={theme.colors.primary}
+          />
+        ))}
       </View>
 
       {/* Permisiune locație */}
@@ -108,7 +145,7 @@ export default function HartaScreen() {
               showsUserLocation={status === 'granted'}
               showsMyLocationButton
             >
-              {filtered.map((place) => {
+              {mappable.map((place) => {
                 const meta = PLACE_META[place.type];
                 return (
                   <Marker
@@ -125,9 +162,6 @@ export default function HartaScreen() {
                             📍 {place.distance.toFixed(1)} km
                           </Text>
                         )}
-                        <Text style={{ fontSize: 11, marginTop: 2, color: place.isOpen ? '#16A34A' : '#DC2626', fontWeight: '600' }}>
-                          {place.isOpen ? `🟢 ${t('map.open')}` : `🔴 ${t('map.closed')}`}
-                        </Text>
                       </View>
                     </Callout>
                   </Marker>
@@ -138,11 +172,15 @@ export default function HartaScreen() {
             <FlatList
               data={filtered}
               keyExtractor={(item) => item.id}
-              contentContainerStyle={{ padding: theme.spacing.md, gap: theme.spacing.sm , maxWidth: 720, width: '100%', alignSelf: 'center' }}
+              contentContainerStyle={{ padding: theme.spacing.md, gap: theme.spacing.sm, maxWidth: 720, width: '100%', alignSelf: 'center', flexGrow: 1 }}
               ListEmptyComponent={
-                <View style={{ padding: 32, alignItems: 'center' }}>
-                  <Text style={{ color: theme.colors.textMuted }}>{t('app.loading')}</Text>
-                </View>
+                <StateView
+                  loading={loading}
+                  empty={!loading}
+                  emoji="🗺️"
+                  title="Niciun rezultat"
+                  description="Nu am găsit încă locuri în această categorie."
+                />
               }
               renderItem={({ item }) => {
                 const meta = PLACE_META[item.type];
@@ -161,16 +199,13 @@ export default function HartaScreen() {
                         </Text>
                       )}
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                        <Text style={{ color: item.isOpen ? theme.colors.success : theme.colors.danger, fontSize: 11, fontWeight: '600' }}>
-                          {item.isOpen ? `🟢 ${t('map.open')}` : `🔴 ${t('map.closed')}`}
-                        </Text>
                         {item.distance !== undefined && (
                           <Text style={{ color: theme.colors.textMuted, fontSize: 11 }}>
-                            · {item.distance.toFixed(1)} km
+                            {item.distance.toFixed(1)} km
                           </Text>
                         )}
                         {item.rating && (
-                          <Text style={{ color: theme.colors.accent, fontSize: 11 }}>· ⭐ {item.rating}</Text>
+                          <Text style={{ color: theme.colors.accent, fontSize: 11 }}>⭐ {item.rating.toFixed(1)}</Text>
                         )}
                       </View>
                     </View>
@@ -180,15 +215,17 @@ export default function HartaScreen() {
                           <Ionicons name="call" size={20} color={theme.colors.primary} />
                         </Pressable>
                       )}
-                      <Pressable onPress={() => {
-                        const url = Platform.select({
-                          ios: `maps://?daddr=${item.coords.latitude},${item.coords.longitude}`,
-                          android: `google.navigation:q=${item.coords.latitude},${item.coords.longitude}`,
-                        });
-                        if (url) Linking.openURL(url);
-                      }}>
-                        <Ionicons name="navigate" size={20} color={theme.colors.primary} />
-                      </Pressable>
+                      {item.coords && (
+                        <Pressable onPress={() => {
+                          const url = Platform.select({
+                            ios: `maps://?daddr=${item.coords!.latitude},${item.coords!.longitude}`,
+                            android: `google.navigation:q=${item.coords!.latitude},${item.coords!.longitude}`,
+                          });
+                          if (url) Linking.openURL(url);
+                        }}>
+                          <Ionicons name="navigate" size={20} color={theme.colors.primary} />
+                        </Pressable>
+                      )}
                     </View>
                   </Card>
                 );

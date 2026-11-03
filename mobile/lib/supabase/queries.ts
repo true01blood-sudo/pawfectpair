@@ -2596,6 +2596,8 @@ export const queries = {
   fetchUnreadNotificationsCount,
   markNotificationRead,
   markAllNotificationsRead,
+  // Business listings (harta)
+  fetchBusinessListings,
 };
 
 // ============================================================
@@ -3102,4 +3104,36 @@ export async function markAllNotificationsRead(userId: string): Promise<void> {
     .eq('user_id', userId)
     .eq('is_read', false);
   if (error) throw error;
+}
+
+// ============================================================
+// BUSINESS LISTINGS — director de activitati conexe (harta)
+// ============================================================
+
+export type BusinessListingCategory = 'pet_shop' | 'shelter' | 'trainer';
+
+export type BusinessListingRow = {
+  id: string;
+  category: BusinessListingCategory;
+  name: string;
+  city: string | null;
+  address: string | null;
+  lat: number | null;
+  lng: number | null;
+  phone: string | null;
+  website: string | null;
+  description: string | null;
+  verified: boolean;
+};
+
+/** Director importat (OSM + ACh.ro) — vezi scripts/business-import/. */
+export async function fetchBusinessListings(): Promise<BusinessListingRow[]> {
+  const { data, error } = await supabase
+    .from('business_listings')
+    .select('id, category, name, city, address, lat, lng, phone, website, description, verified')
+    .eq('active', true)
+    .order('verified', { ascending: false })
+    .order('name', { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as BusinessListingRow[];
 }
