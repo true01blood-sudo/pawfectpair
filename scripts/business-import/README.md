@@ -52,3 +52,45 @@ Populează `public.business_listings` (migrațiile `0070_business_listings.sql` 
   Registrul e per-vehicul (o firmă poate avea mai multe camioane); importăm un
   singur rând per transportator unic (proprietar + județ), doar cele cu
   autorizația curentă activă (ultima intrare din istoricul fiecărui vehicul).
+
+## Geocodare veterinari (geocode-vets.js)
+
+`public.vets` are doar `city`/`address` text, deloc `lat`/`lng` — aplică mai
+întâi `supabase/migrations/0072_vets_geocoding.sql` (coloane noi, nulabile).
+Fără geocodare, veterinarii nu pot apărea ca pini pe hartă (mobil) sau în
+`/aproape` (web), doar în listă, fără distanță reală.
+
+Nu există nicio cheie Google Geocoding API în acest proiect utilizabilă
+server-side (singura cheie Google e cea de Maps SDK din `mobile/app.json`,
+restricționată pe package+SHA-1 Android — ar fi respinsă de Google dacă ar fi
+folosită dintr-un script). Folosim în schimb **Nominatim** (geocodare gratuită
+OpenStreetMap, fără cheie) — respectă politica lor de 1 cerere/secundă.
+
+```bash
+node geocode-vets.js --dry-run --limit=10   # testează pe primii 10, nu scrie in DB
+node geocode-vets.js                        # geocodeaza real toti vets fara lat/lng
+```
+
+La momentul scrierii, `public.vets` are doar 2 înregistrări reale (date de
+test) — pipeline-ul DSVSA/OSM pentru veterinari (`pawfectpair-design/geolocatie
++ alte module/`) nu a fost niciodată conectat la această bază de date de
+producție (scrie într-o bază Postgres separată, locală, definită în
+`schema.sql`/`docker-compose.yml` din acel folder) — e un gol separat, nu face
+parte din acest script.
+
+## Normalizare orașe OSM (normalize-cities.js)
+
+Datele OSM brute au variante inconsistente de oraș (cu/fără diacritice,
+cu/fără sufix de județ, hyphenation diferită — ex. "București" / "Bucuresti" /
+"Bucuresti, Ilfov" / "Cluj Napoca, Jud. Cluj" toate apărând ca valori
+distincte). `normalize-city.js` exportă funcția pură de normalizare (folosită
+și de `import.js` la fiecare import nou, ca să nu mai reapară mizeria).
+
+```bash
+node normalize-cities.js --dry-run   # afișează tabelul înainte/după, NU scrie in DB
+node normalize-cities.js             # aplică UPDATE pentru valorile schimbate
+```
+
+Citește intâi tabelul din `--dry-run` — normalizarea e conservatoare (lasă
+neatinse intrările ambigue: adrese complete greșit puse în `city`, sau doar
+"Jud. X" fără oraș), dar tot merită un ochi uman înainte de rulare reală.
