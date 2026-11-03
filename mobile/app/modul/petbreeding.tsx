@@ -139,7 +139,11 @@ export default function PetBreedingScreen() {
       <View style={styles.swipeArea}>
         {listings.isLoading ? (
           <Text style={{ color: theme.colors.textMuted }}>{t('app.loading', 'Se încarcă...')}</Text>
-        ) : isFinished ? (
+        ) : listings.isError ? (
+          <StateView
+            error="Nu am putut încărca anunțurile de reproducere. Încearcă din nou."
+          />
+        ) : isFinished || !card ? (
           <View style={styles.finishedState}>
             <Text style={{ fontSize: 48 }}>🌸</Text>
             <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '700', marginTop: 12, textAlign: 'center' }}>
@@ -277,7 +281,7 @@ export default function PetBreedingScreen() {
       </View>
 
       {/* Butoane acțiune */}
-      {!isFinished && (
+      {!isFinished && card && (
         <View style={styles.actionRow}>
           <Pressable onPress={undoLast} style={[styles.actionBtn, styles.actionBtnSm, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
             <Ionicons name="return-up-back" size={20} color={theme.colors.textMuted} />
@@ -298,7 +302,7 @@ export default function PetBreedingScreen() {
       )}
 
       {/* CTA View profile */}
-      {!isFinished && (
+      {!isFinished && card && (
         <View style={{ paddingHorizontal: 20, paddingBottom: 16 }}>
           <Pressable
             onPress={() => card.contact_phone ? Linking.openURL(`tel:${card.contact_phone}`) : Alert.alert('Fără contact', 'Acest anunț nu are un număr de telefon adăugat.')}
