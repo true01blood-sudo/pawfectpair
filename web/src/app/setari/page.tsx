@@ -14,13 +14,11 @@ export default async function SetariPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, username, bio, avatar_url, role")
+    .select("full_name")
     .eq("id", user.id)
     .single();
 
   const fullName = profile?.full_name ?? user.user_metadata?.full_name ?? "";
-  const username = profile?.username ?? "";
-  const bio = profile?.bio ?? "";
 
   return (
     <>
@@ -40,27 +38,6 @@ export default async function SetariPage() {
                   defaultValue={fullName}
                   maxLength={80}
                   className="w-full rounded-xl border px-3 py-2 text-sm bg-transparent"
-                  style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: "var(--muted)" }}>Nume utilizator</label>
-                <input
-                  name="username"
-                  defaultValue={username}
-                  maxLength={30}
-                  className="w-full rounded-xl border px-3 py-2 text-sm bg-transparent"
-                  style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: "var(--muted)" }}>Bio</label>
-                <textarea
-                  name="bio"
-                  defaultValue={bio}
-                  rows={3}
-                  maxLength={300}
-                  className="w-full rounded-xl border px-3 py-2 text-sm bg-transparent resize-none"
                   style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
                 />
               </div>
