@@ -9,7 +9,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../components/theme-provider';
 import { Avatar, Button, Card, Input } from '../../components/ui';
-import { useProfile, useUpdateProfile, useAuth } from '../../hooks';
+import { useProfile, useUpdateProfile, useAuth, useUnreadNotificationsCount } from '../../hooks';
 import { useUIStore } from '../../store/ui.store';
 import { pickFromGallery, takePhoto, PhotoValidationError } from '../../lib/image-picker';
 import { uploadPetPhoto } from '../../lib/supabase/queries';
@@ -23,6 +23,7 @@ export default function ProfilScreen() {
   const theme = useAppTheme();
   const router = useRouter();
   const { profile, updateProfile } = { profile: useProfile(), updateProfile: useUpdateProfile() };
+  const unreadNotifications = useUnreadNotificationsCount();
   const { signOut } = useAuth();
   const user = useAuthStore((s) => s.user);
   const themePreference = useUIStore((s) => s.themePreference);
@@ -159,6 +160,26 @@ export default function ProfilScreen() {
             <Button title={t('profile.dark')} size="sm" variant={themePreference === 'dark' ? 'primary' : 'outline'} onPress={() => setThemePreference('dark')} style={{ flex: 1 }} />
             <Button title={t('profile.system')} size="sm" variant={themePreference === 'system' ? 'primary' : 'outline'} onPress={() => setThemePreference('system')} style={{ flex: 1 }} />
           </View>
+        </Card>
+
+        {/* Notificări */}
+        <Card>
+          <Pressable onPress={() => router.push('/notificari')}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View>
+                <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeLg, fontFamily: theme.typography.fontFamilyBold }}>
+                  🔔 Notificări
+                  {(unreadNotifications.data ?? 0) > 0 && (
+                    <Text style={{ color: theme.colors.primary }}> ({unreadNotifications.data})</Text>
+                  )}
+                </Text>
+                <Text style={{ color: theme.colors.textMuted, fontSize: theme.typography.fontSizeSm, marginTop: 2 }}>
+                  Mesaje noi, programări și actualizări
+                </Text>
+              </View>
+              <Text style={{ color: theme.colors.primary, fontSize: 22 }}>›</Text>
+            </View>
+          </Pressable>
         </Card>
 
         {/* Programările mele */}

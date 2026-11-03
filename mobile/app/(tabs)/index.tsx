@@ -16,6 +16,7 @@ import { Card } from '../../components/ui';
 import { useMyPets, useUpcomingRecords, useEduArticles } from '../../hooks';
 import { useProfile } from '../../hooks/useProfile';
 import { useEvents, useSetEventRsvp, useMyRsvps } from '../../hooks/useEvents';
+import { useUnreadNotificationsCount } from '../../hooks/useNotifications';
 import { useAuthStore } from '../../store/auth.store';
 import { MEDICAL_TYPE_LABELS } from '@pawfectpair/shared';
 
@@ -28,6 +29,7 @@ export default function HomeScreen() {
   const pets = useMyPets();
   const profile = useProfile();
   const session = useAuthStore((s) => s.session);
+  const unreadNotifications = useUnreadNotificationsCount();
   const [activeTab, setActiveTab] = useState<FeedTab>('For you');
   const [refreshing, setRefreshing] = useState(false);
   const lastBackPress = useRef(0);
@@ -123,10 +125,13 @@ export default function HomeScreen() {
           </Pressable>
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <Pressable
-              onPress={() => router.push('/(tabs)/profil')}
+              onPress={() => router.push('/notificari')}
               style={[styles.iconBtn, { backgroundColor: s.surface, borderColor: s.border }]}
             >
               <Ionicons name="notifications-outline" size={20} color={s.text} />
+              {(unreadNotifications.data ?? 0) > 0 && (
+                <View style={[styles.notifDot, { backgroundColor: '#EF4444', borderColor: s.background }]} />
+              )}
             </Pressable>
             <Pressable
               onPress={() => router.push('/(tabs)/comunitate')}
@@ -381,6 +386,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  notifDot: {
+    position: 'absolute',
+    top: 6,
+    right: 7,
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    borderWidth: 1.5,
   },
   petAvatar: {
     width: 56,

@@ -11,7 +11,10 @@ export {
   useMatchCandidates, useLikePet, usePassPet,
   useConversations, useMessages, useSendMessage,
 } from './useMatch';
-export { useNotifications } from './useNotifications';
+export {
+  useNotifications, useNotificationsList, useUnreadNotificationsCount,
+  useMarkNotificationRead, useMarkAllNotificationsRead,
+} from './useNotifications';
 export {
   useEduArticles, useTrainers, useMyTrainerProfile,
   useSaveTrainerProfile, useToggleTrainerActive, useEduLibrary,
