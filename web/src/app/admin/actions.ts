@@ -21,6 +21,21 @@ async function requireAdmin() {
   return supabase;
 }
 
+export async function updateAppVersion(formData: FormData) {
+  const supabase = await requireAdmin();
+  const min_app_version = String(formData.get("min_app_version") ?? "").trim() || null;
+  const update_message = String(formData.get("update_message") ?? "").trim() || null;
+  const ios_store_url = String(formData.get("ios_store_url") ?? "").trim() || null;
+  const android_store_url = String(formData.get("android_store_url") ?? "").trim() || null;
+
+  await supabase
+    .from("app_settings")
+    .update({ min_app_version, update_message, ios_store_url, android_store_url, updated_at: new Date().toISOString() })
+    .eq("id", true);
+
+  revalidatePath("/admin/setari");
+}
+
 export async function updateMarkup(formData: FormData) {
   const supabase = await requireAdmin();
   const markup_percent = Number(formData.get("markup_percent") ?? 15);
