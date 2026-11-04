@@ -6,7 +6,6 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert, Switch } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../theme-provider';
 import { Button, Input, Card } from '../ui';
 import {
@@ -40,7 +39,6 @@ export function PetForm({ initial, onSubmit, submitLabel = 'Salvează' }: PetFor
   const t = useAppTheme();
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
-  const { t: tr } = useTranslation();
 
   const [form, setForm] = useState<PetForm>({
     name: initial?.name ?? '',
@@ -217,11 +215,11 @@ export function PetForm({ initial, onSubmit, submitLabel = 'Salvează' }: PetFor
       {(form.species === 'Câine' || form.species === 'Pisică') && (
         <Card>
           <Text style={{ color: t.colors.text, fontSize: t.typography.fontSizeMd, fontFamily: t.typography.fontFamilyBold, marginBottom: t.spacing.sm }}>
-            📜 {tr('petext.pedigree_section')}
+            📜 Pedigree / Carte de origine
           </Text>
           <View style={styles.switchRow}>
             <Text style={{ color: t.colors.text, fontSize: t.typography.fontSizeSm, flex: 1 }}>
-              {tr('petext.pedigree_toggle')}
+              Are pedigree (carte de origine)
             </Text>
             <Switch
               value={form.pedigree_registered === true}
@@ -233,7 +231,7 @@ export function PetForm({ initial, onSubmit, submitLabel = 'Salvează' }: PetFor
           {form.pedigree_registered === true && (
             <View style={{ gap: t.spacing.xs, marginTop: t.spacing.sm }}>
               <Input
-                label={tr('petext.pedigree_registry')}
+                label="Registrul de origine"
                 value={form.pedigree_registry ?? ''}
                 onChangeText={(v) => set('pedigree_registry', v)}
                 placeholder="LRC"
@@ -251,10 +249,10 @@ export function PetForm({ initial, onSubmit, submitLabel = 'Salvează' }: PetFor
                 ))}
               </View>
               <Input
-                label={tr('petext.pedigree_number')}
+                label="Numărul din registru"
                 value={form.pedigree_number ?? ''}
                 onChangeText={(v) => set('pedigree_number', v)}
-                placeholder={tr('petext.pedigree_number_ph')}
+                placeholder="ex. LRC 12345/2024"
                 maxLength={60}
               />
             </View>
@@ -264,7 +262,7 @@ export function PetForm({ initial, onSubmit, submitLabel = 'Salvează' }: PetFor
 
       {/* ——— Cadrul legal OUG 55/2002 (doar câini) ——— */}
       {form.species === 'Câine' && (
-        <Oug50Section form={form} set={set} tr={tr} />
+        <Oug50Section form={form} set={set} />
       )}
 
       <Input
@@ -329,23 +327,21 @@ const styles = StyleSheet.create({
 // Sub-componentă: cadrul legal OUG 55/2002 (doar câini)
 // ============================================================
 
-const OUG_ACTION_LABEL_KEY: Record<Oug50ActionId, string> = {
-  owner_18: 'petext.oug50_req_owner_18',
-  registration: 'petext.oug50_req_registration',
-  microchip: 'petext.oug50_req_microchip',
-  insurance: 'petext.oug50_req_insurance',
-  sign: 'petext.oug50_req_sign',
-  sterilized: 'petext.oug50_req_sterilized',
+const OUG_ACTION_LABEL: Record<Oug50ActionId, string> = {
+  owner_18: 'Posesor min. 18 ani',
+  registration: 'Înregistrare la poliție (evidența câinilor periculoși)',
+  microchip: 'Microchip / identificare (Legea 258/2013)',
+  insurance: 'Asigurare de răspundere civilă',
+  sign: 'Afiș „Atenție câine" la poartă / ușa casei',
+  sterilized: 'Animal sterilizat',
 };
 
 function Oug50Section({
   form,
   set,
-  tr,
 }: {
   form: PetForm;
   set: <K extends keyof PetForm>(key: K, value: PetForm[K]) => void;
-  tr: (k: string, o?: Record<string, unknown>) => string;
 }) {
   const theme = useAppTheme();
   const detected = useMemo(() => detectOug50Category(form.breed), [form.breed]);
@@ -372,11 +368,11 @@ function Oug50Section({
     return (
       <Card>
         <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeMd, fontFamily: theme.typography.fontFamilyBold, marginBottom: theme.spacing.xs }}>
-          ⚖️ {tr('petext.oug50_section')}
+          ⚖️ Cadrul legal — câini periculoși (OUG 55/2002)
         </Text>
         <View style={styles.switchRow}>
           <Text style={{ color: theme.colors.textMuted, fontSize: theme.typography.fontSizeSm, flex: 1 }}>
-            {tr('petext.oug50_toggle')}
+            Rasă potențial periculoasă (declarație)
           </Text>
           <Switch
             value={false}
@@ -397,16 +393,16 @@ function Oug50Section({
   return (
     <Card>
       <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeMd, fontFamily: theme.typography.fontFamilyBold, marginBottom: theme.spacing.xs }}>
-        ⚖️ {tr('petext.oug50_section')}
+        ⚖️ Cadrul legal — câini periculoși (OUG 55/2002)
       </Text>
 
       <View style={[styles.ougBanner, { backgroundColor: theme.colors.warning + '18', borderColor: theme.colors.warning }]}>
         <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeSm, fontFamily: theme.typography.fontFamilyMedium }}>
-          {tr('petext.oug50_banner')}
+          Animalul face parte din categoriile reglementate de OUG 55/2002. Respectă cerințele legale de mai jos.
         </Text>
         <Text style={{ color: theme.colors.warning, fontSize: theme.typography.fontSizeXs, fontFamily: theme.typography.fontFamilyBold }}>
-          {detected > 0 ? `${tr('petext.oug50_detected')}: ` : ''}
-          {category === 1 ? tr('petext.oug50_cat1') : tr('petext.oug50_cat2')}
+          {detected > 0 ? 'Detectat automat din rasă: ' : ''}
+          {category === 1 ? 'Categoria I — câini de luptă / atac' : 'Categoria II — câini agresivi'}
         </Text>
       </View>
 
@@ -417,14 +413,14 @@ function Oug50Section({
         </View>
         <Text style={{ color: theme.colors.textMuted, fontSize: theme.typography.fontSizeXs }}>
           {compliance.complete
-            ? `✅ ${tr('petext.oug50_complete_ok')}`
-            : tr('petext.oug50_progress', { done: compliance.done, total: compliance.total })}
+            ? '✅ Conform — toate cerințele sunt bifate'
+            : `${compliance.done} din ${compliance.total} îndeplinite`}
         </Text>
       </View>
 
       {/* Checklist bifabil */}
       <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeSm, fontFamily: theme.typography.fontFamilyMedium, marginTop: theme.spacing.md, marginBottom: theme.spacing.xs }}>
-        {tr('petext.oug50_checklist')}
+        Conformitate legală
       </Text>
       {actions.map((id) => {
         const col = OUG50_ACTION_COLUMN[id];
@@ -432,7 +428,7 @@ function Oug50Section({
         return (
           <View key={id} style={styles.switchRow}>
             <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeSm, flex: 1 }}>
-              {tr(OUG_ACTION_LABEL_KEY[id])}
+              {OUG_ACTION_LABEL[id]}
             </Text>
             <Switch
               value={val}
@@ -449,21 +445,21 @@ function Oug50Section({
         <View style={styles.ougReqRow}>
           <Text style={{ fontSize: 14 }}>🚨</Text>
           <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeXs, flex: 1 }}>
-            {tr('petext.oug50_req_muzzle_leash')} — {tr('petext.oug50_required_by_law')}
+            În spații publice: lesă scurtă + botniță — Obligatoriu prin lege
           </Text>
         </View>
         {category === 1 && (
           <View style={styles.ougReqRow}>
             <Text style={{ fontSize: 14 }}>🚫</Text>
             <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeXs, flex: 1 }}>
-              {tr('petext.oug50_req_no_public_venues')}
+              Acces interzis: localuri publice, transport în comun, piețe
             </Text>
           </View>
         )}
       </View>
 
       <Text style={{ color: theme.colors.textMuted, fontSize: theme.typography.fontSizeXs, marginTop: theme.spacing.sm }}>
-        ℹ️ {tr('petext.oug50_legal_note')}
+        ℹ️ Informații orientative — verifică legislația actualizată (OUG 55/2002, Legea 258/2013) și normele locale.
       </Text>
     </Card>
   );

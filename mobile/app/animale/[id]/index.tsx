@@ -9,32 +9,36 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../../components/theme-provider';
 import { Button, Card, StateView, Input } from '../../../components/ui';
 import { MedicalRecordItem, WeightChart } from '../../../components/medical';
 import {
   usePet, useMedicalRecords, useWeightLogs,
-  useCreateMedicalRecord, useDeleteMedicalRecord, useAddWeightLog,
+  useCreateMedicalRecord, useUpdateMedicalRecord, useDeleteMedicalRecord, useAddWeightLog,
 } from '../../../hooks';
 import {
   SPECIES_EMOJI, SPECIES_LABELS, calcAge, formatDateRO, toDateInput,
   MEDICAL_TYPE_OPTIONS, MEDICAL_TYPE_LABELS,
   detectOug50Category, oug50Compliance, oug50ChecklistActions, OUG50_ACTION_COLUMN,
 } from '@pawfectpair/shared';
-import type { MedicalType, Pet } from '@pawfectpair/shared';
+import type { MedicalType, MedicalRecord, Pet } from '@pawfectpair/shared';
 
-const OUG_ACTION_LABEL_KEY: Record<string, string> = {
-  owner_18: 'petext.oug50_req_owner_18',
-  registration: 'petext.oug50_req_registration',
-  microchip: 'petext.oug50_req_microchip',
-  insurance: 'petext.oug50_req_insurance',
-  sign: 'petext.oug50_req_sign',
-  sterilized: 'petext.oug50_req_sterilized',
+// Text fix in română — restul ecranului (titluri, butoane, alerte) e deja
+// hardcodat românește, nu trece prin i18n; cardul OUG50 era singurul care
+// folosea tr(), ceea ce il facea sa arate in engleza ori de cate ori
+// i18n.language nu era exact 'ro' (raportat de user) — inconsecvent fata
+// de restul ecranului, care ramane romanesc indiferent de limba selectata.
+const OUG_ACTION_LABEL: Record<string, string> = {
+  owner_18: 'Posesor min. 18 ani',
+  registration: 'Înregistrare la poliție (evidența câinilor periculoși)',
+  microchip: 'Microchip / identificare (Legea 258/2013)',
+  insurance: 'Asigurare de răspundere civilă',
+  sign: 'Afiș „Atenție câine" la poartă / ușa casei',
+  sterilized: 'Animal sterilizat',
 };
 
 /** Card cadrul legal OUG 55/2002 — afișat doar pentru câini încadrați */
-function Oug50ProfileCard({ pet, tr }: { pet: Pet; tr: (k: string, o?: Record<string, unknown>) => string }) {
+function Oug50ProfileCard({ pet }: { pet: Pet }) {
   const t = useAppTheme();
   const detected = detectOug50Category(pet.breed);
   const category = (pet.oug50_category === 1 || detected === 1) ? 1 : 2;
@@ -65,11 +69,11 @@ function Oug50ProfileCard({ pet, tr }: { pet: Pet; tr: (k: string, o?: Record<st
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Text style={{ color: t.colors.text, fontSize: t.typography.fontSizeMd, fontFamily: t.typography.fontFamilyBold, flex: 1 }}>
-          {tr('petext.oug50_badge', { cat: category })}
+          ⚠️ Rasă periculoasă — Cat. {category}
         </Text>
       </View>
       <Text style={{ color: t.colors.text, fontSize: t.typography.fontSizeSm }}>
-        {category === 1 ? tr('petext.oug50_cat1') : tr('petext.oug50_cat2')}
+        {category === 1 ? 'Categoria I — câini de luptă / atac' : 'Categoria II — câini agresivi'}
       </Text>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -78,8 +82,8 @@ function Oug50ProfileCard({ pet, tr }: { pet: Pet; tr: (k: string, o?: Record<st
         </View>
         <Text style={{ color: t.colors.textMuted, fontSize: t.typography.fontSizeXs }}>
           {compliance.complete
-            ? `✅ ${tr('petext.oug50_complete_ok')}`
-            : tr('petext.oug50_progress', { done: compliance.done, total: compliance.total })}
+            ? '✅ Conform — toate cerințele sunt bifate'
+            : `${compliance.done} din ${compliance.total} îndeplinite`}
         </Text>
       </View>
 
@@ -89,7 +93,7 @@ function Oug50ProfileCard({ pet, tr }: { pet: Pet; tr: (k: string, o?: Record<st
           <View key={id} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
             <Text style={{ fontSize: 14 }}>{done ? '✅' : '⬜'}</Text>
             <Text style={{ color: done ? t.colors.text : t.colors.textMuted, fontSize: t.typography.fontSizeXs, flex: 1 }}>
-              {tr(OUG_ACTION_LABEL_KEY[id])}
+              {OUG_ACTION_LABEL[id]}
             </Text>
           </View>
         );
@@ -99,21 +103,21 @@ function Oug50ProfileCard({ pet, tr }: { pet: Pet; tr: (k: string, o?: Record<st
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
           <Text style={{ fontSize: 13 }}>🚨</Text>
           <Text style={{ color: t.colors.text, fontSize: t.typography.fontSizeXs, flex: 1 }}>
-            {tr('petext.oug50_req_muzzle_leash')}
+            În spații publice: lesă scurtă + botniță
           </Text>
         </View>
         {category === 1 && (
           <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
             <Text style={{ fontSize: 13 }}>🚫</Text>
             <Text style={{ color: t.colors.text, fontSize: t.typography.fontSizeXs, flex: 1 }}>
-              {tr('petext.oug50_req_no_public_venues')}
+              Acces interzis: localuri publice, transport în comun, piețe
             </Text>
           </View>
         )}
       </View>
 
       <Text style={{ color: t.colors.textMuted, fontSize: t.typography.fontSizeXs }}>
-        ℹ️ {tr('petext.oug50_legal_note')}
+        ℹ️ Informații orientative — verifică legislația actualizată (OUG 55/2002, Legea 258/2013) și normele locale.
       </Text>
     </View>
   );
@@ -123,15 +127,16 @@ export default function PetDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const t = useAppTheme();
   const router = useRouter();
-  const { t: tr } = useTranslation();
   const pet = usePet(id);
   const medical = useMedicalRecords(id);
   const weight = useWeightLogs(id);
   const createRecord = useCreateMedicalRecord();
+  const updateRecord = useUpdateMedicalRecord();
   const deleteRecord = useDeleteMedicalRecord();
   const addWeight = useAddWeightLog();
 
   const [showAddMedical, setShowAddMedical] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<MedicalRecord | null>(null);
   const [showAddWeight, setShowAddWeight] = useState(false);
 
   const age = pet.data ? calcAge(pet.data.birth_date) : null;
@@ -193,7 +198,7 @@ export default function PetDetailScreen() {
                       <Text style={{ fontSize: 16 }}>📜</Text>
                       <View style={{ flex: 1 }}>
                         <Text style={{ color: t.colors.text, fontSize: t.typography.fontSizeXs, fontFamily: t.typography.fontFamilyBold }}>
-                          {tr('petext.pedigree_show')}
+                          Pedigree
                           {pet.data.pedigree_registry ? ` · ${pet.data.pedigree_registry}` : ''}
                         </Text>
                         {pet.data.pedigree_number ? (
@@ -210,7 +215,7 @@ export default function PetDetailScreen() {
               {/* Cadrul legal OUG 55/2002 — doar câini încadrați */}
               {pet.data.species === 'Câine' &&
                 (pet.data.dangerous_breed || detectOug50Category(pet.data.breed) > 0) && (
-                  <Oug50ProfileCard pet={pet.data} tr={tr} />
+                  <Oug50ProfileCard pet={pet.data} />
                 )}
 
               {/* Acțiuni rapide */}
@@ -219,22 +224,25 @@ export default function PetDetailScreen() {
                 <Button title="⚖️ Greutate" variant="outline" onPress={() => router.push(`/animale/${id}/greutate`)} style={{ flex: 1 }} />
               </View>
 
-              {/* Card greutate actuală */}
+              {/* Card greutate actuală — apăsabil, deschide istoricul (arăta ca un card interactiv dar nu naviga nicăieri) */}
               {lastWeight && (
-                <Card style={{ marginTop: t.spacing.md, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                  <View style={[styles.weightIcon, { backgroundColor: t.colors.primaryLight }]}>
-                    <Text style={{ fontSize: 28 }}>⚖️</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: t.colors.textMuted, fontSize: t.typography.fontSizeSm }}>Ultima cântărire</Text>
-                    <Text style={{ color: t.colors.text, fontSize: t.typography.fontSizeXl, fontFamily: t.typography.fontFamilyBold }}>
-                      {lastWeight.weight_kg} kg
-                    </Text>
-                    <Text style={{ color: t.colors.textMuted, fontSize: t.typography.fontSizeXs }}>
-                      {formatDateRO(lastWeight.logged_at)}
-                    </Text>
-                  </View>
-                </Card>
+                <Pressable onPress={() => router.push(`/animale/${id}/greutate`)}>
+                  <Card style={{ marginTop: t.spacing.md, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <View style={[styles.weightIcon, { backgroundColor: t.colors.primaryLight }]}>
+                      <Text style={{ fontSize: 28 }}>⚖️</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: t.colors.textMuted, fontSize: t.typography.fontSizeSm }}>Ultima cântărire</Text>
+                      <Text style={{ color: t.colors.text, fontSize: t.typography.fontSizeXl, fontFamily: t.typography.fontFamilyBold }}>
+                        {lastWeight.weight_kg} kg
+                      </Text>
+                      <Text style={{ color: t.colors.textMuted, fontSize: t.typography.fontSizeXs }}>
+                        {formatDateRO(lastWeight.logged_at)}
+                      </Text>
+                    </View>
+                    <Text style={{ color: t.colors.textMuted, fontSize: 18 }}>›</Text>
+                  </Card>
+                </Pressable>
               )}
 
               {/* Secțiune medicală */}
@@ -252,12 +260,17 @@ export default function PetDetailScreen() {
                 emptyText={'Nu există înregistrări medicale. Apasă pe „+ Adaugă" pentru a crea prima.'}
               >
                 {medical.data?.map((r) => (
-                  <MedicalRecordItem key={r.id} record={r} onDelete={(rid) => {
-                    Alert.alert('Ștergere', 'Sigur ștergi această înregistrare?', [
-                      { text: 'Anulează', style: 'cancel' },
-                      { text: 'Șterge', style: 'destructive', onPress: () => deleteRecord.mutate(rid) },
-                    ]);
-                  }} />
+                  <MedicalRecordItem
+                    key={r.id}
+                    record={r}
+                    onEdit={(record) => setEditingRecord(record)}
+                    onDelete={(rid) => {
+                      Alert.alert('Ștergere', 'Sigur ștergi această înregistrare?', [
+                        { text: 'Anulează', style: 'cancel' },
+                        { text: 'Șterge', style: 'destructive', onPress: () => deleteRecord.mutate(rid) },
+                      ]);
+                    }}
+                  />
                 ))}
               </StateView>
 
@@ -273,14 +286,20 @@ export default function PetDetailScreen() {
         </StateView>
       </ScrollView>
 
-      {/* Modal adăugare înregistrare medicală */}
+      {/* Modal adăugare/editare înregistrare medicală */}
       <AddMedicalModal
-        visible={showAddMedical}
-        onClose={() => setShowAddMedical(false)}
+        visible={showAddMedical || !!editingRecord}
+        initial={editingRecord}
+        onClose={() => { setShowAddMedical(false); setEditingRecord(null); }}
         petId={id}
         onSubmit={async (input) => {
-          await createRecord.mutateAsync({ ...input, pet_id: id });
+          if (editingRecord) {
+            await updateRecord.mutateAsync({ id: editingRecord.id, input });
+          } else {
+            await createRecord.mutateAsync({ ...input, pet_id: id });
+          }
           setShowAddMedical(false);
+          setEditingRecord(null);
         }}
       />
 
@@ -297,26 +316,39 @@ export default function PetDetailScreen() {
   );
 }
 
-function AddMedicalModal({ visible, onClose, petId, onSubmit }: {
+function AddMedicalModal({ visible, initial, onClose, petId, onSubmit }: {
   visible: boolean;
+  initial?: MedicalRecord | null;
   onClose: () => void;
   petId: string;
   onSubmit: (input: { type: MedicalType; title: string; record_date: string; next_due_date: string | null; notes: string | null }) => Promise<void>;
 }) {
   const t = useAppTheme();
-  const [type, setType] = useState<MedicalType>('vaccination');
-  const [title, setTitle] = useState('');
-  const [recordDate, setRecordDate] = useState(toDateInput());
-  const [dueDate, setDueDate] = useState('');
-  const [notes, setNotes] = useState('');
+  const isEditing = !!initial;
+  const [type, setType] = useState<MedicalType>(initial?.type ?? 'vaccination');
+  const [title, setTitle] = useState(initial?.title ?? '');
+  const [recordDate, setRecordDate] = useState(initial?.record_date ?? toDateInput());
+  const [dueDate, setDueDate] = useState(initial?.next_due_date ?? '');
+  const [notes, setNotes] = useState(initial?.notes ?? '');
   const [busy, setBusy] = useState(false);
+
+  // Resincronizam formularul de fiecare data cand se deschide pe o alta inregistrare
+  // (sau pe modul "adaugare") — altfel ramane cu valorile editarii anterioare.
+  React.useEffect(() => {
+    if (!visible) return;
+    setType(initial?.type ?? 'vaccination');
+    setTitle(initial?.title ?? '');
+    setRecordDate(initial?.record_date ?? toDateInput());
+    setDueDate(initial?.next_due_date ?? '');
+    setNotes(initial?.notes ?? '');
+  }, [visible, initial]);
 
   async function submit() {
     if (!title.trim()) { Alert.alert('Lipsă', 'Titlul este obligatoriu'); return; }
     setBusy(true);
     try {
       await onSubmit({ type, title: title.trim(), record_date: recordDate, next_due_date: dueDate || null, notes: notes.trim() || null });
-      setTitle(''); setNotes(''); setDueDate(''); setRecordDate(toDateInput());
+      if (!isEditing) { setTitle(''); setNotes(''); setDueDate(''); setRecordDate(toDateInput()); }
     } catch (e: any) {
       Alert.alert('Eroare', e?.message ?? 'Încearcă din nou');
     } finally {
@@ -330,7 +362,7 @@ function AddMedicalModal({ visible, onClose, petId, onSubmit }: {
         <Card style={{ margin: 16, maxHeight: '90%' }}>
           <ScrollView>
             <Text style={{ color: t.colors.text, fontSize: t.typography.fontSizeXl, fontFamily: t.typography.fontFamilyBold, marginBottom: t.spacing.md }}>
-              Înregistrare medicală
+              {isEditing ? 'Editează înregistrarea' : 'Înregistrare medicală'}
             </Text>
             <Text style={{ color: t.colors.text, fontSize: t.typography.fontSizeSm, fontFamily: t.typography.fontFamilyMedium, marginBottom: t.spacing.xs }}>Tip *</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: t.spacing.md }}>
@@ -344,7 +376,7 @@ function AddMedicalModal({ visible, onClose, petId, onSubmit }: {
             <Input label="Note" value={notes} onChangeText={setNotes} placeholder="Doza, veterinarul, reacții..." multiline numberOfLines={3} />
             <View style={{ flexDirection: 'row', gap: 8, marginTop: t.spacing.md }}>
               <Button title="Anulează" variant="ghost" onPress={onClose} style={{ flex: 1 }} />
-              <Button title="Salvează" onPress={submit} loading={busy} style={{ flex: 1 }} />
+              <Button title={isEditing ? 'Salvează modificările' : 'Salvează'} onPress={submit} loading={busy} style={{ flex: 1 }} />
             </View>
           </ScrollView>
         </Card>

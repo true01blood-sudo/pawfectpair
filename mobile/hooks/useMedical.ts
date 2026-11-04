@@ -43,6 +43,18 @@ export function useCreateMedicalRecord() {
   });
 }
 
+export function useUpdateMedicalRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: Omit<MedicalRecordInput, 'pet_id'> }) =>
+      queries.updateMedicalRecord(id, input),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: MEDICAL_KEY(data.pet_id) });
+      qc.invalidateQueries({ queryKey: ['medical', 'upcoming'] });
+    },
+  });
+}
+
 export function useDeleteMedicalRecord() {
   const qc = useQueryClient();
   return useMutation({

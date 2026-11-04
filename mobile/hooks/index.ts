@@ -5,6 +5,7 @@ export {
 } from './usePets';
 export {
   useMedicalRecords, useUpcomingRecords, useCreateMedicalRecord,
+  useUpdateMedicalRecord,
   useDeleteMedicalRecord, useWeightLogs, useAddWeightLog,
 } from './useMedical';
 export {

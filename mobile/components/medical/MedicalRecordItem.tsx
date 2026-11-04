@@ -7,10 +7,11 @@ import type { MedicalRecord } from '@pawfectpair/shared';
 
 interface MedicalRecordItemProps {
   record: MedicalRecord;
+  onEdit?: (record: MedicalRecord) => void;
   onDelete?: (id: string) => void;
 }
 
-export function MedicalRecordItem({ record, onDelete }: MedicalRecordItemProps) {
+export function MedicalRecordItem({ record, onEdit, onDelete }: MedicalRecordItemProps) {
   const t = useAppTheme();
   const days = record.next_due_date ? daysUntil(record.next_due_date) : null;
   const upcoming = days !== null && days >= 0 && days <= 30;
@@ -51,11 +52,18 @@ export function MedicalRecordItem({ record, onDelete }: MedicalRecordItemProps) 
             </Text>
           )}
         </View>
-        {onDelete && (
-          <Pressable onPress={() => onDelete(record.id)} hitSlop={8}>
-            <Text style={{ color: t.colors.danger, fontSize: t.typography.fontSizeLg }}>✕</Text>
-          </Pressable>
-        )}
+        <View style={{ gap: t.spacing.sm, alignItems: 'center' }}>
+          {onEdit && (
+            <Pressable onPress={() => onEdit(record)} hitSlop={8}>
+              <Text style={{ fontSize: t.typography.fontSizeMd }}>✏️</Text>
+            </Pressable>
+          )}
+          {onDelete && (
+            <Pressable onPress={() => onDelete(record.id)} hitSlop={8}>
+              <Text style={{ color: t.colors.danger, fontSize: t.typography.fontSizeLg }}>✕</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
     </Card>
   );

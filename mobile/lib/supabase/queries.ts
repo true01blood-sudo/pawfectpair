@@ -343,6 +343,27 @@ export async function createMedicalRecord(
   return data as MedicalRecord;
 }
 
+export async function updateMedicalRecord(
+  id: string,
+  input: Omit<MedicalRecordInput, 'pet_id'>
+): Promise<MedicalRecord> {
+  const safe = {
+    type: input.type,
+    title: sanitizeText(input.title, 120),
+    record_date: input.record_date,
+    next_due_date: input.next_due_date || null,
+    notes: input.notes ? sanitizeText(input.notes, 2000) : null,
+  };
+  const { data, error } = await supabase
+    .from('medical_records')
+    .update(safe)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data as MedicalRecord;
+}
+
 export async function deleteMedicalRecord(id: string): Promise<void> {
   const { error } = await supabase.from('medical_records').delete().eq('id', id);
   if (error) throw error;
@@ -2434,6 +2455,7 @@ export const queries = {
   fetchMedicalRecords,
   fetchUpcomingRecords,
   createMedicalRecord,
+  updateMedicalRecord,
   deleteMedicalRecord,
   fetchWeightLogs,
   addWeightLog,
