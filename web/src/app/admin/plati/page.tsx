@@ -17,12 +17,40 @@ export default async function AdminPlatiPage() {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "admin") redirect("/");
 
+  const now = new Date();
+  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
   // Nu selectăm niciodată secret_key / webhook_secret direct — doar dacă
   // sunt setate (boolean), ca să nu trimitem secretele către client la fiecare randare.
-  const { data: providers } = await supabase
-    .from("subscription_payment_providers")
-    .select("provider, enabled, test_mode, public_key, updated_at, secret_key, webhook_secret")
-    .order("provider");
+  const [
+    { data: providers },
+    { count: premiumCount },
+    { count: freeCount },
+    { data: expiringSoon },
+    { data: recentSubs },
+  ] = await Promise.all([
+    supabase
+      .from("subscription_payment_providers")
+      .select("provider, enabled, test_mode, public_key, updated_at, secret_key, webhook_secret")
+      .order("provider"),
+    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("plan", "premium"),
+    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("plan", "free"),
+    supabase
+      .from("profiles")
+      .select("id, full_name, plan_expires_at, plan_source")
+      .eq("plan", "premium")
+      .not("plan_expires_at", "is", null)
+      .lte("plan_expires_at", in7Days)
+      .order("plan_expires_at", { ascending: true })
+      .limit(20),
+    supabase
+      .from("profiles")
+      .select("id, full_name, plan_purchased_at")
+      .eq("plan_source", "purchased")
+      .not("plan_purchased_at", "is", null)
+      .order("plan_purchased_at", { ascending: false })
+      .limit(10),
+  ]);
 
   const rows = (providers ?? []).map((p) => ({
     ...p,
@@ -33,7 +61,7 @@ export default async function AdminPlatiPage() {
   }));
 
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
       <Breadcrumb items={[{ href: "/admin", label: "Admin" }, { label: "Plăți abonamente" }]} />
       <h1 className="text-xl font-bold sm:text-2xl">Plăți abonamente</h1>
       <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
@@ -41,7 +69,66 @@ export default async function AdminPlatiPage() {
         nu în aplicația mobilă. Poți activa mai mulți procesatori simultan.
       </p>
 
-      <div className="mt-6 flex flex-col gap-4">
+      {/* Statistici rapide */}
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-2">
+        <div className="rounded-2xl border p-4" style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>
+          <p className="text-xs" style={{ color: "var(--muted)" }}>Useri Premium</p>
+          <p className="mt-1 text-2xl font-bold" style={{ color: "var(--foreground)" }}>💎 {premiumCount ?? 0}</p>
+        </div>
+        <div className="rounded-2xl border p-4" style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>
+          <p className="text-xs" style={{ color: "var(--muted)" }}>Useri Gratuit</p>
+          <p className="mt-1 text-2xl font-bold" style={{ color: "var(--foreground)" }}>🆓 {freeCount ?? 0}</p>
+        </div>
+      </div>
+
+      {/* Expiră în curând */}
+      <section className="mt-6 rounded-2xl border p-4 sm:p-6" style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>
+        <h2 className="font-semibold">⏳ Expiră în următoarele 7 zile</h2>
+        <p className="text-xs" style={{ color: "var(--muted)" }}>
+          Notificarea automată de reînnoire pleacă singură cu 5 zile înainte — lista de aici e doar pentru vizibilitate.
+        </p>
+        {expiringSoon && expiringSoon.length > 0 ? (
+          <div className="mt-3 flex flex-col divide-y" style={{ borderColor: "var(--card-border)" }}>
+            {expiringSoon.map((u) => (
+              <div key={u.id} className="flex items-center justify-between py-2 text-sm">
+                <div>
+                  <p style={{ color: "var(--foreground)" }}>{u.full_name ?? u.id}</p>
+                  {u.plan_source === "promo_launch" && (
+                    <span className="text-xs" style={{ color: "var(--muted)" }}>promoție de lansare</span>
+                  )}
+                </div>
+                <span style={{ color: "var(--muted)" }}>
+                  {u.plan_expires_at && new Date(u.plan_expires_at).toLocaleDateString("ro-RO")}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 text-sm" style={{ color: "var(--muted)" }}>Niciun abonament nu expiră în următoarele 7 zile.</p>
+        )}
+      </section>
+
+      {/* Abonamente recente */}
+      <section className="mt-4 rounded-2xl border p-4 sm:p-6" style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>
+        <h2 className="font-semibold">💳 Ultimele abonamente plătite</h2>
+        {recentSubs && recentSubs.length > 0 ? (
+          <div className="mt-3 flex flex-col divide-y" style={{ borderColor: "var(--card-border)" }}>
+            {recentSubs.map((u) => (
+              <div key={u.id} className="flex items-center justify-between py-2 text-sm">
+                <p style={{ color: "var(--foreground)" }}>{u.full_name ?? u.id}</p>
+                <span style={{ color: "var(--muted)" }}>
+                  {u.plan_purchased_at && new Date(u.plan_purchased_at).toLocaleDateString("ro-RO")}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 text-sm" style={{ color: "var(--muted)" }}>Niciun abonament plătit încă.</p>
+        )}
+      </section>
+
+      <h2 className="mt-8 font-semibold">Procesatori</h2>
+      <div className="mt-3 flex flex-col gap-4">
         {rows.map((p) => {
           const label = PROVIDER_LABELS[p.provider] ?? { name: p.provider, hint: "" };
           return (

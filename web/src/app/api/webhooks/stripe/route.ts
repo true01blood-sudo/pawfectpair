@@ -49,6 +49,7 @@ export async function POST(request: Request) {
             stripe_subscription_id: subscriptionId ?? null,
             plan: "premium",
             plan_source: "purchased",
+            plan_purchased_at: new Date().toISOString(),
           })
           .eq("id", userId);
       }
