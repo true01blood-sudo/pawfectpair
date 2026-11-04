@@ -5,7 +5,7 @@ import { sendContactMessage } from "./actions";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description: "Contactează echipa PawfectPair. Suntem aici să te ajutăm.",
+  description: "Contactează echipa Pet Care. Suntem aici să te ajutăm.",
 };
 
 export default async function ContactPage({

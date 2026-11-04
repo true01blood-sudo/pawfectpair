@@ -52,7 +52,7 @@ export const PREMIUM_YEARLY_PRICE_DATA = {
   unit_amount: 1999, // 19,99€ — Stripe lucrează în cenți
   recurring: { interval: "year" as const },
   product_data: {
-    name: "PawfectPair Premium",
-    description: "Acces complet la toate modulele PawfectPair, un an.",
+    name: "Pet Care+",
+    description: "Acces complet la toate modulele Pet Care, un an.",
   },
 };

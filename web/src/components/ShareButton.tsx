@@ -7,11 +7,11 @@ export default function ShareButton() {
 
   async function share() {
     const url = "https://pawfectpair.app";
-    const text = "Am găsit PawfectPair — o platformă super pentru animale de companie: adopții, veterinari, magazin și comunitate. Hai și tu!";
+    const text = "Am găsit Pet Care — o platformă super pentru animale de companie: adopții, veterinari, magazin și comunitate. Hai și tu!";
 
     if (navigator.share) {
       try {
-        await navigator.share({ title: "PawfectPair", text, url });
+        await navigator.share({ title: "Pet Care", text, url });
       } catch {
         // user cancelled share sheet — nothing to do
       }

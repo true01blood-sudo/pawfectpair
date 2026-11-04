@@ -16,7 +16,7 @@ function hasPremiumAccess(profile: { plan: string; plan_expires_at: string | nul
 }
 
 export const metadata = {
-  title: "Planuri — PawfectPair",
+  title: "Planuri — Pet Care",
   description: "Planuri gratuite și Premium pentru useri, listări gratuite și Pro pentru furnizori (veterinari, pensiuni, traineri).",
 };
 
@@ -56,7 +56,7 @@ export default async function PlanuriPage({
 
           {checkout === "succes" && (
             <div className="mt-5 rounded-2xl border p-4" style={{ borderColor: "var(--success, #16A34A)", background: "var(--success-bg, #DCFCE7)" }}>
-              <p className="font-semibold" style={{ color: "var(--success, #16A34A)" }}>✅ Abonare reușită — bine ai venit la Premium!</p>
+              <p className="font-semibold" style={{ color: "var(--success, #16A34A)" }}>✅ Abonare reușită — bine ai venit la Pet Care+!</p>
             </div>
           )}
           {checkout === "anulat" && (
@@ -72,9 +72,9 @@ export default async function PlanuriPage({
 
           {isPromoActive && (
             <div className="mt-5 rounded-2xl border p-4" style={{ borderColor: "var(--primary)", background: "color-mix(in srgb, var(--primary) 8%, var(--card-bg))" }}>
-              <p className="font-semibold" style={{ color: "var(--foreground)" }}>🎉 Lansare — Premium gratuit</p>
+              <p className="font-semibold" style={{ color: "var(--foreground)" }}>🎉 Lansare — Pet Care+ gratuit</p>
               <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-                Oricine își creează cont până la <strong>30 decembrie 2026</strong> primește automat planul Premium gratuit,
+                Oricine își creează cont până la <strong>30 decembrie 2026</strong> primește automat planul Pet Care+ gratuit,
                 valabil până cel târziu <strong>1 iunie 2027</strong>. Niciun card necesar.
               </p>
             </div>
@@ -84,7 +84,7 @@ export default async function PlanuriPage({
             <div className="mt-4 rounded-2xl border p-4" style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>
               <p className="text-sm" style={{ color: "var(--muted)" }}>Planul tău curent</p>
               <p className="mt-1 text-lg font-bold" style={{ color: "var(--foreground)" }}>
-                {premium ? "💎 Premium" : "🆓 Gratuit"}
+                {premium ? "💎 Pet Care+" : "🆓 Gratuit"}
                 {premium && profile.plan_expires_at && (
                   <span className="ml-2 text-sm font-normal" style={{ color: "var(--muted)" }}>
                     activ până la {new Date(profile.plan_expires_at).toLocaleDateString("ro-RO")}
@@ -105,7 +105,7 @@ export default async function PlanuriPage({
               </ul>
             </div>
             <div className="rounded-2xl border-2 p-5" style={{ borderColor: "var(--primary)", background: "var(--card-bg)" }}>
-              <p className="font-semibold" style={{ color: "var(--primary)" }}>Premium</p>
+              <p className="font-semibold" style={{ color: "var(--primary)" }}>Pet Care+</p>
               <p className="mt-1 text-2xl font-bold" style={{ color: "var(--foreground)" }}>19,99€<span className="text-sm font-normal" style={{ color: "var(--muted)" }}>/an</span></p>
               <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>Include tot ce e în Gratuit, plus:</p>
               <ul className="mt-3 space-y-1.5 text-sm" style={{ color: "var(--muted)" }}>

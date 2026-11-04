@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Politica de confidențialitate",
-  description: "Cum colectează și folosește PawfectPair datele tale personale.",
+  description: "Cum colectează și folosește Pet Care datele tale personale.",
 };
 
 export default function ConfidentialitatePage() {
@@ -12,13 +12,13 @@ export default function ConfidentialitatePage() {
       <p className="text-sm text-muted">Ultima actualizare: 25 iulie 2026</p>
 
       <p>
-        Această politică explică ce date colectăm prin PawfectPair, de ce, și
+        Această politică explică ce date colectăm prin Pet Care, de ce, și
         cum îți poți exercita drepturile conform Regulamentului (UE) 2016/679
         (GDPR).
       </p>
 
       <h2>1. Operatorul de date</h2>
-      <p>PawfectPair — contact@pawfectpair.app</p>
+      <p>Pet Care — contact@pawfectpair.app</p>
 
       <h2>2. Ce date colectăm</h2>
       <ul>

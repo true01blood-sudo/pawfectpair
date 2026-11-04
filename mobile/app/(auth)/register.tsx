@@ -52,7 +52,7 @@ export default function RegisterScreen() {
             <Text style={{ fontSize: 56 }}>🐾</Text>
             <Text style={{ color: t.colors.text, fontSize: 24, fontWeight: 'bold' }}>Creează cont</Text>
             <Text style={{ color: t.colors.textMuted, textAlign: 'center' }}>
-              Alătură-te comunității PawfectPair
+              Alătură-te comunității Pet Care
             </Text>
           </View>
 

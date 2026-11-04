@@ -643,7 +643,7 @@ export const de = {
   },
 
   events: {
-    intro: 'Haustier-Events: Treffen, Vermittlungstage, Wettbewerbe, Workshops und charity Aktionen der PawfectPair-Community.',
+    intro: 'Haustier-Events: Treffen, Vermittlungstage, Wettbewerbe, Workshops und charity Aktionen der Pet-Care-Community.',
     tab_explore: 'Entdecken',
     tab_mine: 'Meine Events',
     type_all: 'Alle Typen',
@@ -827,7 +827,7 @@ export const de = {
   },
 
   connect: {
-    intro: 'Die PawfectPair-Community: stelle Fragen, teile Erfahrungen, stelle dein Tier vor und hilf anderen.',
+    intro: 'Die Pet-Care-Community: stelle Fragen, teile Erfahrungen, stelle dein Tier vor und hilf anderen.',
     tab_feed: 'Feed',
     tab_mine: 'Meine Beiträge',
     cat_all: 'Alle',

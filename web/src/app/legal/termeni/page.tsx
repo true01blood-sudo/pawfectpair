@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Termeni și condiții",
-  description: "Termenii și condițiile de utilizare a platformei PawfectPair.",
+  description: "Termenii și condițiile de utilizare a platformei Pet Care.",
 };
 
 export default function TermeniPage() {
@@ -12,15 +12,15 @@ export default function TermeniPage() {
       <p className="text-sm text-muted">Ultima actualizare: 25 iulie 2026</p>
 
       <p>
-        Acești termeni guvernează utilizarea platformei PawfectPair
-        (&quot;Platforma&quot;), operată de PawfectPair (&quot;noi&quot;,
+        Acești termeni guvernează utilizarea platformei Pet Care
+        (&quot;Platforma&quot;), operată de Pet Care Services (&quot;noi&quot;,
         &quot;Compania&quot;). Prin crearea unui cont sau utilizarea
         Platformei, ești de acord cu acești termeni.
       </p>
 
-      <h2>1. Ce este PawfectPair</h2>
+      <h2>1. Ce este Pet Care</h2>
       <p>
-        PawfectPair este o platformă care conectează proprietari de animale
+        Pet Care este o platformă care conectează proprietari de animale
         de companie, veterinari, centre de adopție/asociații și magazine, prin
         module de: adopții, programări veterinare, marketplace, comunitate și
         socializare între animale de companie.
@@ -44,7 +44,7 @@ export default function TermeniPage() {
 
       <h2>4. Adopții</h2>
       <p>
-        PawfectPair facilitează contactul dintre solicitanți și centrele/
+        Pet Care facilitează contactul dintre solicitanți și centrele/
         persoanele care oferă animale spre adopție, dar nu este parte în
         procesul de adopție și nu garantează exactitatea anunțurilor.
         Comercializarea animalelor prin secțiunea de adopții este interzisă.
@@ -57,14 +57,14 @@ export default function TermeniPage() {
         administratorii platformei în scop de populare a catalogului.
         Prețurile pot include un adaos comercial stabilit de platformă.
         Comenzile plasate prin Platformă reprezintă o înțelegere între
-        cumpărător și vânzător; PawfectPair nu procesează în prezent plăți
+        cumpărător și vânzător; Pet Care nu procesează în prezent plăți
         online și nu răspunde pentru livrarea sau calitatea produselor.
       </p>
 
       <h2>6. Programări veterinare</h2>
       <p>
         Programările sunt cereri transmise cabinetelor selectate; confirmarea
-        finală aparține cabinetului veterinar. PawfectPair nu oferă consultații
+        finală aparține cabinetului veterinar. Pet Care nu oferă consultații
         medicale și nu răspunde pentru actul medical veterinar.
       </p>
 
@@ -81,7 +81,7 @@ export default function TermeniPage() {
       <h2>8. Limitarea răspunderii</h2>
       <p>
         Platforma este oferită &quot;ca atare&quot;. În limita permisă de
-        lege, PawfectPair nu răspunde pentru daune indirecte rezultate din
+        lege, Pet Care nu răspunde pentru daune indirecte rezultate din
         utilizarea serviciilor, interacțiuni între utilizatori sau conținut
         publicat de terți.
       </p>

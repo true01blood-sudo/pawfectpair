@@ -907,7 +907,7 @@ export const ro = {
   },
 
   events: {
-    intro: 'Evenimente pentru animale de companie: întâlniri, zile de adopție, competiții, workshop-uri și acțiuni caritabile din comunitatea PawfectPair.',
+    intro: 'Evenimente pentru animale de companie: întâlniri, zile de adopție, competiții, workshop-uri și acțiuni caritabile din comunitatea Pet Care.',
     tab_explore: 'Explorează',
     tab_mine: 'Evenimentele mele',
     type_all: 'Toate tipurile',
@@ -1091,7 +1091,7 @@ export const ro = {
   },
 
   connect: {
-    intro: 'Comunitatea PawfectPair: pune întrebări, împărtășește experiențe, prezintă-ți animalul și ajută-i pe ceilalți.',
+    intro: 'Comunitatea Pet Care: pune întrebări, împărtășește experiențe, prezintă-ți animalul și ajută-i pe ceilalți.',
     tab_feed: 'Feed',
     tab_mine: 'Postările mele',
     cat_all: 'Toate',

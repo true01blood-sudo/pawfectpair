@@ -445,7 +445,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* ── PAWFECT+ ── */}
+        {/* ── PET CARE+ ── */}
         <section style={{ background: "#111827" }} className="py-14">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="rounded-3xl border border-white/10 bg-white/5 p-8 sm:p-12">

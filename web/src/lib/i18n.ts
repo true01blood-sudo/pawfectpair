@@ -81,7 +81,7 @@ export const translations = {
       ],
     },
     plus: {
-      badge: "✦ Pawfect+",
+      badge: "✦ Pet Care+",
       title: "Un singur nivel.\nTot ce are nevoie animalul tău.",
       desc: "Nu cumperi module separate. Cumperi liniștea că animalul tău e în siguranță.",
       comingSoon: "Vezi planurile",
@@ -174,7 +174,7 @@ export const translations = {
       ],
     },
     plus: {
-      badge: "✦ Pawfect+",
+      badge: "✦ Pet Care+",
       title: "One level.\nEverything your pet needs.",
       desc: "Don't buy separate modules. Buy peace of mind that your pet is safe.",
       comingSoon: "View plans",
@@ -267,7 +267,7 @@ export const translations = {
       ],
     },
     plus: {
-      badge: "✦ Pawfect+",
+      badge: "✦ Pet Care+",
       title: "Un seul niveau.\nTout ce dont votre animal a besoin.",
       desc: "N'achetez pas de modules séparés. Achetez la tranquillité d'esprit que votre animal est en sécurité.",
       comingSoon: "Voir les forfaits",
@@ -360,7 +360,7 @@ export const translations = {
       ],
     },
     plus: {
-      badge: "✦ Pawfect+",
+      badge: "✦ Pet Care+",
       title: "Eine Stufe.\nAlles was Ihr Tier braucht.",
       desc: "Kaufen Sie keine separaten Module. Kaufen Sie die Gewissheit, dass Ihr Tier sicher ist.",
       comingSoon: "Pläne ansehen",
@@ -429,7 +429,7 @@ export const translations = {
       ],
     },
     plus: {
-      badge: "✦ Pawfect+",
+      badge: "✦ Pet Care+",
       title: "Un solo livello.\nTutto ciò di cui il tuo animale ha bisogno.",
       desc: "Non comprare moduli separati. Compra la tranquillità che il tuo animale sia al sicuro.",
       comingSoon: "Vedi i piani",

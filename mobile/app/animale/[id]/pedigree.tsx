@@ -105,7 +105,7 @@ export default function PedigreeScreen() {
 
   async function sharePedigree() {
     try {
-      await Share.share({ message: `Pedigree-ul lui ${pet?.name ?? 'animalul meu'} pe PawfectPair.` });
+      await Share.share({ message: `Pedigree-ul lui ${pet?.name ?? 'animalul meu'} pe Pet Care.` });
     } catch {}
   }
 

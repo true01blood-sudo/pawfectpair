@@ -42,7 +42,7 @@ export default async function ProdusDetailPage({
       </p>
       {product.category && <p className="text-sm text-muted">{product.category}</p>}
       <p className="mt-2 text-sm text-muted">
-        Vândut de <span className="font-medium">{seller?.full_name ?? "PawfectPair"}</span>
+        Vândut de <span className="font-medium">{seller?.full_name ?? "Pet Care"}</span>
       </p>
       {product.delivery_info && (
         <p className="mt-1 text-sm text-muted">🚚 {product.delivery_info}</p>

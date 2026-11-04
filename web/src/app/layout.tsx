@@ -18,7 +18,7 @@ const siteUrl = "https://pawfectpair.app";
 const siteName = "Pet Care Services";
 const titleDefault = "Pet Care Services — Platforma nr. 1 pentru animale de companie";
 const description =
-  "Pet Care Services (PawfectPair) — platforma completă pentru animalele tale de companie. Adopții, programări veterinare, GPS & siguranță, comunitate, marketplace și mai mult. Gratuit, în română.";
+  "Pet Care Services — platforma completă pentru animalele tale de companie. Adopții, programări veterinare, GPS & siguranță, comunitate, marketplace și mai mult. Gratuit, în română.";
 
 const ogImage = {
   url: `${siteUrl}/og-image.png`,
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     "pașaport animal companie",
     "îngrijire câine",
     "îngrijire pisică",
-    "PawfectPair",
+    "Pet Care Services",
     "pet care Romania",
     "animale de companie aplicație",
   ],
@@ -84,8 +84,8 @@ export const metadata: Metadata = {
   // ── Twitter / X Card ──────────────────────────────────────────
   twitter: {
     card: "summary_large_image",
-    site: "@PawfectPair",
-    creator: "@PawfectPair",
+    site: "@PetCareServices",
+    creator: "@PetCareServices",
     title: titleDefault,
     description,
     images: [ogImage.url],

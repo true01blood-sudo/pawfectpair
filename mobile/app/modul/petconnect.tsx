@@ -1,5 +1,5 @@
 /**
- * Modulul PetConnect — comunitatea PawfectPair (forum).
+ * Modulul PetConnect — comunitatea Pet Care (forum).
  * Feed public cu postări pe categorii, comentarii, prezentări, ajutor.
  *
  * Tab-uri: Feed | Postările mele

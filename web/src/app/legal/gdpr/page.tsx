@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Drepturile tale GDPR",
-  description: "Drepturile tale privind datele personale pe PawfectPair, conform GDPR.",
+  description: "Drepturile tale privind datele personale pe Pet Care, conform GDPR.",
 };
 
 const rights = [
@@ -21,7 +21,7 @@ export default function GdprPage() {
     <>
       <h1>Drepturile tale GDPR</h1>
       <p>
-        Ca utilizator PawfectPair din Uniunea Europeană, ai următoarele
+        Ca utilizator Pet Care din Uniunea Europeană, ai următoarele
         drepturi conform Regulamentului (UE) 2016/679:
       </p>
 

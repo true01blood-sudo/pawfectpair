@@ -31,7 +31,7 @@ export default function Footer({ isLoggedIn = false }: { isLoggedIn?: boolean })
         className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-xs sm:px-6 sm:flex-row sm:items-center sm:justify-between lg:px-8"
         style={{ color: "var(--muted)" }}
       >
-        <p>© {new Date().getFullYear()} PawfectPair. Cu drag pentru fiecare lăbuță.</p>
+        <p>© {new Date().getFullYear()} Pet Care Services. Cu drag pentru fiecare lăbuță.</p>
         <nav className="flex flex-wrap gap-4">
           <Link href="/legal/termeni" className="hover:text-primary transition-colors">Termeni și condiții</Link>
           <Link href="/legal/confidentialitate" className="hover:text-primary transition-colors">Confidențialitate</Link>

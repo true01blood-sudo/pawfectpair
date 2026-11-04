@@ -121,7 +121,7 @@ export default function TrainerDetailScreen() {
             variant="outline"
             onPress={() =>
               Share.share({
-                message: `${trainer.display_name} — trainer${trainer.city ? ` în ${trainer.city}` : ''} pe PawfectPair.`,
+                message: `${trainer.display_name} — trainer${trainer.city ? ` în ${trainer.city}` : ''} pe Pet Care.`,
               }).catch(() => {})
             }
             style={{ flex: 1 }}

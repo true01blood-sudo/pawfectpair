@@ -648,7 +648,7 @@ export const en = {
   },
 
   events: {
-    intro: 'Pet events: meetups, adoption days, competitions, workshops and charity actions from the PawfectPair community.',
+    intro: 'Pet events: meetups, adoption days, competitions, workshops and charity actions from the Pet Care community.',
     tab_explore: 'Explore',
     tab_mine: 'My events',
     type_all: 'All types',
@@ -832,7 +832,7 @@ export const en = {
   },
 
   connect: {
-    intro: 'The PawfectPair community: ask questions, share experiences, introduce your pet and help others.',
+    intro: 'The Pet Care community: ask questions, share experiences, introduce your pet and help others.',
     tab_feed: 'Feed',
     tab_mine: 'My posts',
     cat_all: 'All',

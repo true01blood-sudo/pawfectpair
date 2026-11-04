@@ -115,7 +115,7 @@ export default async function ClinicDoveziPage() {
           </button>
         </form>
         <p className="mt-3 text-xs" style={{ color: "var(--muted)" }}>
-          Dovezile încărcate rămân „În așteptare" până la verificarea manuală de către echipa PawfectPair.
+          Dovezile încărcate rămân „În așteptare" până la verificarea manuală de către echipa Pet Care.
         </p>
       </section>
     </main>

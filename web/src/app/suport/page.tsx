@@ -43,7 +43,7 @@ export default function SuportPage() {
             >
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-2xl">💬</span>
               <span className="font-semibold" style={{ color: "var(--foreground)" }}>Întreabă comunitatea</span>
-              <span className="text-xs" style={{ color: "var(--muted)" }}>Forum PawfectPair</span>
+              <span className="text-xs" style={{ color: "var(--muted)" }}>Forum Pet Care</span>
             </Link>
           </div>
 

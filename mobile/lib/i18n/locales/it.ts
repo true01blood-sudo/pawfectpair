@@ -643,7 +643,7 @@ export const it = {
   },
 
   events: {
-    intro: 'Eventi per animali: incontri, giornate di adozione, competizioni, workshop e azioni benefiche della comunità PawfectPair.',
+    intro: 'Eventi per animali: incontri, giornate di adozione, competizioni, workshop e azioni benefiche della comunità Pet Care.',
     tab_explore: 'Esplora',
     tab_mine: 'I miei eventi',
     type_all: 'Tutti i tipi',
@@ -827,7 +827,7 @@ export const it = {
   },
 
   connect: {
-    intro: 'La comunità PawfectPair: fai domande, condividi esperienze, presenta il tuo animale e aiuta gli altri.',
+    intro: 'La comunità Pet Care: fai domande, condividi esperienze, presenta il tuo animale e aiuta gli altri.',
     tab_feed: 'Feed',
     tab_mine: 'I miei post',
     cat_all: 'Tutti',
