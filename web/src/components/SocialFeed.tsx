@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useState } from "react";
-import { toggleReaction, createPost } from "@/app/social-actions";
+import { toggleReaction, createPost, fetchComments, addComment, type PostComment } from "@/app/social-actions";
 
 type Tab = "following" | "foryou" | "local";
 
@@ -55,6 +55,46 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
   const [saved, setSaved] = useState(false);
   const [likePending, setLikePending] = useState(false);
   const [shared, setShared] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [comments, setComments] = useState<PostComment[] | null>(null);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentsError, setCommentsError] = useState<string | null>(null);
+  const [commentDraft, setCommentDraft] = useState("");
+  const [commentPosting, setCommentPosting] = useState(false);
+  const [commentCount, setCommentCount] = useState(post.commentCount);
+
+  async function handleToggleComments() {
+    const opening = !commentsOpen;
+    setCommentsOpen(opening);
+    if (opening && comments === null) {
+      setCommentsLoading(true);
+      setCommentsError(null);
+      try {
+        setComments(await fetchComments(post.id));
+      } catch (e) {
+        setCommentsError(e instanceof Error ? e.message : "Nu am putut încărca comentariile.");
+      } finally {
+        setCommentsLoading(false);
+      }
+    }
+  }
+
+  async function handleSubmitComment() {
+    const text = commentDraft.trim();
+    if (!text || commentPosting) return;
+    setCommentPosting(true);
+    setCommentsError(null);
+    try {
+      const comment = await addComment(post.id, text);
+      setComments((prev) => [...(prev ?? []), comment]);
+      setCommentCount((n) => n + 1);
+      setCommentDraft("");
+    } catch (e) {
+      setCommentsError(e instanceof Error ? e.message : "Nu am putut adăuga comentariul.");
+    } finally {
+      setCommentPosting(false);
+    }
+  }
 
   async function handleLike() {
     if (likePending) return;
@@ -211,7 +251,7 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
             </span>
           </div>
           <div className="flex items-center gap-3 text-xs" style={{ color: "var(--muted)" }}>
-            {post.commentCount > 0 && <span>{post.commentCount} comentarii</span>}
+            {commentCount > 0 && <span>{commentCount} comentarii</span>}
           </div>
         </div>
 
@@ -230,10 +270,9 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
           </button>
           <button
             type="button"
-            disabled
-            title="În curând"
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-medium opacity-40 cursor-not-allowed"
-            style={{ color: "var(--muted)" }}
+            onClick={handleToggleComments}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-medium transition-colors hover:bg-primary/8 hover:text-primary"
+            style={{ color: commentsOpen ? "var(--primary)" : "var(--muted)" }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -265,6 +304,66 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
             {shared ? "Link copiat" : "Share"}
           </button>
         </div>
+
+        {/* Comments panel */}
+        {commentsOpen && (
+          <div className="mt-3 pt-3 border-t" style={{ borderColor: "var(--card-border)" }}>
+            {commentsLoading && (
+              <p className="text-xs" style={{ color: "var(--muted)" }}>Se încarcă comentariile...</p>
+            )}
+            {!commentsLoading && comments && comments.length === 0 && (
+              <p className="text-xs" style={{ color: "var(--muted)" }}>Niciun comentariu încă — fii primul.</p>
+            )}
+            {comments && comments.length > 0 && (
+              <ul className="flex flex-col gap-2.5 mb-3">
+                {comments.map((c) => (
+                  <li key={c.id} className="flex items-start gap-2">
+                    <div
+                      className="h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-xs font-bold overflow-hidden"
+                      style={{ background: "#fff7ed", color: "var(--primary)" }}
+                    >
+                      {c.authorAvatar ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={c.authorAvatar} alt={c.authorName} className="h-7 w-7 object-cover rounded-full" />
+                      ) : (
+                        c.authorName.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <div className="flex-1 rounded-xl px-3 py-1.5" style={{ background: "var(--surface)" }}>
+                      <p className="text-xs font-semibold" style={{ color: "var(--foreground)" }}>{c.authorName}</p>
+                      <p className="text-xs" style={{ color: "var(--muted)" }}>{c.body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {commentsError && (
+              <p className="text-xs mb-2" style={{ color: "#ef4444" }}>{commentsError}</p>
+            )}
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={commentDraft}
+                onChange={(e) => setCommentDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSubmitComment();
+                }}
+                placeholder="Scrie un comentariu..."
+                className="flex-1 rounded-full border px-3 py-1.5 text-xs outline-none transition-colors focus:border-primary"
+                style={{ background: "var(--surface)", borderColor: "var(--card-border)", color: "var(--foreground)" }}
+              />
+              <button
+                type="button"
+                onClick={handleSubmitComment}
+                disabled={!commentDraft.trim() || commentPosting}
+                className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ background: "var(--primary)" }}
+              >
+                {commentPosting ? "..." : "Trimite"}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Save CTA for lesson type */}
         {post.postType === "lesson" && (
