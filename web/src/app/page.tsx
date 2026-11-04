@@ -449,8 +449,12 @@ export default async function Home() {
         <section style={{ background: "#111827" }} className="py-14">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="rounded-3xl border border-white/10 bg-white/5 p-8 sm:p-12">
-              <div className="flex flex-col gap-8 lg:flex-row lg:items-center">
-                <div className="flex-1">
+              {/* grid (nu flex) — garanteaza impartire 50/50 reala pe ecrane mari;
+                  cu flex + flex-1 doar pe coloana de text, grila de pastile isi
+                  lua latimea naturala din continut si inghesuia textul intr-o
+                  coloana mult prea ingusta (raportat de user, vizibil pe productie). */}
+              <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center">
+                <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-primary/15 px-4 py-1.5 text-sm font-bold text-primary">{t.plus.badge}</div>
                   <h2 className="font-heading mt-3 text-2xl font-bold sm:text-3xl" style={{ color: "#ffffff" }}>
                     {t.plus.title.split("\n")[0]}<br />{t.plus.title.split("\n")[1]}
@@ -466,7 +470,7 @@ export default async function Home() {
                     {t.plus.comingSoon} →
                   </Link>
                 </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <div className="grid grid-cols-2 gap-3">
                   {plusFeatures.map((f) => (
                     <div key={f.text} className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5">
                       <span className="text-lg">{f.emoji}</span>
