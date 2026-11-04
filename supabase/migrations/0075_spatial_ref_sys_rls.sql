@@ -1,0 +1,24 @@
+-- ──────────────────────────────────────────
+-- 0075: fix alertă critică Supabase Advisor — "Table publicly accessible...
+-- Row-Level Security is not enabled" pe public.spatial_ref_sys.
+--
+-- Verificat (query live pe pg_class.relrowsecurity): spatial_ref_sys e
+-- SINGURUL tabel din schema public fara RLS activ. Nu e un tabel al
+-- aplicatiei — e un tabel de sistem creat automat de extensia PostGIS
+-- (CREATE EXTENSION postgis), cu date de referinta EPSG (definitii de
+-- sisteme de coordonate), identice pe orice instalare PostGIS din lume —
+-- nimic sensibil sau specific aplicatiei. Totusi, fiind in schema
+-- public, Supabase il expune implicit prin API (PostgREST) catre
+-- rolurile anon/authenticated fara nicio restrictie cat timp RLS e
+-- dezactivat — motivul alertei.
+--
+-- Fix standard recomandat de Supabase pentru exact acest caz: activam
+-- RLS fara nicio policy. Nicio functionalitate reala nu se rupe —
+-- functiile spatiale PostGIS (ST_Transform etc.) folosite de alte
+-- tabele (business_listings, vets, petday_listings etc. — toate cu
+-- RLS propriu deja activ) ruleaza la nivel SQL intern, nu prin API-ul
+-- restrictionat de RLS. Nimic din codul aplicatiei nu interogheaza
+-- spatial_ref_sys direct (verificat).
+-- ──────────────────────────────────────────
+
+alter table public.spatial_ref_sys enable row level security;
