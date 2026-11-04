@@ -1,11 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const [mode, setMode] = useState<"signIn" | "signUp">("signIn");
   const [email, setEmail] = useState("");
@@ -13,6 +22,27 @@ export default function LoginPage() {
   const [fullName, setFullName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Pasul de cod 2FA — apare după parolă (sau direct la revenirea din OAuth)
+  // dacă userul are autentificare în doi pași activată.
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
+  const nextPath = searchParams.get("next") ?? "/";
+
+  useEffect(() => {
+    if (searchParams.get("mfa") !== "1") return;
+    (async () => {
+      const { data } = await supabase.auth.mfa.listFactors();
+      const factor = data?.totp?.find((f) => f.status === "verified");
+      if (factor) setMfaFactorId(factor.id);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function finishLogin() {
+    router.push(nextPath);
+    router.refresh();
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,13 +58,47 @@ export default function LoginPage() {
             options: { data: { full_name: fullName } },
           });
 
-    setLoading(false);
     if (error) {
+      setLoading(false);
       setError(error.message);
       return;
     }
-    router.push("/");
-    router.refresh();
+
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    setLoading(false);
+    if (aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const factor = factors?.totp?.find((f) => f.status === "verified");
+      if (factor) {
+        setMfaFactorId(factor.id);
+        return;
+      }
+    }
+    await finishLogin();
+  }
+
+  async function handleVerifyMfa(e: React.FormEvent) {
+    e.preventDefault();
+    if (!mfaFactorId) return;
+    setError(null);
+    setLoading(true);
+    const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: mfaFactorId });
+    if (challengeError || !challenge) {
+      setLoading(false);
+      setError(challengeError?.message ?? "Nu am putut trimite cererea de verificare.");
+      return;
+    }
+    const { error: verifyError } = await supabase.auth.mfa.verify({
+      factorId: mfaFactorId,
+      challengeId: challenge.id,
+      code: mfaCode.trim(),
+    });
+    setLoading(false);
+    if (verifyError) {
+      setError("Cod incorect. Încearcă din nou.");
+      return;
+    }
+    await finishLogin();
   }
 
   async function handleGoogle() {
@@ -61,110 +125,144 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-dark/45" aria-hidden />
 
       <div className="relative z-10 w-full max-w-sm rounded-3xl bg-black/50 backdrop-blur-md p-8 text-white">
-        <h1 className="text-3xl font-bold text-center">
-          {mode === "signIn" ? (
-            <>
-              Bine ai <span className="text-primary">revenit</span>
-            </>
-          ) : (
-            <>
-              Creează <span className="text-primary">cont</span>
-            </>
-          )}
-        </h1>
+        {mfaFactorId ? (
+          <>
+            <h1 className="text-3xl font-bold text-center">
+              Cod de <span className="text-primary">verificare</span>
+            </h1>
+            <p className="mt-2 text-center text-sm text-zinc-300">
+              Introdu codul din aplicația de autentificare (Google Authenticator, Authy etc.)
+            </p>
+            <form onSubmit={handleVerifyMfa} className="mt-8 flex flex-col gap-4">
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="123456"
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value)}
+                maxLength={6}
+                className="w-full rounded-full bg-white px-5 py-3 text-center text-lg tracking-[0.3em] text-dark placeholder:text-zinc-400 outline-none"
+                required
+              />
+              {error && <p className="text-sm text-red-400">{error}</p>}
+              <button
+                type="submit"
+                disabled={loading || mfaCode.trim().length < 6}
+                className="w-full rounded-full bg-primary py-3 font-semibold uppercase tracking-wide disabled:opacity-50"
+              >
+                {loading ? "Se verifică..." : "Confirmă"}
+              </button>
+            </form>
+          </>
+        ) : (
+          <>
+            <h1 className="text-3xl font-bold text-center">
+              {mode === "signIn" ? (
+                <>
+                  Bine ai <span className="text-primary">revenit</span>
+                </>
+              ) : (
+                <>
+                  Creează <span className="text-primary">cont</span>
+                </>
+              )}
+            </h1>
 
-        <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
-          {mode === "signUp" && (
-            <input
-              type="text"
-              placeholder="Nume complet"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="w-full rounded-full bg-white px-5 py-3 text-dark placeholder:text-zinc-400 outline-none"
-              required
-            />
-          )}
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-full bg-white px-5 py-3 text-dark placeholder:text-zinc-400 outline-none"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Parolă"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-full bg-white px-5 py-3 text-dark placeholder:text-zinc-400 outline-none"
-            minLength={6}
-            required
-          />
-          {error && <p className="text-sm text-red-400">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-full bg-primary py-3 font-semibold uppercase tracking-wide disabled:opacity-50"
-          >
-            {loading
-              ? "Se procesează..."
-              : mode === "signIn"
-                ? "Intră în cont"
-                : "Creează cont"}
-          </button>
-        </form>
+            <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
+              {mode === "signUp" && (
+                <input
+                  type="text"
+                  placeholder="Nume complet"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full rounded-full bg-white px-5 py-3 text-dark placeholder:text-zinc-400 outline-none"
+                  required
+                />
+              )}
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-full bg-white px-5 py-3 text-dark placeholder:text-zinc-400 outline-none"
+                required
+              />
+              <input
+                type="password"
+                placeholder="Parolă"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-full bg-white px-5 py-3 text-dark placeholder:text-zinc-400 outline-none"
+                minLength={6}
+                required
+              />
+              {error && <p className="text-sm text-red-400">{error}</p>}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-full bg-primary py-3 font-semibold uppercase tracking-wide disabled:opacity-50"
+              >
+                {loading
+                  ? "Se procesează..."
+                  : mode === "signIn"
+                    ? "Intră în cont"
+                    : "Creează cont"}
+              </button>
+            </form>
 
-        <div className="my-5 flex items-center gap-3 text-xs text-zinc-400">
-          <span className="h-px flex-1 bg-white/20" />
-          sau
-          <span className="h-px flex-1 bg-white/20" />
-        </div>
+            <div className="my-5 flex items-center gap-3 text-xs text-zinc-400">
+              <span className="h-px flex-1 bg-white/20" />
+              sau
+              <span className="h-px flex-1 bg-white/20" />
+            </div>
 
-        <button
-          type="button"
-          onClick={handleGoogle}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-white py-3 text-sm font-medium text-dark"
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18">
-            <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62Z" />
-            <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.95v2.33A9 9 0 0 0 9 18Z" />
-            <path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.17.28-1.7V4.97H.95A9 9 0 0 0 0 9c0 1.45.35 2.83.95 4.03l3-2.33Z" />
-            <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .95 4.97l3 2.33C4.66 5.17 6.65 3.58 9 3.58Z" />
-          </svg>
-          Continuă cu Google
-        </button>
+            <button
+              type="button"
+              onClick={handleGoogle}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-white py-3 text-sm font-medium text-dark"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18">
+                <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62Z" />
+                <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.95v2.33A9 9 0 0 0 9 18Z" />
+                <path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.17.28-1.7V4.97H.95A9 9 0 0 0 0 9c0 1.45.35 2.83.95 4.03l3-2.33Z" />
+                <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .95 4.97l3 2.33C4.66 5.17 6.65 3.58 9 3.58Z" />
+              </svg>
+              Continuă cu Google
+            </button>
 
-        <button
-          type="button"
-          onClick={handleFacebook}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-[#1877F2] py-3 text-sm font-medium text-white"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-            <path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.9 3.77-3.9 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.89h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94Z" />
-          </svg>
-          Continuă cu Facebook
-        </button>
+            <button
+              type="button"
+              onClick={handleFacebook}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-[#1877F2] py-3 text-sm font-medium text-white"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                <path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.9 3.77-3.9 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.89h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94Z" />
+              </svg>
+              Continuă cu Facebook
+            </button>
 
-        <button
-          onClick={() => setMode(mode === "signIn" ? "signUp" : "signIn")}
-          className="mt-6 w-full text-center text-sm text-zinc-300"
-        >
-          {mode === "signIn" ? (
-            <>Nu ai cont? <span className="text-primary">Creează unul</span></>
-          ) : (
-            <>Ai deja cont? <span className="text-primary">Autentifică-te</span></>
-          )}
-        </button>
+            <button
+              onClick={() => setMode(mode === "signIn" ? "signUp" : "signIn")}
+              className="mt-6 w-full text-center text-sm text-zinc-300"
+            >
+              {mode === "signIn" ? (
+                <>Nu ai cont? <span className="text-primary">Creează unul</span></>
+              ) : (
+                <>Ai deja cont? <span className="text-primary">Autentifică-te</span></>
+              )}
+            </button>
 
-        <p className="mt-6 text-center text-[11px] leading-relaxed text-zinc-400">
-          Continuând, ești de acord cu{" "}
-          <a href="/legal/termeni" className="underline">Termenii și condițiile</a>{" "}
-          și{" "}
-          <a href="/legal/confidentialitate" className="underline">
-            Politica de confidențialitate
-          </a>.
-        </p>
+            <p className="mt-6 text-center text-[11px] leading-relaxed text-zinc-400">
+              Continuând, ești de acord cu{" "}
+              <a href="/legal/termeni" className="underline">Termenii și condițiile</a>{" "}
+              și{" "}
+              <a href="/legal/confidentialitate" className="underline">
+                Politica de confidențialitate
+              </a>.
+            </p>
+          </>
+        )}
       </div>
     </main>
   );

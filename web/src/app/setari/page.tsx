@@ -3,6 +3,7 @@ import { createClient, getUser } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
 import BottomNav from "@/components/BottomNav";
 import { updateProfile, updatePassword } from "@/app/profil/actions";
+import TwoFactorSection from "@/components/TwoFactorSection";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Setări cont" };
@@ -92,6 +93,8 @@ export default async function SetariPage() {
               </button>
             </form>
           </section>
+
+          <TwoFactorSection />
 
           {/* Notifications */}
           <section className="rounded-2xl border p-5 mb-4" style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>

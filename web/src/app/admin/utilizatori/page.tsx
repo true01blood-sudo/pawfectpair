@@ -1,6 +1,30 @@
 import { requireFullAdmin, STAFF_ASSIGNABLE_MODULES } from "@/lib/admin-access";
+import { createAdminClient } from "@/lib/supabase/admin";
 import Breadcrumb from "@/components/Breadcrumb";
 import { changeRole, banUser, verifyUser, removeUserContent } from "./actions";
+
+// Email-ul nu există pe public.profiles (doar pe auth.users) — citit o
+// singură dată prin clientul de service_role, separat de RLS-ul normal.
+// "doar în admin": nicio altă pagină din aplicație nu face acest query.
+async function fetchEmailsById(): Promise<Record<string, string> | null> {
+  try {
+    const admin = createAdminClient();
+    const emails: Record<string, string> = {};
+    let page = 1;
+    for (;;) {
+      const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+      if (error) throw error;
+      for (const u of data.users) {
+        if (u.email) emails[u.id] = u.email;
+      }
+      if (data.users.length < 1000) break;
+      page += 1;
+    }
+    return emails;
+  } catch {
+    return null; // SUPABASE_SERVICE_ROLE_KEY lipsă sau eroare — afișăm lista fără email în loc să stricăm pagina
+  }
+}
 
 const roleLabels: Record<string, string> = {
   user: "Utilizator",
@@ -21,6 +45,14 @@ export default async function AdminUtilizatoriPage() {
     .select("id, full_name, role, admin_modules, created_at, is_banned, is_verified")
     .order("created_at", { ascending: false });
   // is_banned / is_verified added by migration 0039 — safe: null if not yet applied
+
+  const emailsById = await fetchEmailsById();
+  const emailCounts: Record<string, number> = {};
+  if (emailsById) {
+    for (const email of Object.values(emailsById)) {
+      emailCounts[email] = (emailCounts[email] ?? 0) + 1;
+    }
+  }
 
   const total = profiles?.length ?? 0;
   const banned = profiles?.filter((p) => p.is_banned).length ?? 0;
@@ -77,6 +109,24 @@ export default async function AdminUtilizatoriPage() {
                     <> — module: {p.admin_modules!.join(", ")}</>
                   )}
                 </p>
+                {emailsById ? (
+                  emailsById[p.id] ? (
+                    <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
+                      {emailsById[p.id]}
+                      {emailCounts[emailsById[p.id]] > 1 && (
+                        <span className="ml-1.5 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700">
+                          ⚠ email duplicat
+                        </span>
+                      )}
+                    </p>
+                  ) : (
+                    <p className="mt-0.5 text-xs italic" style={{ color: "var(--muted)" }}>fără email (cont OAuth/telefon)</p>
+                  )
+                ) : (
+                  <p className="mt-0.5 text-xs italic" style={{ color: "var(--muted)" }}>
+                    email indisponibil — configurează SUPABASE_SERVICE_ROLE_KEY
+                  </p>
+                )}
               </div>
 
               {p.id !== user.id && (
