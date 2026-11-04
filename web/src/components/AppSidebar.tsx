@@ -119,6 +119,14 @@ function HealthIcon() {
   );
 }
 
+function PlansIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2l3 6 6 .9-4.5 4.4 1 6.2L12 16l-5.5 3.5 1-6.2L3 8.9 9 8z"/>
+    </svg>
+  );
+}
+
 function NearbyIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -207,6 +215,7 @@ const SHORTCUTS = [
   { href: "/reproductie", label: "Reproducție", Icon: BreedingIcon },
   { href: "/pensiuni", label: "Pensiuni", Icon: PensiuniIcon },
   { href: "/aproape", label: "Aproape de tine", Icon: NearbyIcon },
+  { href: "/planuri", label: "Planuri", Icon: PlansIcon },
   { href: "/adoptii", label: "Adopții", Icon: AdoptionIcon },
   { href: "/memorial", label: "Memorial", Icon: MemorialIcon },
 ];

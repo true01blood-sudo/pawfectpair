@@ -133,6 +133,7 @@ export default async function AdminPage() {
             { href: "/admin/produse", label: "📦 Gestionare produse" },
             { href: "/admin/comenzi", label: "🛒 Vizualizare comenzi" },
             { href: "/admin/setari", label: "⚙️ Setări platformă" },
+            { href: "/admin/plati", label: "💳 Plăți abonamente" },
           ].map((l) => (
             <Link
               key={l.href}

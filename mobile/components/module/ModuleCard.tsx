@@ -1,37 +1,33 @@
 /**
  * Card pentru afișarea unui modul în hub-ul de Module.
- * Arată iconiță, nume, descriere, fază (badge colorat).
- * Tap → navighează la rută sau deschide modal „coming soon".
+ * Arată iconiță, nume, descriere, badge Premium dacă e blocat pentru userul curent.
+ * Tap → navighează la rută, sau arată prompt de upgrade dacă e Premium și userul nu are acces.
  */
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { hasPremiumAccess } from '@pawfectpair/shared';
 import { useAppTheme } from '../theme-provider';
+import { useProfile } from '../../hooks/useProfile';
+import { promptUpgrade } from '../../lib/upgrade-prompt';
 import type { AppModule } from '../../lib/modules';
-import type { ModulePhase } from '../../lib/modules';
 
 interface ModuleCardProps {
   module: AppModule;
 }
 
-const PHASE_LABELS: Record<ModulePhase, { key: string; bg: string; fg: string }> = {
-  1: { key: 'modules.faza1', bg: '#16A34A', fg: '#fff' },
-  2: { key: 'modules.faza2', bg: '#F59E0B', fg: '#1a1410' },
-  3: { key: 'modules.faza3', bg: '#94A3B8', fg: '#1a1410' },
-};
-
 export function ModuleCard({ module }: ModuleCardProps) {
   const t = useTranslation().t;
   const theme = useAppTheme();
   const router = useRouter();
-  const phaseInfo = PHASE_LABELS[module.phase];
+  const profile = useProfile();
+  const premium = hasPremiumAccess(profile.data);
+  const locked = module.tier === 'premium' && !premium;
 
   const handlePress = () => {
-    if (module.route) {
-      router.push(module.route as any);
-    }
+    if (locked) { promptUpgrade(t(`modules.${module.id}Name` as any)); return; }
+    if (module.route) router.push(module.route as any);
   };
 
   return (
@@ -47,25 +43,20 @@ export function ModuleCard({ module }: ModuleCardProps) {
         },
       ]}
     >
-      <View style={[styles.iconWrap, { backgroundColor: module.color + '22' }]}>
+      <View style={[styles.iconWrap, { backgroundColor: module.color + '22', opacity: locked ? 0.6 : 1 }]}>
         <Text style={{ fontSize: 28 }}>{module.emoji}</Text>
       </View>
-      <Text style={[styles.name, { color: theme.colors.text }]} numberOfLines={1}>
+      <Text style={[styles.name, { color: locked ? theme.colors.textMuted : theme.colors.text }]} numberOfLines={1}>
         {t(`modules.${module.id}Name` as any)}
       </Text>
       <Text style={[styles.desc, { color: theme.colors.textMuted }]} numberOfLines={2}>
         {t(`modules.${module.id}Desc` as any)}
       </Text>
-      <View
-        style={[
-          styles.phaseBadge,
-          module.status === 'live' ? { backgroundColor: '#16A34A' } : { backgroundColor: phaseInfo.bg },
-        ]}
-      >
-        <Text style={[styles.phaseText, { color: module.status === 'live' ? '#fff' : phaseInfo.fg }]}>
-          {module.status === 'live' ? 'LIVE' : t(phaseInfo.key as any)}
-        </Text>
-      </View>
+      {locked && (
+        <View style={[styles.phaseBadge, { backgroundColor: theme.colors.accent }]}>
+          <Text style={[styles.phaseText, { color: '#1a1410' }]}>🔒 Premium</Text>
+        </View>
+      )}
     </Pressable>
   );
 }

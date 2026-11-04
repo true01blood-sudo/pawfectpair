@@ -14,7 +14,7 @@ import { useUIStore } from '../../store/ui.store';
 import { pickFromGallery, takePhoto, PhotoValidationError } from '../../lib/image-picker';
 import { uploadPetPhoto } from '../../lib/supabase/queries';
 import { useAuthStore } from '../../store/auth.store';
-import { ProfileSchema } from '@pawfectpair/shared';
+import { ProfileSchema, hasPremiumAccess } from '@pawfectpair/shared';
 import { LANGUAGE_LABELS, type AppLanguage } from '../../lib/i18n';
 
 export default function ProfilScreen() {
@@ -160,6 +160,27 @@ export default function ProfilScreen() {
             <Button title={t('profile.dark')} size="sm" variant={themePreference === 'dark' ? 'primary' : 'outline'} onPress={() => setThemePreference('dark')} style={{ flex: 1 }} />
             <Button title={t('profile.system')} size="sm" variant={themePreference === 'system' ? 'primary' : 'outline'} onPress={() => setThemePreference('system')} style={{ flex: 1 }} />
           </View>
+        </Card>
+
+        {/* Planul tău */}
+        <Card>
+          <Pressable onPress={() => Linking.openURL('https://pawfectpair.app/planuri').catch(() => {})}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View>
+                <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeLg, fontFamily: theme.typography.fontFamilyBold }}>
+                  {hasPremiumAccess(profile.data) ? '💎 Plan Premium' : '🆓 Plan Gratuit'}
+                </Text>
+                <Text style={{ color: theme.colors.textMuted, fontSize: theme.typography.fontSizeSm, marginTop: 2 }}>
+                  {hasPremiumAccess(profile.data)
+                    ? profile.data?.plan_expires_at
+                      ? `Activ până la ${new Date(profile.data.plan_expires_at).toLocaleDateString('ro-RO')}`
+                      : 'Toate modulele deblocate'
+                    : 'Vezi ce deblochează Premium'}
+                </Text>
+              </View>
+              <Text style={{ color: theme.colors.primary, fontSize: 22 }}>›</Text>
+            </View>
+          </Pressable>
         </Card>
 
         {/* Notificări */}
