@@ -141,7 +141,7 @@ async function upsertVets(client, rows) {
       `insert into public.vets
          (clinic_name, city, address, phone, lat, lng, source, source_id)
        values ($1,$2,$3,$4,$5,$6,$7,$8)
-       on conflict (source, source_id) do update set
+       on conflict (source, source_id) where source is not null do update set
          clinic_name = excluded.clinic_name, city = excluded.city, address = excluded.address,
          phone = excluded.phone, lat = excluded.lat, lng = excluded.lng
        returning (xmax = 0) as inserted`,
