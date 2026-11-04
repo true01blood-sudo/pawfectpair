@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { createClient, getUser } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
 import BottomNav from "@/components/BottomNav";
+import { startPremiumCheckout, openBillingPortal } from "./actions";
 
 const PROMO_CUTOFF = new Date("2026-12-30T23:59:59+02:00");
 
@@ -25,7 +27,12 @@ const USER_PREMIUM_MODULES = [
   "✈️ Pașaport", "📊 Analiză", "🌷 Memorial",
 ];
 
-export default async function PlanuriPage() {
+export default async function PlanuriPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkout?: string; eroare?: string }>;
+}) {
+  const { checkout, eroare } = await searchParams;
   const supabase = await createClient();
   const user = await getUser();
 
@@ -46,6 +53,22 @@ export default async function PlanuriPage() {
           <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
             Un plan simplu pentru stăpâni, unul simplu pentru furnizori de servicii.
           </p>
+
+          {checkout === "succes" && (
+            <div className="mt-5 rounded-2xl border p-4" style={{ borderColor: "var(--success, #16A34A)", background: "var(--success-bg, #DCFCE7)" }}>
+              <p className="font-semibold" style={{ color: "var(--success, #16A34A)" }}>✅ Abonare reușită — bine ai venit la Premium!</p>
+            </div>
+          )}
+          {checkout === "anulat" && (
+            <div className="mt-5 rounded-2xl border p-4" style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>
+              <p className="text-sm" style={{ color: "var(--muted)" }}>Plata a fost anulată — nu s-a reținut nimic.</p>
+            </div>
+          )}
+          {eroare === "stripe_neconfigurat" && (
+            <div className="mt-5 rounded-2xl border p-4" style={{ borderColor: "var(--danger, #DC2626)", background: "var(--danger-bg, #FEE2E2)" }}>
+              <p className="text-sm" style={{ color: "var(--danger, #DC2626)" }}>Plata online nu e disponibilă momentan. Încearcă mai târziu.</p>
+            </div>
+          )}
 
           {isPromoActive && (
             <div className="mt-5 rounded-2xl border p-4" style={{ borderColor: "var(--primary)", background: "color-mix(in srgb, var(--primary) 8%, var(--card-bg))" }}>
@@ -89,14 +112,35 @@ export default async function PlanuriPage() {
                 {USER_PREMIUM_MODULES.map((m) => <li key={m}>{m}</li>)}
                 <li>⭐ Prioritate la rezervări și notificări</li>
               </ul>
-              <button
-                disabled
-                className="mt-4 w-full rounded-full px-5 py-2.5 text-sm font-semibold opacity-50"
-                style={{ background: "var(--primary)", color: "white" }}
-                title="Plata online vine în curând"
-              >
-                Abonează-te (în curând)
-              </button>
+              {!user ? (
+                <Link
+                  href="/login"
+                  className="mt-4 block w-full rounded-full px-5 py-2.5 text-center text-sm font-semibold"
+                  style={{ background: "var(--primary)", color: "white" }}
+                >
+                  Conectează-te ca să te abonezi
+                </Link>
+              ) : premium ? (
+                <form action={openBillingPortal}>
+                  <button
+                    type="submit"
+                    className="mt-4 w-full rounded-full border px-5 py-2.5 text-sm font-semibold"
+                    style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
+                  >
+                    Gestionează abonamentul
+                  </button>
+                </form>
+              ) : (
+                <form action={startPremiumCheckout}>
+                  <button
+                    type="submit"
+                    className="mt-4 w-full rounded-full px-5 py-2.5 text-sm font-semibold"
+                    style={{ background: "var(--primary)", color: "white" }}
+                  >
+                    Abonează-te — 19,99€/an
+                  </button>
+                </form>
+              )}
             </div>
           </div>
 
@@ -127,7 +171,7 @@ export default async function PlanuriPage() {
                 disabled
                 className="mt-4 w-full rounded-full px-5 py-2.5 text-sm font-semibold opacity-50"
                 style={{ background: "var(--primary)", color: "white" }}
-                title="Plata online vine în curând"
+                title="Necesită mai întâi revendicarea listării firmei tale (în curând)"
               >
                 Devino furnizor Pro (în curând)
               </button>
