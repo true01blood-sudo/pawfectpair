@@ -33,6 +33,15 @@ type Props = {
   initialPosts?: SocialPost[];
 };
 
+// Plural românesc: 1 -> singular, 2-19 -> plural, 20+ -> "de" + plural.
+function pluralizeComments(n: number): string {
+  if (n === 1) return "1 comentariu";
+  if (n >= 20) return `${n} de comentarii`;
+  return `${n} comentarii`;
+}
+
+const COMMENT_PREVIEW_COUNT = 2;
+
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
@@ -62,6 +71,7 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
   const [commentDraft, setCommentDraft] = useState("");
   const [commentPosting, setCommentPosting] = useState(false);
   const [commentCount, setCommentCount] = useState(post.commentCount);
+  const [commentsExpanded, setCommentsExpanded] = useState(false);
 
   async function handleToggleComments() {
     const opening = !commentsOpen;
@@ -88,6 +98,7 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
       const comment = await addComment(post.id, text);
       setComments((prev) => [...(prev ?? []), comment]);
       setCommentCount((n) => n + 1);
+      setCommentsExpanded(true);
       setCommentDraft("");
     } catch (e) {
       setCommentsError(e instanceof Error ? e.message : "Nu am putut adăuga comentariul.");
@@ -251,7 +262,16 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
             </span>
           </div>
           <div className="flex items-center gap-3 text-xs" style={{ color: "var(--muted)" }}>
-            {commentCount > 0 && <span>{commentCount} comentarii</span>}
+            {commentCount > 0 && (
+              <button
+                type="button"
+                onClick={handleToggleComments}
+                className="hover:underline"
+                style={{ color: "var(--muted)" }}
+              >
+                {pluralizeComments(commentCount)}
+              </button>
+            )}
           </div>
         </div>
 
@@ -315,27 +335,39 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
               <p className="text-xs" style={{ color: "var(--muted)" }}>Niciun comentariu încă — fii primul.</p>
             )}
             {comments && comments.length > 0 && (
-              <ul className="flex flex-col gap-2.5 mb-3">
-                {comments.map((c) => (
-                  <li key={c.id} className="flex items-start gap-2">
-                    <div
-                      className="h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-xs font-bold overflow-hidden"
-                      style={{ background: "#fff7ed", color: "var(--primary)" }}
-                    >
-                      {c.authorAvatar ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={c.authorAvatar} alt={c.authorName} className="h-7 w-7 object-cover rounded-full" />
-                      ) : (
-                        c.authorName.charAt(0).toUpperCase()
-                      )}
-                    </div>
-                    <div className="flex-1 rounded-xl px-3 py-1.5" style={{ background: "var(--surface)" }}>
-                      <p className="text-xs font-semibold" style={{ color: "var(--foreground)" }}>{c.authorName}</p>
-                      <p className="text-xs" style={{ color: "var(--muted)" }}>{c.body}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              <>
+                {!commentsExpanded && comments.length > COMMENT_PREVIEW_COUNT && (
+                  <button
+                    type="button"
+                    onClick={() => setCommentsExpanded(true)}
+                    className="mb-2 text-xs font-medium hover:underline"
+                    style={{ color: "var(--muted)" }}
+                  >
+                    Vezi toate cele {comments.length} comentarii
+                  </button>
+                )}
+                <ul className="flex flex-col gap-2.5 mb-3">
+                  {(commentsExpanded ? comments : comments.slice(-COMMENT_PREVIEW_COUNT)).map((c) => (
+                    <li key={c.id} className="flex items-start gap-2">
+                      <div
+                        className="h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-xs font-bold overflow-hidden"
+                        style={{ background: "#fff7ed", color: "var(--primary)" }}
+                      >
+                        {c.authorAvatar ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={c.authorAvatar} alt={c.authorName} className="h-7 w-7 object-cover rounded-full" />
+                        ) : (
+                          c.authorName.charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <div className="flex-1 rounded-xl px-3 py-1.5" style={{ background: "var(--surface)" }}>
+                        <p className="text-xs font-semibold" style={{ color: "var(--foreground)" }}>{c.authorName}</p>
+                        <p className="text-xs" style={{ color: "var(--muted)" }}>{c.body}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
             {commentsError && (
               <p className="text-xs mb-2" style={{ color: "#ef4444" }}>{commentsError}</p>
@@ -384,7 +416,7 @@ function PostCard({ post, currentUserId }: { post: SocialPost; currentUserId?: s
               {saved ? "Salvat" : "Salvează lecția"}
             </button>
             <a
-              href="/veterinari"
+              href={post.location ? `/veterinari?oras=${encodeURIComponent(post.location)}` : "/veterinari"}
               className="flex flex-1 items-center justify-center gap-2 rounded-full py-2.5 text-sm font-medium transition-colors hover:border-primary/40 hover:text-primary"
               style={{ border: "1.5px solid var(--card-border)", color: "var(--foreground)" }}
             >
