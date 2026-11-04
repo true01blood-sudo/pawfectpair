@@ -83,6 +83,7 @@ const navLinks = [
   { href: "/magazin", label: "Magazin" },
   { href: "/comunitate", label: "Comunitate" },
   { href: "/forum", label: "Forum" },
+  { href: "/planuri", label: "Planuri" },
   { href: "/resq", label: "PetResQ" },
   { href: "/sos", label: "SOS", danger: true },
 ];

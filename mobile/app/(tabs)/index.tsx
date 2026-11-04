@@ -5,7 +5,7 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, Pressable, RefreshControl,
-  Image as RNImage, StyleSheet, FlatList, BackHandler, ToastAndroid, Platform, Alert,
+  Image as RNImage, StyleSheet, FlatList, BackHandler, ToastAndroid, Platform, Alert, Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -19,7 +19,7 @@ import { useEvents, useSetEventRsvp, useMyRsvps } from '../../hooks/useEvents';
 import { ModulesQuickGrid } from '../../components/module/ModulesQuickGrid';
 import { useUnreadNotificationsCount } from '../../hooks/useNotifications';
 import { useAuthStore } from '../../store/auth.store';
-import { MEDICAL_TYPE_LABELS } from '@pawfectpair/shared';
+import { MEDICAL_TYPE_LABELS, hasPremiumAccess } from '@pawfectpair/shared';
 
 const FEED_TABS = ['Following', 'For you', 'Local'] as const;
 type FeedTab = typeof FEED_TABS[number];
@@ -152,6 +152,26 @@ export default function HomeScreen() {
             Local stories, events and tips for happier pets.
           </Text>
         </View>
+
+        {/* ── Planul tău — status + link spre /planuri (plata e doar pe web) ── */}
+        <Pressable
+          onPress={() => Linking.openURL('https://pawfectpair.app/planuri').catch(() => {})}
+          style={{ marginTop: sp.lg, paddingHorizontal: sp.lg }}
+        >
+          <View style={[styles.planBanner, { backgroundColor: s.surface, borderColor: s.border }]}>
+            <View>
+              <Text style={{ color: s.textMuted, fontSize: 12 }}>Planul tău</Text>
+              <Text style={{ color: s.text, fontSize: 15, fontFamily: theme.typography.fontFamilyBold, marginTop: 1 }}>
+                {hasPremiumAccess(profile.data) ? '💎 Premium' : '🆓 Gratuit'}
+              </Text>
+            </View>
+            <View style={[styles.planCta, { backgroundColor: s.primary }]}>
+              <Text style={{ color: '#fff', fontSize: 12, fontFamily: theme.typography.fontFamilySemibold }}>
+                Vezi planurile
+              </Text>
+            </View>
+          </View>
+        </Pressable>
 
         {/* ── Toate modulele — acces direct, organic (nu mai doar din Explorare) ── */}
         <View style={{ marginTop: sp.lg, paddingHorizontal: sp.lg }}>
@@ -412,6 +432,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingVertical: 10,
     paddingHorizontal: 6,
+  },
+  planBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  planCta: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
   },
   petAvatar: {
     width: 56,

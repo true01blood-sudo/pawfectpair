@@ -21,13 +21,16 @@ const PROMISE_META = [
 
 const PROFILE_EMOJIS = ["💉", "⚖️", "📋", "📅"];
 
+// Module reale din planul Premium (lib/modules.ts, mobil — sursa de adevăr
+// pentru care module sunt gratuite/premium). SOS/Adopții/Magazin/PetWell/
+// PetMatch sunt gratuite — nu le listăm aici, ar fi informație greșită.
 const plusFeatures = [
-  { emoji: "📍", text: "GPS activ + istoric trasee" },
-  { emoji: "🏥", text: "Sănătate extinsă + istoric complet" },
-  { emoji: "🩺", text: "Beneficii la veterinari parteneri" },
-  { emoji: "🛒", text: "Oferte exclusive PetMarket" },
-  { emoji: "📋", text: "Dosare medicale nelimitate" },
-  { emoji: "🔔", text: "Alerte prioritare PetSOS" },
+  { emoji: "📡", text: "GPS activ + istoric trasee" },
+  { emoji: "🏡", text: "Pensiuni & cazare animale" },
+  { emoji: "🎓", text: "Antrenament cu traineri" },
+  { emoji: "🛡️", text: "Asigurare animal companie" },
+  { emoji: "🎪", text: "Evenimente comunitate" },
+  { emoji: "📊", text: "Analiză & statistici" },
 ];
 
 export default async function Home() {
@@ -453,7 +456,15 @@ export default async function Home() {
                     {t.plus.title.split("\n")[0]}<br />{t.plus.title.split("\n")[1]}
                   </h2>
                   <p className="mt-2 text-zinc-400">{t.plus.desc}</p>
-                  <span className="mt-4 inline-block rounded-full border border-white/25 px-4 py-1.5 text-sm text-zinc-200">{t.plus.comingSoon}</span>
+                  <p className="mt-3 text-2xl font-bold" style={{ color: "#ffffff" }}>
+                    19,99€<span className="text-sm font-normal text-zinc-400">/an</span>
+                  </p>
+                  <Link
+                    href="/planuri"
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                  >
+                    {t.plus.comingSoon} →
+                  </Link>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {plusFeatures.map((f) => (
