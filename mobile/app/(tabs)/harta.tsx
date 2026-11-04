@@ -17,19 +17,21 @@ import { useLocation, sortByDistance, type PetPlace } from '../../lib/location';
 import { useBusinessListings, useVets } from '../../hooks';
 import type { BusinessListingCategory } from '../../lib/supabase/queries';
 
-type FilterType = 'all' | 'vet' | 'shop' | 'shelter' | 'trainer';
+type FilterType = 'all' | 'vet' | 'shop' | 'shelter' | 'trainer' | 'transport';
 
 const PLACE_META: Record<PetPlace['type'], { emoji: string; color: string; label: string }> = {
-  vet:     { emoji: '🏥', color: '#DC2626', label: 'Veterinari' },
-  shop:    { emoji: '🛍️', color: '#EC4899', label: 'Magazine' },
-  shelter: { emoji: '🏠', color: '#F59E0B', label: 'Adăposturi' },
-  trainer: { emoji: '🎓', color: '#7C3AED', label: 'Traineri' },
+  vet:       { emoji: '🏥', color: '#DC2626', label: 'Veterinari' },
+  shop:      { emoji: '🛍️', color: '#EC4899', label: 'Magazine' },
+  shelter:   { emoji: '🏠', color: '#F59E0B', label: 'Adăposturi' },
+  trainer:   { emoji: '🎓', color: '#7C3AED', label: 'Traineri' },
+  transport: { emoji: '🚚', color: '#0891B2', label: 'Transport' },
 };
 
 const CATEGORY_TO_TYPE: Record<BusinessListingCategory, PetPlace['type']> = {
   pet_shop: 'shop',
   shelter: 'shelter',
   trainer: 'trainer',
+  transport: 'transport',
 };
 
 export default function HartaScreen() {

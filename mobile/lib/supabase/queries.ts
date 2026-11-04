@@ -3112,7 +3112,7 @@ export async function markAllNotificationsRead(userId: string): Promise<void> {
 // BUSINESS LISTINGS — director de activitati conexe (harta)
 // ============================================================
 
-export type BusinessListingCategory = 'pet_shop' | 'shelter' | 'trainer';
+export type BusinessListingCategory = 'pet_shop' | 'shelter' | 'trainer' | 'transport';
 
 export type BusinessListingRow = {
   id: string;

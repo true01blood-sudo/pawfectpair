@@ -15,7 +15,7 @@ export interface Coords {
 export interface PetPlace {
   id: string;
   name: string;
-  type: 'vet' | 'shop' | 'shelter' | 'trainer';
+  type: 'vet' | 'shop' | 'shelter' | 'trainer' | 'transport';
   /** Lipsește pentru surse fără coordonate reale (ex: vets) — nu poate apărea ca pin pe hartă. */
   coords?: Coords;
   address?: string;

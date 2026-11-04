@@ -7,34 +7,55 @@ const CATEGORY_META: Record<string, { emoji: string; label: string }> = {
   pet_shop: { emoji: "🛍️", label: "Magazine" },
   shelter: { emoji: "🏠", label: "Adăposturi & adopții" },
   trainer: { emoji: "🎓", label: "Traineri" },
+  transport: { emoji: "🚚", label: "Transport animale" },
 };
+
+const PAGE_SIZE = 60;
 
 export default async function AproapePage({
   searchParams,
 }: {
-  searchParams: Promise<{ categorie?: string; oras?: string }>;
+  searchParams: Promise<{ categorie?: string; oras?: string; pagina?: string }>;
 }) {
   const { categorie, oras } = await searchParams;
+  const page = Math.max(1, parseInt((await searchParams).pagina ?? "1", 10) || 1);
   const supabase = await createClient();
 
-  const { data: allListings } = await supabase
+  // business_listings are peste 1300 de randuri active (transport singur
+  // >1000) — peste limita implicita PostgREST (max-rows, de obicei 1000),
+  // care taie orice raspuns la 1000 indiferent de .limit() cerut de client.
+  // Fara paginare reala (range() + count exact), "Toate" / "Transport"
+  // trunchiau silentios rezultatele fara nicio indicatie.
+  let q = supabase
     .from("business_listings")
-    .select("id, category, name, city, address, phone, website, description, verified")
+    .select("id, category, name, city, address, phone, website, description, verified", { count: "exact" })
     .eq("active", true)
     .order("verified", { ascending: false })
-    .order("name", { ascending: true });
+    .order("name", { ascending: true })
+    .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+  if (categorie) q = q.eq("category", categorie);
+  if (oras) q = q.eq("city", oras);
 
-  const rows = allListings ?? [];
-  const cities = Array.from(new Set(rows.map((r) => r.city).filter((c): c is string => Boolean(c)))).sort();
+  const { data: filtered, count } = await q;
+  const totalCount = count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
-  const filtered = rows.filter((r) => (!categorie || r.category === categorie) && (!oras || r.city === oras));
+  // Lista de orase pentru filtru — interogare separata, usoara (o singura
+  // coloana), filtrata doar pe categorie (nu si pe oras — altfel ai pierde
+  // restul optiunilor din chip-uri odata ce alegi unul).
+  let cityQ = supabase.from("business_listings").select("city").eq("active", true).not("city", "is", null);
+  if (categorie) cityQ = cityQ.eq("category", categorie);
+  const { data: cityRows } = await cityQ;
+  const cities = Array.from(new Set((cityRows ?? []).map((r) => r.city).filter((c): c is string => Boolean(c)))).sort();
 
-  function hrefFor(next: { categorie?: string; oras?: string }) {
+  function hrefFor(next: { categorie?: string; oras?: string; pagina?: number }) {
     const params = new URLSearchParams();
     const c = next.categorie !== undefined ? next.categorie : categorie;
     const o = next.oras !== undefined ? next.oras : oras;
+    const p = next.pagina !== undefined ? next.pagina : (next.categorie !== undefined || next.oras !== undefined ? 1 : page);
     if (c) params.set("categorie", c);
     if (o) params.set("oras", o);
+    if (p > 1) params.set("pagina", String(p));
     const qs = params.toString();
     return qs ? `/aproape?${qs}` : "/aproape";
   }
@@ -102,18 +123,19 @@ export default async function AproapePage({
 
           <div className="mt-6 mb-3">
             <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--muted)" }}>
-              {filtered.length} {filtered.length === 1 ? "rezultat" : "rezultate"}
+              {totalCount} {totalCount === 1 ? "rezultat" : "rezultate"}
+              {totalPages > 1 && ` · pagina ${page} din ${totalPages}`}
             </h2>
           </div>
 
-          {filtered.length === 0 ? (
+          {(filtered ?? []).length === 0 ? (
             <div className="rounded-2xl border-2 border-dashed p-10 text-center" style={{ borderColor: "var(--card-border)" }}>
               <p className="text-3xl mb-2">🔍</p>
               <p className="font-semibold" style={{ color: "var(--foreground)" }}>Niciun rezultat pentru acest filtru</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-              {filtered.map((r) => {
+              {(filtered ?? []).map((r) => {
                 const meta = CATEGORY_META[r.category] ?? { emoji: "📍", label: r.category };
                 return (
                   <div
@@ -149,6 +171,29 @@ export default async function AproapePage({
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-center gap-3">
+              {page > 1 && (
+                <Link
+                  href={hrefFor({ pagina: page - 1 })}
+                  className="flex min-h-9 items-center rounded-full border px-4 text-sm font-medium transition-colors"
+                  style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
+                >
+                  ← Pagina anterioară
+                </Link>
+              )}
+              {page < totalPages && (
+                <Link
+                  href={hrefFor({ pagina: page + 1 })}
+                  className="flex min-h-9 items-center rounded-full border px-4 text-sm font-medium transition-colors"
+                  style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
+                >
+                  Pagina următoare →
+                </Link>
+              )}
             </div>
           )}
         </main>
