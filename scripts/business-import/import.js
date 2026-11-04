@@ -181,8 +181,11 @@ function parseAchTable(html) {
 
     const nameCellLines = stripTags(nameCell);
     const addressLines = nameCellLines.slice(1); // restul liniilor din acelasi td = oras/adresa
-    const city = addressLines[0] || null;
-    const address = addressLines.slice(1).join(", ") || null;
+    // Cand sursa nu separa oras/adresa pe linii distincte, prima linie e
+    // uneori adresa intreaga ("Com. X, Sat. Y, Str. Z nr. N") — nu un oras.
+    const firstLineIsFullAddress = addressLines[0] && /\b(str\.|sat\.|com\.|nr\.)\b/i.test(addressLines[0]);
+    const city = firstLineIsFullAddress ? null : addressLines[0] || null;
+    const address = firstLineIsFullAddress ? addressLines.join(", ") : addressLines.slice(1).join(", ") || null;
 
     const lastCell = tds[tds.length - 1];
     const phoneMatch = stripTags(lastCell).join(" ").match(/0\d[\d\s]{7,}\d/);

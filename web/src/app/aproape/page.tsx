@@ -46,7 +46,17 @@ export default async function AproapePage({
   let cityQ = supabase.from("business_listings").select("city").eq("active", true).not("city", "is", null);
   if (categorie) cityQ = cityQ.eq("category", categorie);
   const { data: cityRows } = await cityQ;
-  const cities = Array.from(new Set((cityRows ?? []).map((r) => r.city).filter((c): c is string => Boolean(c)))).sort();
+  // Unele intrari (scraping ACh/ANSVSA) au adresa completa bagata in city
+  // cand sursa nu separa oras/adresa pe linii distincte ("Com. X, Sat. Y,
+  // Str. Z nr. N") — nu sunt orase reale, le scoatem din lista de filtre.
+  const looksLikeFullAddress = (c: string) => /\b(str\.|sat\.|com\.|nr\.)\b/i.test(c);
+  const cities = Array.from(
+    new Set(
+      (cityRows ?? [])
+        .map((r) => r.city)
+        .filter((c): c is string => Boolean(c) && !looksLikeFullAddress(c))
+    )
+  ).sort();
 
   function hrefFor(next: { categorie?: string; oras?: string; pagina?: number }) {
     const params = new URLSearchParams();
