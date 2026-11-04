@@ -24,7 +24,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Pet Care Services folosește camera pentru a fotografia animalul tău de companie.",
         "NSPhotoLibraryUsageDescription": "Pet Care Services accesează galeria pentru a selecta o poză a animalului tău.",
-        "NSUserNotificationsUsageDescription": "Pet Care Services te anunță despre scadențe medicale și match-uri noi."
+        "NSUserNotificationsUsageDescription": "Pet Care Services te anunță despre scadențe medicale și match-uri noi.",
+        "NSFaceIDUsageDescription": "Pet Care Services folosește Face ID pentru a debloca aplicația, dacă activezi această opțiune din Profil."
       },
       "config": {
         "usesNonExemptEncryption": false

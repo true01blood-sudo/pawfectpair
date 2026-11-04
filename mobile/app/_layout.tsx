@@ -3,7 +3,8 @@
  * ThemeProvider, StatusBar. Redirecționarea auth se face în (auth)/_layout
  * și (tabs)/_layout.
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { AppState, type AppStateStatus } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -12,8 +13,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { QUERY_CACHE_CONFIG } from '@pawfectpair/shared';
 import { ThemeProvider } from '../components/theme-provider';
 import { UpdateRequiredScreen } from '../components/UpdateRequiredScreen';
+import { BiometricLockScreen } from '../components/BiometricLockScreen';
 import { setupNotifications, registerForPushNotifications } from '../lib/push';
 import { checkUpdateRequired, type UpdateGateResult } from '../lib/update-gate';
+import { getBiometricLockEnabled, authenticateWithBiometrics } from '../lib/biometric';
 import { supabase } from '../lib/supabase/client';
 import {
   useFonts,
@@ -42,10 +45,51 @@ export default function RootLayout() {
     PlusJakartaSans_700Bold,
   });
   const [updateGate, setUpdateGate] = useState<UpdateGateResult | null>(null);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [locked, setLocked] = useState(false);
+  const [unlockFailed, setUnlockFailed] = useState(false);
+  const appState = useRef(AppState.currentState);
 
   useEffect(() => {
     checkUpdateRequired().then(setUpdateGate);
   }, []);
+
+  async function tryUnlock() {
+    setUnlockFailed(false);
+    const ok = await authenticateWithBiometrics();
+    if (ok) {
+      setLocked(false);
+    } else {
+      setLocked(true);
+      setUnlockFailed(true);
+    }
+  }
+
+  // La pornire: dacă userul a activat blocarea din Profil, cere biometria
+  // înainte de a arăta orice ecran.
+  useEffect(() => {
+    getBiometricLockEnabled().then((enabled) => {
+      setBiometricEnabled(enabled);
+      if (enabled) {
+        setLocked(true);
+        tryUnlock();
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // La revenirea din background: re-blochează, ca un ecran de lock real.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (next: AppStateStatus) => {
+      if (appState.current.match(/inactive|background/) && next === 'active' && biometricEnabled) {
+        setLocked(true);
+        tryUnlock();
+      }
+      appState.current = next;
+    });
+    return () => sub.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [biometricEnabled]);
 
   useEffect(() => {
     setupNotifications();
@@ -72,6 +116,8 @@ export default function RootLayout() {
             <StatusBar style="auto" />
             {updateGate?.required ? (
               <UpdateRequiredScreen message={updateGate.message} storeUrl={updateGate.storeUrl} />
+            ) : locked ? (
+              <BiometricLockScreen onRetry={tryUnlock} failed={unlockFailed} />
             ) : (
               <Stack screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="(auth)" />

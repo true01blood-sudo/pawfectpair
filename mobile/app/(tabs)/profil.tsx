@@ -1,7 +1,7 @@
 /**
  * Ecran Profil — date utilizator, setări temă, buton logout, GDPR.
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Linking, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
@@ -16,6 +16,12 @@ import { uploadPetPhoto } from '../../lib/supabase/queries';
 import { useAuthStore } from '../../store/auth.store';
 import { ProfileSchema, hasPremiumAccess } from '@pawfectpair/shared';
 import { LANGUAGE_LABELS, type AppLanguage } from '../../lib/i18n';
+import {
+  isBiometricHardwareAvailable,
+  getBiometricLockEnabled,
+  setBiometricLockEnabled,
+  authenticateWithBiometrics,
+} from '../../lib/biometric';
 
 export default function ProfilScreen() {
   const t = useTranslation().t;
@@ -31,6 +37,22 @@ export default function ProfilScreen() {
 
   const [editing, setEditing] = useState(false);
   const [fullName, setFullName] = useState(profile.data?.full_name ?? '');
+  const [biometricSupported, setBiometricSupported] = useState(false);
+  const [biometricEnabled, setBiometricEnabledState] = useState(false);
+
+  useEffect(() => {
+    isBiometricHardwareAvailable().then(setBiometricSupported);
+    getBiometricLockEnabled().then(setBiometricEnabledState);
+  }, []);
+
+  async function handleToggleBiometric(next: boolean) {
+    if (next) {
+      const ok = await authenticateWithBiometrics();
+      if (!ok) return; // nu activăm dacă nu reușim să verificăm chiar acum biometria
+    }
+    await setBiometricLockEnabled(next);
+    setBiometricEnabledState(next);
+  }
   const [phone, setPhone] = useState(profile.data?.phone ?? '');
   const [bio, setBio] = useState(profile.data?.bio ?? '');
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -161,6 +183,28 @@ export default function ProfilScreen() {
             <Button title={t('profile.system')} size="sm" variant={themePreference === 'system' ? 'primary' : 'outline'} onPress={() => setThemePreference('system')} style={{ flex: 1 }} />
           </View>
         </Card>
+
+        {/* Securitate — deblocare biometrică */}
+        {biometricSupported && (
+          <Card>
+            <Text style={{ color: theme.colors.text, fontSize: theme.typography.fontSizeLg, fontFamily: theme.typography.fontFamilyBold, marginBottom: theme.spacing.md }}>
+              🔒 Securitate
+            </Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flex: 1, marginRight: 12 }}>
+                <Text style={{ color: theme.colors.text }}>Deblocare cu amprentă / Face ID</Text>
+                <Text style={{ color: theme.colors.textMuted, fontSize: theme.typography.fontSizeSm, marginTop: 2 }}>
+                  Cere biometria la fiecare deschidere a aplicației
+                </Text>
+              </View>
+              <Switch
+                value={biometricEnabled}
+                onValueChange={handleToggleBiometric}
+                trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+              />
+            </View>
+          </Card>
+        )}
 
         {/* Planul tău */}
         <Card>
