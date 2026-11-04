@@ -1,15 +1,10 @@
-import { redirect } from "next/navigation";
-import { createClient, getUser } from "@/lib/supabase/server";
+import { requireAdminModule } from "@/lib/admin-access";
 import Breadcrumb from "@/components/Breadcrumb";
 import ImageUpload from "@/components/ImageUpload";
 import { addProduct, updateProduct, deleteProduct } from "./actions";
 
 export default async function AdminProdusePage() {
-  const supabase = await createClient();
-  const user = await getUser();
-  if (!user) redirect("/login");
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin") redirect("/");
+  const { supabase } = await requireAdminModule("produse");
 
   const { data: products } = await supabase
     .from("products")

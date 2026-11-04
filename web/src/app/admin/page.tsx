@@ -1,13 +1,8 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient, getUser } from "@/lib/supabase/server";
+import { requireAdminPanelAccess } from "@/lib/admin-access";
 
 export default async function AdminPage() {
-  const supabase = await createClient();
-  const user = await getUser();
-  if (!user) redirect("/login");
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin") redirect("/");
+  const { supabase } = await requireAdminPanelAccess();
 
   const [
     { count: usersCount },

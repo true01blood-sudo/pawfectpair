@@ -1,5 +1,4 @@
-import { redirect } from "next/navigation";
-import { createClient, getUser } from "@/lib/supabase/server";
+import { requireAdminModule } from "@/lib/admin-access";
 import Breadcrumb from "@/components/Breadcrumb";
 import { setDocumentStatus } from "../actions";
 
@@ -25,12 +24,7 @@ type DocRow = {
 };
 
 export default async function AdminDoveziPage() {
-  const supabase = await createClient();
-  const user = await getUser();
-  if (!user) redirect("/login");
-
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin") redirect("/");
+  const { supabase } = await requireAdminModule("dovezi");
 
   const { data: documents } = await supabase
     .from("clinic_documents")

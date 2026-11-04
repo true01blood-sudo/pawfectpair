@@ -17,7 +17,10 @@ export async function changeRole(userId: string, formData: FormData) {
   const { supabase, adminId } = await requireAdmin();
   if (userId === adminId) throw new Error("Nu îți poți schimba propriul rol de aici.");
   const role = String(formData.get("role") ?? "user");
-  await supabase.from("profiles").update({ role }).eq("id", userId);
+  // admin_modules contează doar pentru role='staff' — curățat la orice alt rol,
+  // ca lista din UI să nu arate module "permise" pentru un cont care nu mai e staff.
+  const adminModules = role === "staff" ? formData.getAll("admin_modules").map(String) : [];
+  await supabase.from("profiles").update({ role, admin_modules: adminModules }).eq("id", userId);
   revalidatePath("/admin/utilizatori");
 }
 

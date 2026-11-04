@@ -1,23 +1,24 @@
-import { redirect } from "next/navigation";
-import { createClient, getUser } from "@/lib/supabase/server";
+import { requireFullAdmin, STAFF_ASSIGNABLE_MODULES } from "@/lib/admin-access";
 import Breadcrumb from "@/components/Breadcrumb";
 import { changeRole, banUser, verifyUser, removeUserContent } from "./actions";
 
 const roleLabels: Record<string, string> = {
-  user: "Utilizator", vet: "Veterinar", shop: "Magazin", shelter: "Centru/Asociație", pensiune: "Pensiune", admin: "Admin",
+  user: "Utilizator",
+  admin: "Admin",
+  vet: "Veterinar",
+  shop: "Magazin",
+  shelter: "Centru/Asociație",
+  pensiune: "Pensiune/Hotel",
+  trainer: "Trainer",
+  staff: "Staff (acces parțial admin)",
 };
 
 export default async function AdminUtilizatoriPage() {
-  const supabase = await createClient();
-  const user = await getUser();
-  if (!user) redirect("/login");
-
-  const { data: me } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (me?.role !== "admin") redirect("/");
+  const { supabase, user } = await requireFullAdmin();
 
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("id, full_name, role, created_at, is_banned, is_verified")
+    .select("id, full_name, role, admin_modules, created_at, is_banned, is_verified")
     .order("created_at", { ascending: false });
   // is_banned / is_verified added by migration 0039 — safe: null if not yet applied
 
@@ -72,26 +73,44 @@ export default async function AdminUtilizatoriPage() {
                 </div>
                 <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
                   {roleLabels[p.role] ?? p.role} · din {new Date(p.created_at).toLocaleDateString("ro-RO")}
+                  {p.role === "staff" && (p.admin_modules?.length ?? 0) > 0 && (
+                    <> — module: {p.admin_modules!.join(", ")}</>
+                  )}
                 </p>
               </div>
 
               {p.id !== user.id && (
                 <div className="flex flex-wrap items-center gap-2">
-                  {/* Role change */}
-                  <form action={changeRole.bind(null, p.id)} className="flex items-center gap-1">
+                  {/* Role change + module access (pentru staff) */}
+                  <form action={changeRole.bind(null, p.id)} className="flex flex-wrap items-center gap-1">
                     <select name="role" defaultValue={p.role}
                       className="min-h-9 rounded-lg border px-2 text-xs"
                       style={{ borderColor: "var(--card-border)", background: "var(--card-bg)", color: "var(--foreground)" }}>
                       <option value="user">Utilizator</option>
+                      <option value="admin">Admin</option>
                       <option value="vet">Veterinar</option>
                       <option value="shop">Magazin</option>
                       <option value="shelter">Centru/Asociație</option>
-                      <option value="pensiune">Pensiune</option>
-                      <option value="admin">Admin</option>
+                      <option value="pensiune">Pensiune/Hotel</option>
+                      <option value="trainer">Trainer</option>
+                      <option value="staff">Staff (acces parțial admin)</option>
                     </select>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px]" style={{ color: "var(--muted)" }}>
+                      {STAFF_ASSIGNABLE_MODULES.map((m) => (
+                        <label key={m.key} className="flex items-center gap-1">
+                          <input
+                            type="checkbox"
+                            name="admin_modules"
+                            value={m.key}
+                            defaultChecked={p.admin_modules?.includes(m.key)}
+                          />
+                          {m.icon} {m.label}
+                        </label>
+                      ))}
+                    </div>
                     <button className="min-h-9 rounded-full border px-3 text-xs"
                       style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}>
-                      Rol
+                      Salvează rol
                     </button>
                   </form>
 

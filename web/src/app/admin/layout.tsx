@@ -1,31 +1,15 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient, getUser } from "@/lib/supabase/server";
 import AppHeader from "@/components/AppHeader";
+import { ADMIN_MODULES, requireAdminPanelAccess } from "@/lib/admin-access";
 import type { ReactNode } from "react";
 
-const navItems = [
-  { href: "/admin", label: "Dashboard", icon: "📊" },
-  { href: "/admin/utilizatori", label: "Utilizatori", icon: "👥" },
-  { href: "/admin/continut", label: "Moderare", icon: "🛡️" },
-  { href: "/admin/produse", label: "Produse", icon: "📦" },
-  { href: "/admin/comenzi", label: "Comenzi", icon: "🛒" },
-  { href: "/admin/dovezi", label: "Dovezi", icon: "📋" },
-  { href: "/admin/veterinari", label: "Veterinari", icon: "🏥" },
-  { href: "/admin/antrenament", label: "Antrenament", icon: "🎓" },
-  { href: "/admin/cercuri", label: "Cercuri", icon: "🧑‍🤝‍🧑" },
-  { href: "/admin/pensiuni", label: "Pensiuni", icon: "🏠" },
-  { href: "/admin/evenimente", label: "Evenimente", icon: "📅" },
-  { href: "/admin/setari", label: "Setări", icon: "⚙️" },
-];
-
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  const supabase = await createClient();
-  const user = await getUser();
-  if (!user) redirect("/login");
+  const { user, isFullAdmin, allowedModules } = await requireAdminPanelAccess();
 
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin") redirect("/");
+  const navItems = [
+    { href: "/admin", label: "Dashboard", icon: "📊" },
+    ...ADMIN_MODULES.filter((m) => isFullAdmin || allowedModules.includes(m.key)),
+  ];
 
   const userName = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? "";
   const avatarUrl = (user.user_metadata?.avatar_url as string | undefined) ?? null;

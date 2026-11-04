@@ -1,14 +1,9 @@
-import { redirect } from "next/navigation";
-import { createClient, getUser } from "@/lib/supabase/server";
+import { requireAdminModule } from "@/lib/admin-access";
 import Breadcrumb from "@/components/Breadcrumb";
 import { updateMarkup, importDemoProducts, importPetFoodFacts, addArticle } from "../actions";
 
 export default async function AdminSetariPage() {
-  const supabase = await createClient();
-  const user = await getUser();
-  if (!user) redirect("/login");
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin") redirect("/");
+  const { supabase } = await requireAdminModule("setari");
 
   const { data: settings } = await supabase.from("app_settings").select("markup_percent").eq("id", true).single();
 

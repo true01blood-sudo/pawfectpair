@@ -1,14 +1,8 @@
-import { redirect } from "next/navigation";
-import { createClient, getUser } from "@/lib/supabase/server";
+import { requireAdminModule } from "@/lib/admin-access";
 import Breadcrumb from "@/components/Breadcrumb";
 
 export default async function AdminComenziPage() {
-  const supabase = await createClient();
-  const user = await getUser();
-  if (!user) redirect("/login");
-
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin") redirect("/");
+  const { supabase } = await requireAdminModule("comenzi");
 
   const { data: orders } = await supabase
     .from("orders")
@@ -72,7 +66,7 @@ export default async function AdminComenziPage() {
                   const product = it.products as unknown as { name: string; profiles: { full_name: string } | null } | null;
                   return (
                     <p key={i} className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
-                      {product?.name} × {it.quantity} — vânzător: {product?.profiles?.full_name ?? "PawfectPair"}
+                      {product?.name} × {it.quantity} — vânzător: {product?.profiles?.full_name ?? "Pet Care"}
                     </p>
                   );
                 })}

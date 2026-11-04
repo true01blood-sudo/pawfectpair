@@ -31,7 +31,7 @@ export default async function AppShell({ children, mainClassName }: Props) {
     { data: recommendedListing },
     { data: petProfile },
   ] = await Promise.all([
-    supabase.from("profiles").select("role").eq("id", user.id).single(),
+    supabase.from("profiles").select("role, admin_modules").eq("id", user.id).single(),
     supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("is_read", false),
     supabase.from("matches").select("id, user_a_id, user_b_id").or(`user_a_id.eq.${user.id},user_b_id.eq.${user.id}`),
     supabase
@@ -53,7 +53,7 @@ export default async function AppShell({ children, mainClassName }: Props) {
     supabase.from("pets").select("id, name, species, breed, birth_date, photo_url").eq("owner_id", user.id).limit(1).single(),
   ]);
 
-  let isAdmin = profile?.role === "admin";
+  let isAdmin = profile?.role === "admin" || (profile?.role === "staff" && (profile.admin_modules?.length ?? 0) > 0);
   let isVet = profile?.role === "vet";
   const unreadNotifications = notifCount ?? 0;
 
@@ -116,7 +116,7 @@ export default async function AppShell({ children, mainClassName }: Props) {
             className="mt-auto shrink-0 border-t px-6 py-3 hidden md:flex items-center justify-between text-xs"
             style={{ borderColor: "var(--card-border)", color: "var(--muted)" }}
           >
-            <span>© {new Date().getFullYear()} PawfectPair</span>
+            <span>© {new Date().getFullYear()} Pet Care Services</span>
             <nav className="flex gap-4">
               <a href="/legal/termeni" className="hover:text-primary transition-colors">Termeni</a>
               <a href="/legal/confidentialitate" className="hover:text-primary transition-colors">Confidențialitate</a>

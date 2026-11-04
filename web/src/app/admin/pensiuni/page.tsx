@@ -1,15 +1,9 @@
-import { redirect } from "next/navigation";
-import { createClient, getUser } from "@/lib/supabase/server";
+import { requireAdminModule } from "@/lib/admin-access";
 import Breadcrumb from "@/components/Breadcrumb";
 import { toggleListingVerified, toggleListingActive, deletePetdayListing, deletePetdayReview } from "../actions";
 
 export default async function AdminPensiuniPage() {
-  const supabase = await createClient();
-  const user = await getUser();
-  if (!user) redirect("/login");
-
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin") redirect("/");
+  const { supabase } = await requireAdminModule("pensiuni");
 
   const [{ data: listings }, { data: reviews }] = await Promise.all([
     supabase
