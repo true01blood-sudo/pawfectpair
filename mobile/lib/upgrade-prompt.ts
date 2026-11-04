@@ -10,11 +10,11 @@ export function promptUpgrade(moduleName?: string) {
   Alert.alert(
     'Modul Premium',
     moduleName
-      ? `"${moduleName}" face parte din planul Premium (19,99€/an). Abonează-te pe site ca să-l deblochezi.`
-      : 'Acest modul face parte din planul Premium (19,99€/an). Abonează-te pe site ca să-l deblochezi.',
+      ? `"${moduleName}" face parte din planul Premium. Vezi detalii pe site.`
+      : 'Acest modul face parte din planul Premium. Vezi detalii pe site.',
     [
       { text: 'Mai târziu', style: 'cancel' },
-      { text: 'Vezi planurile', onPress: () => Linking.openURL(PLANS_URL).catch(() => {}) },
+      { text: 'Detalii', onPress: () => Linking.openURL(PLANS_URL).catch(() => {}) },
     ]
   );
 }
